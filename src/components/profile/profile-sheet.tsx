@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -84,7 +85,14 @@ export function ProfileSheet() {
       await updateFavoriteTeam(team)
       toast({ title: "Flag Updated", description: "You are now representing " + team })
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Update Failed", description: error.message })
+      // Gracefully handle if column is missing in DB
+      toast({ 
+        variant: "destructive", 
+        title: "Update Failed", 
+        description: error.message?.includes("favorite_team") 
+          ? "National representation feature is currently being synced. Please try again later." 
+          : error.message 
+      })
     }
   }
 
@@ -156,10 +164,10 @@ export function ProfileSheet() {
               </p>
             </div>
 
-            <div className="w-full space-y-3 pt-4 border-t border-gray-100">
-               <div className="flex items-center gap-2 justify-center">
+            <div className="w-full space-y-3 pt-4 border-t border-gray-100 text-left">
+               <div className="flex items-center gap-2">
                   <Flag className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Represent Your Nation</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">National Representation</span>
                </div>
                <Select value={profile?.favorite_team || ""} onValueChange={handleUpdateTeam}>
                   <SelectTrigger className="w-full h-12 rounded-2xl border-gray-100 bg-gray-50/50">
@@ -202,11 +210,11 @@ export function ProfileSheet() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-5 bg-primary/5 border border-primary/10 rounded-3xl text-center space-y-1">
-              <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-60">Your Rank</p>
+              <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-60">Arena Rank</p>
               <span className="text-3xl font-black italic text-primary">#{stats?.rank || "--"}</span>
             </div>
             <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl text-center space-y-1">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Points</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Points</p>
               <span className="text-3xl font-black italic text-gray-900">{stats?.points || "0"}</span>
             </div>
           </div>
