@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -47,26 +46,30 @@ function parseScore(value: string, status: string) {
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get("authorization");
+
     if (!authHeader?.startsWith("Bearer ")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1];
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const token = authHeader.replace("Bearer ", "");
 
-    if (authError || !user) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseAdmin.auth.getUser(token);
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
-    // Verify Superadmin Role
-    const { data: profile, error: profileError } = await supabaseAdmin
+    const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (profileError || profile?.role !== "superadmin") {
-      return NextResponse.json({ error: "Forbidden: Superadmin access required" }, { status: 403 });
+    if (profile?.role !== "superadmin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Fetch from World Cup API
@@ -109,6 +112,8 @@ export async function POST(req: Request) {
         home_score: parseScore(game.home_score, status),
         away_score: parseScore(game.away_score, status),
         updated_at: new Date().toISOString(),
+        // Initialize result sync metadata for internal tracking if needed
+        result_sync_due_at: kickoffUtc ? DateTime.fromISO(kickoffUtc).plus({ minutes: 110 }).toUTC().toISO() : null
       };
     });
 
