@@ -112,7 +112,7 @@ export default function LandingPage() {
             <div className="flex items-center justify-center gap-2 mt-2">
                 <Sparkles className="h-3 w-3 text-primary" />
                 <p className="text-gray-400 text-[10px] uppercase tracking-[0.5em] font-black">
-                Official Fan Hub
+                Zikura Recreation Club
                 </p>
                 <Sparkles className="h-3 w-3 text-primary" />
             </div>
