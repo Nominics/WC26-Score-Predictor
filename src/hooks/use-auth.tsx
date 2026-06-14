@@ -42,8 +42,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!isConfigured) return
 
       try {
-        // Fetch profile data first
-        // Note: 'lifelines_remaining' removed as it's not yet in the DB schema
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("id, display_name, favorite_team, role, starting_points")
@@ -55,7 +53,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(profileData)
         }
 
-        // Fetch user stats and rank from the updated leaderboard view
         const [userStatsRes, rankRes] = await Promise.all([
           supabase
             .from("leaderboard")
@@ -78,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           predictionPoints: predPoints,
           startingPoints: startPoints,
           rank: rank,
-          lifelines: 5 // Defaulting to 5 for now until the column is added to profiles
+          lifelines: 5
         })
       } catch (err) {
         console.error("Error fetching user data:", err)
@@ -95,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    const { data: { subscription } } = supabase.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return
 
       const currentUser = session?.user || null
@@ -187,8 +184,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const useLifeline = async () => {
-    // This function will need the lifelines_remaining column to be added to the profiles table
-    // For now, we will simply log the intent
     console.log("Lifeline used - database update pending column addition")
     if (user) await fetchUserData(user.id)
   }
