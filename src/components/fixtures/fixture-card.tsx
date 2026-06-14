@@ -1,14 +1,15 @@
+
 "use client"
 
 import { useState } from "react"
-import { Fixture } from "@/lib/mock-data"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Camera, Edit2, Check } from "lucide-react"
+import { Edit2, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { DateTime } from "luxon"
 
 interface FixtureCardProps {
-  fixture: Fixture
+  fixture: any // Using any for DB compatibility
   initialHome?: number
   initialAway?: number
   onSave: (id: string, h: number, a: number) => void
@@ -23,12 +24,18 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
     const h = parseInt(hScore)
     const a = parseInt(aScore)
     if (!isNaN(h) && !isNaN(a)) {
-      onSave(fixture.id, h, a)
+      onSave(fixture.external_id, h, a)
       setEditing(false)
     }
   }
 
-  const isLive = fixture.status === 'live' || (fixture.status === 'scheduled' && fixture.id === '1')
+  const isLive = fixture.status === 'live'
+  const isFinished = fixture.status === 'finished'
+  
+  // Format kickoff time
+  const kickoff = DateTime.fromISO(fixture.kickoff_at)
+  const timeStr = kickoff.isValid ? kickoff.toFormat('HH:mm') : 'TBD'
+  const dateStr = kickoff.isValid ? kickoff.toFormat('MMM dd') : ''
 
   return (
     <Card className="relative overflow-hidden border border-gray-100 bg-white rounded-[2.5rem] shadow-sm hover:shadow-md transition-all duration-300 group">
@@ -36,18 +43,26 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
         <div className="flex items-center justify-between gap-4">
           {/* Home Team */}
           <div className="flex flex-col items-center flex-1 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-4xl mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
-              {fixture.homeTeam.flag}
+            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-3xl mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
+              {fixture.home_flag || '⚽'}
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.homeTeam.name}</span>
-            <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.homeTeam.code}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.home_team}</span>
+            <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.home_team.substring(0, 3).toUpperCase()}</span>
           </div>
 
           {/* Center Area (Score/Status) */}
           <div className="flex flex-col items-center justify-center min-w-[120px]">
-            {isLive && (
+            {isLive ? (
               <div className="flex items-center gap-1.5 bg-red-50 text-red-600 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-4 animate-pulse">
                 <span className="h-1.5 w-1.5 bg-red-600 rounded-full" /> Live
+              </div>
+            ) : isFinished ? (
+              <div className="bg-gray-100 text-gray-400 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-4">
+                Finished
+              </div>
+            ) : (
+              <div className="text-[9px] font-black text-primary uppercase mb-4 tracking-widest">
+                {dateStr} • {timeStr}
               </div>
             )}
             
@@ -79,30 +94,36 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
                     {initialAway ?? '0'}
                   </span>
                 </div>
-                <span className="text-[9px] font-black text-gray-300 mt-2 uppercase tracking-[0.2em] italic">Kickoff in 2h</span>
+                {isFinished && (
+                  <div className="mt-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                    Result: {fixture.home_score} - {fixture.away_score}
+                  </div>
+                )}
               </div>
             )}
 
             <div className="mt-6">
-               {editing ? (
-                  <Button size="sm" onClick={handleSave} className="rounded-full bg-primary hover:bg-primary/90 px-6 h-9 font-black uppercase text-[10px] tracking-wider">
-                    <Check className="h-4 w-4 mr-1" /> Save Pick
-                  </Button>
-               ) : (
-                  <Button variant="ghost" size="icon" onClick={() => setEditing(true)} className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10 hover:bg-gray-100 transition-colors">
-                    <Edit2 className="h-4 w-4 text-gray-400" />
-                  </Button>
+               {!isFinished && (
+                  editing ? (
+                    <Button size="sm" onClick={handleSave} className="rounded-full bg-primary hover:bg-primary/90 px-6 h-9 font-black uppercase text-[10px] tracking-wider">
+                      <Check className="h-4 w-4 mr-1" /> Save Pick
+                    </Button>
+                  ) : (
+                    <Button variant="ghost" size="icon" onClick={() => setEditing(true)} className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10 hover:bg-gray-100 transition-colors">
+                      <Edit2 className="h-4 w-4 text-gray-400" />
+                    </Button>
+                  )
                )}
             </div>
           </div>
 
           {/* Away Team */}
           <div className="flex flex-col items-center flex-1 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-4xl mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
-              {fixture.awayTeam.flag}
+            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-3xl mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
+              {fixture.away_flag || '⚽'}
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.awayTeam.name}</span>
-            <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.awayTeam.code}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.away_team}</span>
+            <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.away_team.substring(0, 3).toUpperCase()}</span>
           </div>
         </div>
       </CardContent>

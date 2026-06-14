@@ -1,9 +1,9 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { MainNav } from "@/components/layout/main-nav"
-import { FIXTURES } from "@/lib/mock-data"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
@@ -22,9 +22,10 @@ const DATES = [
 ]
 
 export default function Dashboard() {
-  const { user, profile, loading: authLoading } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeDate, setActiveDate] = useState("15")
@@ -38,23 +39,40 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user) {
-      fetchPredictions()
+      fetchData()
     } else if (!authLoading) {
       setIsLoading(false)
     }
   }, [user, authLoading])
 
-  const fetchPredictions = async () => {
+  const fetchData = async () => {
+    setIsLoading(true)
     try {
-      const { data, error } = await supabase
+      // Fetch Fixtures
+      const { data: fixturesData, error: fError } = await supabase
+        .from("fixtures")
+        .select("*")
+        .order("kickoff_at", { ascending: true })
+      
+      if (fError) throw fError
+      setFixtures(fixturesData || [])
+
+      // Fetch Predictions
+      const { data: predData, error: pError } = await supabase
         .from("predictions")
         .select("*")
         .eq("user_id", user?.id)
       
-      if (error) throw error
-      if (data) setPredictions(data)
+      if (pError) throw pError
+      setPredictions(predData || [])
+
     } catch (error: any) {
-      console.error("Error fetching predictions:", error)
+      console.error("Error fetching data:", error)
+      toast({
+        variant: "destructive",
+        title: "Connection Error",
+        description: "Could not load latest match data.",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -80,7 +98,16 @@ export default function Dashboard() {
         description: "Failed to save prediction.",
       })
     } else {
-      await fetchPredictions()
+      // Update local state instead of full refetch for better UX
+      setPredictions(prev => {
+        const existing = prev.findIndex(p => p.fixture_id === fId)
+        if (existing > -1) {
+          const updated = [...prev]
+          updated[existing] = { ...updated[existing], home_score: h, away_score: a }
+          return updated
+        }
+        return [...prev, { fixture_id: fId, home_score: h, away_score: a }]
+      })
       toast({
         title: "Success",
         description: "Prediction updated!",
@@ -135,20 +162,26 @@ export default function Dashboard() {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-black uppercase italic tracking-tight">Upcoming Fixtures</h2>
-            <span className="bg-primary/10 text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase italic">Live Odds</span>
+            <span className="bg-primary/10 text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase italic">Live Data</span>
           </div>
-          {FIXTURES.map((fixture) => {
-            const pred = predictions.find(p => p.fixture_id === fixture.id)
-            return (
-              <FixtureCard 
-                key={fixture.id} 
-                fixture={fixture} 
-                initialHome={pred?.home_score}
-                initialAway={pred?.away_score}
-                onSave={handlePredict}
-              />
-            )
-          })}
+          {fixtures.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-gray-200">
+              <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">No fixtures found. Sync required.</p>
+            </div>
+          ) : (
+            fixtures.map((fixture) => {
+              const pred = predictions.find(p => p.fixture_id === fixture.external_id)
+              return (
+                <FixtureCard 
+                  key={fixture.external_id} 
+                  fixture={fixture} 
+                  initialHome={pred?.home_score}
+                  initialAway={pred?.away_score}
+                  onSave={handlePredict}
+                />
+              )
+            })
+          )}
         </div>
       </main>
     </div>
