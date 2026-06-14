@@ -12,6 +12,8 @@ import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Card } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function Dashboard() {
   const { user, loading: authLoading, stats, useLifeline } = useAuth()
@@ -86,7 +88,7 @@ export default function Dashboard() {
       .from("activity_feed")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(5)
+      .limit(10)
     setActivityLogs(data || [])
   }
 
@@ -195,6 +197,49 @@ export default function Dashboard() {
         </div>
       </header>
 
+      {/* Live Feed Card Section */}
+      <div className="max-w-2xl mx-auto px-6 pt-6">
+        <Card className="rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden bg-white">
+          <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center gap-2">
+            <Activity className="h-4 w-4 text-primary" />
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Arena Feed</h3>
+          </div>
+          <ScrollArea className="h-32">
+            <div className="p-4 space-y-3">
+              {activityLogs.length === 0 ? (
+                <div className="py-10 text-center">
+                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Waiting for the first whistle...</p>
+                </div>
+              ) : (
+                activityLogs.map((log) => (
+                  <div key={log.id} className="flex gap-4 p-4 bg-gray-50/30 rounded-3xl border border-gray-50 items-center transition-colors hover:bg-gray-50/50">
+                    <Avatar className="h-8 w-8 border border-white shadow-sm">
+                      <AvatarFallback className="bg-white text-primary font-black text-[10px]">
+                        {getInitials(log.display_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 overflow-hidden">
+                      <p className="text-[10px] truncate">
+                        <span className="font-black text-gray-900 uppercase mr-1">{log.display_name}</span>
+                        <span className="text-gray-400 font-bold lowercase">
+                          {log.action === 'prediction_created' ? 'locked in' : 'updated'} a pick
+                        </span>
+                      </p>
+                      <p className="font-black text-primary uppercase italic text-[11px] tracking-tight truncate">
+                        {log.home_team} vs {log.away_team}
+                      </p>
+                    </div>
+                    <span className="text-[8px] text-gray-300 font-black uppercase bg-white px-2 py-1 rounded-full whitespace-nowrap shadow-sm">
+                      {DateTime.fromISO(log.created_at).toRelative()}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </Card>
+      </div>
+
       {dateTabs.length > 0 && (
         <div className="px-6 py-4 sticky top-[92px] bg-white/80 backdrop-blur-md z-30 border-b border-gray-100/50">
           <div className="flex items-center no-scrollbar overflow-x-auto gap-3 max-w-2xl mx-auto">
@@ -256,39 +301,6 @@ export default function Dashboard() {
             })}
           </div>
         )}
-
-        {/* Live Activity Section */}
-        <section className="space-y-4 pt-4">
-          <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-primary" />
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Arena Feed</h3>
-          </div>
-          <div className="space-y-3">
-            {activityLogs.map((log) => (
-              <div key={log.id} className="flex gap-4 p-4 bg-white rounded-3xl border border-gray-100 items-center shadow-sm">
-                <Avatar className="h-8 w-8 border border-gray-50">
-                  <AvatarFallback className="bg-gray-50 text-primary font-black text-[10px]">
-                    {getInitials(log.display_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 overflow-hidden">
-                  <p className="text-[10px] truncate">
-                    <span className="font-black text-gray-900 uppercase mr-1">{log.display_name}</span>
-                    <span className="text-gray-400 font-bold lowercase">
-                      {log.action === 'prediction_created' ? 'locked in' : 'updated'} a pick
-                    </span>
-                  </p>
-                  <p className="font-black text-primary uppercase italic text-[11px] tracking-tight truncate">
-                    {log.home_team} vs {log.away_team}
-                  </p>
-                </div>
-                <span className="text-[8px] text-gray-300 font-black uppercase bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap">
-                  {DateTime.fromISO(log.created_at).toRelative()}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
     </div>
   )
