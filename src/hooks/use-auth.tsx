@@ -10,7 +10,7 @@ interface AuthContextType {
   profile: any | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
   updateDisplayName: (name: string) => Promise<void>
 }
@@ -25,7 +25,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = createClient()
 
   useEffect(() => {
-    // Initial session check
     const initAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
@@ -42,7 +41,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initAuth()
 
-    // Listen for auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user)
@@ -75,15 +73,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push("/dashboard")
   }
 
-  const register = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+  const register = async (email: string, password: string, name: string) => {
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`
+        data: {
+          display_name: name
+        }
       }
     })
+    
     if (error) throw error
+
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert({ 
+          id: data.user.id, 
+          display_name: name,
+          updated_at: new Date().toISOString() 
+        })
+      
+      if (profileError) console.error("Error creating profile:", profileError)
+      await fetchProfile(data.user.id)
+      router.push("/dashboard")
+    }
   }
 
   const logout = async () => {

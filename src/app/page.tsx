@@ -9,11 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useToast } from "@/hooks/use-toast"
-import { Lock, Mail } from "lucide-react"
+import { Lock, Mail, User } from "lucide-react"
 
 export default function LandingPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [mode, setMode] = useState<"signin" | "signup">("signin")
   const { login, register } = useAuth()
@@ -23,6 +24,7 @@ export default function LandingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) return
+    if (mode === "signup" && !name) return
     
     setIsSubmitting(true)
     try {
@@ -33,10 +35,10 @@ export default function LandingPage() {
           description: "Successfully signed in.",
         })
       } else {
-        await register(email, password)
+        await register(email, password, name)
         toast({
           title: "Account created!",
-          description: "Check your email for a confirmation link.",
+          description: "Welcome to the arena.",
         })
       }
     } catch (error: any) {
@@ -52,7 +54,6 @@ export default function LandingPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-white overflow-hidden relative">
-      {/* Subtle Background Decoration */}
       <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none grayscale">
         <Image 
           src="https://picsum.photos/seed/stadium/1200/800" 
@@ -94,7 +95,21 @@ export default function LandingPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-3">
+              <div className="space-y-3 text-left">
+                {mode === "signup" && (
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder="Full Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                      className="bg-gray-50 border-gray-100 h-14 pl-12 rounded-2xl text-gray-900 font-medium focus:ring-primary/20"
+                    />
+                  </div>
+                )}
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
