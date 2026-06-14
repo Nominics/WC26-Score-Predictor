@@ -1,11 +1,10 @@
-
 "use client"
 
 import { useState } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
@@ -52,9 +51,9 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-black overflow-hidden relative">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-white overflow-hidden relative">
       {/* Subtle Background Decoration */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+      <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none grayscale">
         <Image 
           src="https://picsum.photos/seed/stadium/1200/800" 
           alt="Stadium Background" 
@@ -66,7 +65,7 @@ export default function LandingPage() {
       
       <div className="relative z-10 w-full max-w-sm space-y-10 text-center">
         <div className="flex flex-col items-center space-y-6">
-          <div className="relative h-24 w-24">
+          <div className="relative h-24 w-24 grayscale brightness-50 contrast-125">
             <Image 
               src={logo?.imageUrl || "https://picsum.photos/seed/fifa26/400/400"} 
               alt="WC26 Logo" 
@@ -74,22 +73,22 @@ export default function LandingPage() {
               className="object-contain"
             />
           </div>
-          <div className="space-y-2">
-            <h1 className="text-4xl font-black text-white tracking-tighter leading-none">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-black text-gray-900 tracking-tighter leading-none">
               WC26<br/><span className="text-primary italic">PREDICTOR</span>
             </h1>
-            <p className="text-gray-400 text-[10px] uppercase tracking-[0.3em] font-black">
-              The Official Fans Arena
+            <p className="text-gray-400 text-[9px] uppercase tracking-[0.4em] font-black">
+              Official Fan Hub
             </p>
           </div>
         </div>
 
-        <Card className="border-white/10 bg-white/5 backdrop-blur-2xl shadow-2xl rounded-[2.5rem] overflow-hidden">
+        <Card className="border-gray-100 bg-white shadow-2xl rounded-[2.5rem] overflow-hidden">
           <CardHeader className="pb-4">
             <Tabs defaultValue="signin" onValueChange={(v) => setMode(v as any)} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-white/5 rounded-full p-1 h-12">
-                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Sign In</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white font-bold text-xs uppercase">Register</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-gray-50 rounded-full p-1 h-12">
+                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white font-black text-[10px] uppercase tracking-wider">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white font-black text-[10px] uppercase tracking-wider">Register</TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
@@ -97,7 +96,7 @@ export default function LandingPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-3">
                 <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     type="email"
                     placeholder="Email Address"
@@ -105,11 +104,11 @@ export default function LandingPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isSubmitting}
-                    className="bg-white/5 border-white/10 h-14 pl-12 rounded-2xl text-white font-medium focus:ring-primary/20"
+                    className="bg-gray-50 border-gray-100 h-14 pl-12 rounded-2xl text-gray-900 font-medium focus:ring-primary/20"
                   />
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
                     type="password"
                     placeholder="Password"
@@ -117,16 +116,16 @@ export default function LandingPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={isSubmitting}
-                    className="bg-white/5 border-white/10 h-14 pl-12 rounded-2xl text-white font-medium focus:ring-primary/20"
+                    className="bg-gray-50 border-gray-100 h-14 pl-12 rounded-2xl text-gray-900 font-medium focus:ring-primary/20"
                   />
                 </div>
               </div>
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-primary text-white font-black uppercase tracking-tight text-lg h-16 rounded-2xl hover:bg-primary/90 transition-all active:scale-95 shadow-[0_0_20px_rgba(124,58,237,0.3)] mt-2"
+                className="w-full bg-primary text-white font-black uppercase tracking-tight text-lg h-16 rounded-2xl hover:bg-primary/90 transition-all active:scale-95 shadow-lg mt-2"
               >
-                {isSubmitting ? "Authenticating..." : mode === "signin" ? "Enter Stadium" : "Create Account"}
+                {isSubmitting ? "Authenticating..." : mode === "signin" ? "Enter Arena" : "Create Account"}
               </Button>
             </form>
           </CardContent>
