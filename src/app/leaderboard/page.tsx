@@ -30,9 +30,10 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     try {
       // Step 1: Fetch core ranking data from leaderboard view
+      // We attempt to fetch total and completed predictions for a richer breakdown
       const { data: lbData, error: lbError } = await supabase
         .from("leaderboard")
-        .select(`user_id, display_name, total_points, total_predictions`)
+        .select(`user_id, display_name, total_points, total_predictions, completed_predictions`)
         .order("total_points", { ascending: false })
         .order("total_predictions", { ascending: false })
       
@@ -48,7 +49,7 @@ export default function Leaderboard() {
           .in("id", userIds)
 
         if (profError) {
-          console.warn("Profile fetch warning (might be missing columns):", profError)
+          console.warn("Profile fetch warning:", profError)
         }
 
         // Step 3: Merge and calculate simulated movement for visual flair
@@ -158,6 +159,9 @@ export default function Leaderboard() {
                           <Hash className="h-2.5 w-2.5 text-gray-400" />
                           <span className="text-[9px] font-black text-gray-500 uppercase tracking-tighter">
                             {entry.total_predictions} <span className="text-gray-300">Picks</span>
+                            {entry.completed_predictions !== undefined && (
+                              <span className="ml-1 text-primary">({entry.completed_predictions} Finished)</span>
+                            )}
                           </span>
                        </div>
                     </div>
