@@ -87,7 +87,7 @@ export default function Dashboard() {
       .from("activity_feed")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(10)
+      .limit(3)
     setActivityLogs(data || [])
   }
 
@@ -196,7 +196,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 pt-6">
+      <div className="max-w-2xl mx-auto px-6 pt-6 mb-10">
         <Card className="rounded-[2.5rem] border-gray-100 shadow-xl overflow-hidden bg-white">
           <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
