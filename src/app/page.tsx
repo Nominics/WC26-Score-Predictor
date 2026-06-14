@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useToast } from "@/hooks/use-toast"
 import { Lock, Mail, User } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export default function LandingPage() {
   const [email, setEmail] = useState("")
@@ -17,9 +18,17 @@ export default function LandingPage() {
   const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [mode, setMode] = useState<"signin" | "signup">("signin")
-  const { login, register } = useAuth()
+  const { login, register, user, loading } = useAuth()
   const { toast } = useToast()
+  const router = useRouter()
   const logo = PlaceHolderImages.find(img => img.id === 'fifa-logo')
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/dashboard")
+    }
+  }, [user, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +60,19 @@ export default function LandingPage() {
       setIsSubmitting(false)
     }
   }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-xl">
+          WC26
+        </div>
+      </div>
+    )
+  }
+
+  // Prevent flicker before redirect
+  if (user) return null
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-white overflow-hidden relative">
