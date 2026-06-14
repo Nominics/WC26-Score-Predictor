@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fetch profile data first
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("*")
+          .select("id, display_name, favorite_team, role, starting_points, lifelines_remaining")
           .eq("id", userId)
           .maybeSingle()
 
@@ -145,7 +145,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error
     }
 
-    // Note: Profiles are handled by a Supabase trigger, but we fetch to ensure sync
     if (data.user) {
       await fetchUserData(data.user.id)
     }

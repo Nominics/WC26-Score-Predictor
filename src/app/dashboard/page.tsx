@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -18,7 +17,7 @@ import { PwaInstallButton } from "@/components/pwa-install-button"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 
 export default function Dashboard() {
-  const { user: authUser, loading: authLoading, stats, useLifeline } = useAuth()
+  const { user: authUser, profile, loading: authLoading, stats, useLifeline } = useAuth()
   const { toast } = useToast()
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
