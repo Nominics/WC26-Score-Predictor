@@ -8,13 +8,11 @@ import type { User } from "@supabase/supabase-js"
 interface AuthContextType {
   user: User | null
   profile: any | null
-  stats: { points: number; rank: number } | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
   updateDisplayName: (name: string) => Promise<void>
-  refreshStats: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -22,7 +20,6 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any | null>(null)
-  const [stats, setStats] = useState<{ points: number; rank: number } | null>(null)
   const [loading, setLoading] = useState(true)
 
   const router = useRouter()
@@ -30,54 +27,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = useCallback(
     async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", userId)
-          .maybeSingle()
+      if (!supabase) return
 
-        if (error) {
-          console.error("Error fetching profile:", error.message)
-          setProfile(null)
-          return
-        }
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle()
 
-        setProfile(data)
-      } catch (err) {
-        console.error("Profile fetch exception:", err)
+      if (error) {
+        console.error("Error fetching profile:", error.message)
+        setProfile(null)
+        return
       }
+
+      setProfile(data)
     },
     [supabase]
   )
 
-  const refreshStats = useCallback(async () => {
-    if (!user) return
-
-    try {
-      const { data: userData } = await supabase
-        .from("leaderboard")
-        .select("total_points")
-        .eq("user_id", user.id)
-        .maybeSingle()
-
-      const points = userData?.total_points || 0
-
-      const { count } = await supabase
-        .from("leaderboard")
-        .select("*", { count: "exact", head: true })
-        .gt("total_points", points)
-
-      setStats({
-        points,
-        rank: (count || 0) + 1,
-      })
-    } catch (err) {
-      console.error("Error fetching stats:", err)
-    }
-  }, [supabase, user])
-
   useEffect(() => {
+    if (!supabase?.auth) {
+      setLoading(false)
+      return
+    }
+
     let mounted = true
 
     async function loadInitialSession() {
@@ -103,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(null)
         }
       } catch (err) {
-        console.error("Initial session load exception:", err)
+        console.error("Auth initialization error:", err)
       } finally {
         if (mounted) setLoading(false)
       }
@@ -122,7 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (event === "SIGNED_OUT") {
         setUser(null)
         setProfile(null)
-        setStats(null)
       }
 
       setLoading(false)
@@ -134,24 +107,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [supabase, fetchProfile])
 
-  useEffect(() => {
-    if (user) {
-      refreshStats()
-    }
-  }, [user, profile, refreshStats])
-
   const login = async (email: string, password: string) => {
+    if (!supabase?.auth) throw new Error("Auth not configured")
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) throw error
+
     router.replace("/dashboard")
     router.refresh()
   }
 
   const register = async (email: string, password: string, name: string) => {
+    if (!supabase?.auth) throw new Error("Auth not configured")
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -183,16 +155,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = async () => {
-    await supabase.auth.signOut()
+    if (supabase?.auth) {
+      await supabase.auth.signOut()
+    }
     setUser(null)
     setProfile(null)
-    setStats(null)
     router.replace("/")
     router.refresh()
   }
 
   const updateDisplayName = async (name: string) => {
-    if (!user) return
+    if (!user || !supabase) return
 
     const { error } = await supabase.from("profiles").upsert({
       id: user.id,
@@ -210,13 +183,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         profile,
-        stats,
         loading,
         login,
         register,
         logout,
         updateDisplayName,
-        refreshStats,
       }}
     >
       {children}

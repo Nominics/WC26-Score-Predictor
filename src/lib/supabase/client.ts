@@ -7,6 +7,7 @@ let supabase: ReturnType<typeof createSupabaseClient> | undefined;
  * Uses resilient defaults to prevent crashes during build or if env vars are missing.
  */
 export function createClient() {
+  // Use fallbacks to prevent "supabaseUrl is required" errors during initialization
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "placeholder";
 
