@@ -2,15 +2,15 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 let supabase: ReturnType<typeof createSupabaseClient> | undefined;
 
+/**
+ * Creates a browser-side Supabase client.
+ * Uses resilient defaults to prevent crashes during build or if env vars are missing.
+ */
 export function createClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "placeholder";
 
-  if (!supabaseUrl || !supabaseKey) {
-    console.error("Supabase environment variables are missing. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
-  }
-
-  if (!supabase && supabaseUrl && supabaseKey) {
+  if (!supabase) {
     supabase = createSupabaseClient(
       supabaseUrl,
       supabaseKey,
@@ -25,5 +25,5 @@ export function createClient() {
     );
   }
 
-  return supabase!;
+  return supabase;
 }

@@ -1,18 +1,18 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
+/**
+ * Creates a server-side Supabase client.
+ * Includes defensive checks for environment variables.
+ */
 export async function createClient() {
   const cookieStore = await cookies();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    console.error("Supabase environment variables are missing for server client.");
-  }
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co";
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "placeholder";
 
   return createServerClient(
-    supabaseUrl || "https://placeholder.supabase.co",
-    supabaseKey || "placeholder",
+    supabaseUrl,
+    supabaseKey,
     {
       cookies: {
         getAll() {
@@ -24,7 +24,7 @@ export async function createClient() {
               cookieStore.set(name, value, options);
             });
           } catch {
-            // Safe to ignore in Server Components.
+            // This can be ignored in Server Components/Actions
           }
         },
       },

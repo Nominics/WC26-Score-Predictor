@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -11,14 +10,34 @@ import {
 } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { User, LogOut, Mail, Trophy, Star } from "lucide-react"
+import { User, LogOut, Mail, Trophy, Star, Copy, Share2 } from "lucide-react"
+import { copyToClipboard } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 export function ProfileSheet() {
   const { user, profile, stats, logout } = useAuth()
+  const { toast } = useToast()
 
   if (!user) return null
 
   const initials = profile?.display_name?.substring(0, 2).toUpperCase() || "??"
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}?ref=${user.id}`
+    const success = await copyToClipboard(shareUrl)
+    if (success) {
+      toast({
+        title: "Link Copied",
+        description: "Your invite link is ready to share!",
+      })
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Copy Failed",
+        description: "Please copy the URL manually from your browser.",
+      })
+    }
+  }
 
   return (
     <Sheet>
@@ -53,6 +72,14 @@ export function ProfileSheet() {
                 <Mail className="h-3 w-3" /> {user.email}
               </p>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleShare}
+              className="rounded-full h-9 px-6 font-black uppercase text-[10px] tracking-widest gap-2"
+            >
+              <Share2 className="h-3 w-3" /> Share Predictor
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
