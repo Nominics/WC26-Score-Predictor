@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -10,9 +11,10 @@ import {
 } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { User, LogOut, Mail, Trophy, Star, Share2 } from "lucide-react"
+import { User, LogOut, Mail, Trophy, Star, Share2, ShieldCheck } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import Link from "next/link"
 
 export function ProfileSheet() {
   const { user, profile, stats, logout } = useAuth()
@@ -21,6 +23,7 @@ export function ProfileSheet() {
   if (!user) return null
 
   const initials = profile?.display_name?.substring(0, 2).toUpperCase() || "??"
+  const isSuperadmin = profile?.role === 'superadmin'
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}?ref=${user.id}`
@@ -72,14 +75,29 @@ export function ProfileSheet() {
                 <Mail className="h-3 w-3" /> {user.email}
               </p>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleShare}
-              className="rounded-full h-9 px-6 font-black uppercase text-[10px] tracking-widest gap-2"
-            >
-              <Share2 className="h-3 w-3" /> Share Predictor
-            </Button>
+            
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleShare}
+                className="rounded-full h-9 px-6 font-black uppercase text-[10px] tracking-widest gap-2"
+              >
+                <Share2 className="h-3 w-3" /> Share Predictor
+              </Button>
+              
+              {isSuperadmin && (
+                <Link href="/admin">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="rounded-full h-9 px-6 font-black uppercase text-[10px] tracking-widest gap-2 border-primary text-primary hover:bg-primary hover:text-white"
+                  >
+                    <ShieldCheck className="h-3 w-3" /> Admin Panel
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
