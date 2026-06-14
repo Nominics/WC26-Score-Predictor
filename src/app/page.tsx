@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,6 @@ import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useToast } from "@/hooks/use-toast"
 import { Lock, Mail, User, Loader2 } from "lucide-react"
-import { useRouter } from "next/navigation"
 
 export default function LandingPage() {
   const [email, setEmail] = useState("")
@@ -20,15 +19,7 @@ export default function LandingPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin")
   const { login, register, user, loading } = useAuth()
   const { toast } = useToast()
-  const router = useRouter()
   const logo = PlaceHolderImages.find(img => img.id === 'fifa-logo')
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (!loading && user) {
-      router.push("/dashboard")
-    }
-  }, [user, loading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,7 +63,6 @@ export default function LandingPage() {
     )
   }
 
-  // Prevent flicker before redirect
   if (user) return null
 
   return (

@@ -7,26 +7,17 @@ import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
 import { Trophy, Calendar as CalendarIcon, Loader2 } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
-  const router = useRouter()
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const supabase = createClient()
-
-  // Redirect to login ONLY if loading is finished and no user exists
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/")
-    }
-  }, [user, authLoading, router])
 
   useEffect(() => {
     if (user) {
@@ -40,7 +31,6 @@ export default function Dashboard() {
     if (!user) return
     setIsLoading(true)
     try {
-      // Fetch fixtures directly from Supabase
       const { data: fixturesData, error: fError } = await supabase
         .from("fixtures")
         .select(`
@@ -63,13 +53,11 @@ export default function Dashboard() {
       if (fError) throw fError
       setFixtures(fixturesData || [])
 
-      // Set initial active date if fixtures exist
       if (fixturesData && fixturesData.length > 0) {
         const firstDate = DateTime.fromISO(fixturesData[0].kickoff_at).toISODate()
         setActiveDate(firstDate)
       }
 
-      // Fetch user predictions
       const { data: predData, error: pError } = await supabase
         .from("predictions")
         .select("*")
@@ -90,7 +78,6 @@ export default function Dashboard() {
     }
   }
 
-  // Generate unique dates for tabs from fixtures
   const dateTabs = useMemo(() => {
     const dates = new Set<string>()
     fixtures.forEach(f => {
@@ -108,7 +95,6 @@ export default function Dashboard() {
     })
   }, [fixtures])
 
-  // Filter fixtures based on active date
   const displayFixtures = useMemo(() => {
     if (!activeDate) return fixtures.slice(0, 10)
     
@@ -116,7 +102,6 @@ export default function Dashboard() {
       DateTime.fromISO(f.kickoff_at).toISODate() === activeDate
     )
 
-    // Fallback: If for some reason the filtered list is empty, show the next 10 fixtures
     return filtered.length > 0 ? filtered : fixtures.slice(0, 10)
   }, [fixtures, activeDate])
 
@@ -160,7 +145,6 @@ export default function Dashboard() {
     )
   }
 
-  // Don't render content if no user (middleware and useEffect handle the redirect)
   if (!user) return null
 
   return (
@@ -179,7 +163,6 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Date Tabs - Dynamically generated from fixtures */}
       {dateTabs.length > 0 && (
         <div className="px-6 mb-8 mt-4 sticky top-[92px] bg-gray-50/80 backdrop-blur-md z-30 py-4 border-b border-gray-100/50">
           <div className="flex items-center no-scrollbar overflow-x-auto gap-3 max-w-2xl mx-auto">

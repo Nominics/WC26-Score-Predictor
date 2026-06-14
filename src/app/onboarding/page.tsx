@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useAuth } from "@/hooks/use-auth"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -10,11 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 export default function Onboarding() {
   const { user, updateDisplayName } = useAuth()
   const [name, setName] = useState("")
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!user) router.push("/")
-  }, [user, router])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,6 +16,8 @@ export default function Onboarding() {
       updateDisplayName(name)
     }
   }
+
+  if (!user) return null
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 bg-black">
