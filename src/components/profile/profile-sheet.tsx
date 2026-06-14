@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import {
   Sheet,
@@ -10,14 +11,19 @@ import {
 } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { LogOut, Mail, Trophy, Star, Share2, ShieldCheck } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { LogOut, Mail, Trophy, Star, Share2, ShieldCheck, Edit2, Check, X } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 
 export function ProfileSheet() {
-  const { user, profile, stats, logout } = useAuth()
+  const { user, profile, stats, logout, updateDisplayName } = useAuth()
   const { toast } = useToast()
+  
+  const [isEditing, setIsEditing] = useState(false)
+  const [newName, setNewName] = useState(profile?.display_name || "")
+  const [isSaving, setIsSaving] = useState(false)
 
   if (!user) return null
 
@@ -51,6 +57,35 @@ export function ProfileSheet() {
     }
   }
 
+  const handleUpdateName = async () => {
+    if (newName.trim().length < 3) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Name",
+        description: "Display name must be at least 3 characters.",
+      })
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      await updateDisplayName(newName.trim())
+      setIsEditing(false)
+      toast({
+        title: "Profile Updated",
+        description: "Your display name has been changed.",
+      })
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: error.message || "Could not update display name.",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -62,7 +97,7 @@ export function ProfileSheet() {
           </Avatar>
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[320px] sm:w-[400px] p-0 border-l-0">
+      <SheetContent side="right" className="w-[320px] sm:w-[400px] p-0 border-l-0 overflow-y-auto">
         <SheetHeader className="p-8 bg-primary text-white">
           <SheetTitle className="text-white font-black italic uppercase tracking-tighter text-2xl">
             My Profile
@@ -76,11 +111,41 @@ export function ProfileSheet() {
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <div className="space-y-1">
-              <h3 className="text-xl font-black uppercase italic text-gray-900 leading-tight">
-                {profile?.display_name}
-              </h3>
-              <p className="text-xs font-bold text-gray-400 flex items-center justify-center gap-1.5 uppercase tracking-widest">
+            
+            <div className="space-y-1 w-full flex flex-col items-center">
+              {isEditing ? (
+                <div className="flex items-center gap-2 w-full max-w-[240px]">
+                  <Input 
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="h-10 text-center font-bold"
+                    placeholder="Enter new name"
+                    disabled={isSaving}
+                    autoFocus
+                  />
+                  <Button size="icon" variant="ghost" className="h-10 w-10 text-green-600" onClick={handleUpdateName} disabled={isSaving}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" className="h-10 w-10 text-gray-400" onClick={() => { setIsEditing(false); setNewName(profile?.display_name || ""); }} disabled={isSaving}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="group flex items-center gap-2">
+                  <h3 className="text-xl font-black uppercase italic text-gray-900 leading-tight">
+                    {profile?.display_name}
+                  </h3>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => { setIsEditing(true); setNewName(profile?.display_name || ""); }}
+                  >
+                    <Edit2 className="h-3 w-3 text-gray-400" />
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs font-bold text-gray-400 flex items-center justify-center gap-1.5 uppercase tracking-widest mt-1">
                 <Mail className="h-3 w-3" /> {user.email}
               </p>
             </div>
