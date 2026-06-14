@@ -1,6 +1,7 @@
+
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import {
   Sheet,
@@ -22,8 +23,15 @@ export function ProfileSheet() {
   const { toast } = useToast()
   
   const [isEditing, setIsEditing] = useState(false)
-  const [newName, setNewName] = useState(profile?.display_name || "")
+  const [newName, setNewName] = useState("")
   const [isSaving, setIsSaving] = useState(false)
+
+  // Update internal name state when profile loads or changes
+  useEffect(() => {
+    if (profile?.display_name) {
+      setNewName(profile.display_name)
+    }
+  }, [profile?.display_name])
 
   if (!user) return null
 
@@ -58,7 +66,8 @@ export function ProfileSheet() {
   }
 
   const handleUpdateName = async () => {
-    if (newName.trim().length < 3) {
+    const trimmedName = newName.trim()
+    if (trimmedName.length < 3) {
       toast({
         variant: "destructive",
         title: "Invalid Name",
@@ -69,7 +78,7 @@ export function ProfileSheet() {
 
     setIsSaving(true)
     try {
-      await updateDisplayName(newName.trim())
+      await updateDisplayName(trimmedName)
       setIsEditing(false)
       toast({
         title: "Profile Updated",
@@ -138,7 +147,7 @@ export function ProfileSheet() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 bg-orange-50 hover:bg-orange-100 text-orange-500 rounded-full transition-all border border-orange-200"
+                    className="h-8 w-8 bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-all border border-orange-600 shadow-sm"
                     onClick={() => { setIsEditing(true); setNewName(profile?.display_name || ""); }}
                   >
                     <Edit2 className="h-4 w-4" />

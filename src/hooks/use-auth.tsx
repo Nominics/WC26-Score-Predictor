@@ -126,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data.user) {
+      // For initial registration, upsert is fine to ensure profile exists
       await supabase.from("profiles").upsert({
         id: data.user.id,
         display_name: name,
@@ -147,12 +148,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateDisplayName = async (name: string) => {
     if (!user || !isConfigured) return
-    const { error } = await supabase.from("profiles").upsert({
-      id: user.id,
-      display_name: name,
-      updated_at: new Date().toISOString(),
-    })
+    
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        display_name: name,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", user.id)
+      .select()
+      .single()
+
     if (error) throw error
+    
+    // Refresh local profile data after successful update
     await fetchUserData(user.id)
   }
 
