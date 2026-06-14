@@ -2,7 +2,7 @@
 
 import { MainNav } from "@/components/layout/main-nav"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Info, Award, Calendar, Zap, ShieldAlert, Sparkles } from "lucide-react"
+import { Info, Award, Calendar, Zap, ShieldAlert, Sparkles, Flag } from "lucide-react"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { cn } from "@/lib/utils"
@@ -12,6 +12,7 @@ const RULES = [
   { title: "Correct Result", points: 1, description: "Predict the correct winner or a draw outcome.", icon: Zap },
   { title: "Time Limit", points: 0, description: "Standard lock: 15 minutes after kickoff.", icon: Calendar },
   { title: "Lifeline usage", points: 0, description: "Use 1 of 5 lifelines to update picks until the 50th minute.", icon: ShieldAlert },
+  { title: "National Pride", points: 0, description: "Choose a favorite team to represent in the standings.", icon: Flag },
 ];
 
 export default function Rules() {
@@ -51,7 +52,7 @@ export default function Rules() {
             <div key={i} className="p-6 bg-white rounded-3xl border border-gray-100 flex justify-between items-center shadow-lg transition-transform hover:scale-[1.01]">
               <div className="flex items-center gap-4">
                 <div className="bg-gray-50 p-3 rounded-2xl">
-                    <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : "text-gray-400")} />
+                    <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : rule.title === "National Pride" ? "text-primary" : "text-gray-400")} />
                 </div>
                 <div className="space-y-0.5">
                     <h3 className="text-lg font-black italic text-gray-900 uppercase tracking-tight">{rule.title}</h3>
@@ -67,6 +68,23 @@ export default function Rules() {
             </div>
           ))}
         </div>
+
+        <Card className="bg-white border border-gray-100 shadow-xl rounded-3xl overflow-hidden">
+          <CardHeader className="flex flex-row items-center gap-3 bg-primary/5 p-6">
+            <div className="bg-primary/10 p-2 rounded-xl">
+                <Flag className="text-primary h-5 w-5"/>
+            </div>
+            <CardTitle className="text-gray-900 font-black italic uppercase tracking-tight text-lg">National Representation</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-3">
+            <p className="text-sm font-medium leading-relaxed text-gray-500">
+              Personalize your Arena profile by selecting a National Team in your profile settings. 
+            </p>
+            <div className="bg-gray-50 rounded-2xl p-4 text-[11px] font-bold uppercase tracking-tight text-gray-600 leading-normal border border-gray-100">
+              Once selected, your nation's flag will serve as your official avatar on the Global Leaderboard and in the Live Activity Feed. Show your colors as you climb the ranks!
+            </div>
+          </CardContent>
+        </Card>
 
         <Card className="bg-blue-600 text-white shadow-xl rounded-3xl overflow-hidden border-0">
           <CardHeader className="flex flex-row items-center gap-3 bg-white/10 p-6">
