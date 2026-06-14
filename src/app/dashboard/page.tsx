@@ -180,9 +180,9 @@ export default function Dashboard() {
       <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900 leading-none">
+            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900 leading-none uppercase">
               <Trophy className="h-5 w-5 text-primary" />
-              MATCH CENTER
+              MATCH <span className="text-primary">CENTER</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
                <p className="text-[8px] text-gray-400 font-black uppercase tracking-widest">Global Arena</p>

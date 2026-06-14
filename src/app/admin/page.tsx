@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -78,7 +77,9 @@ export default function AdminPage() {
           <div className="flex items-center gap-4">
             <ShieldCheck className="h-6 w-6 text-primary" />
             <div>
-              <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">CONTROL TOWER</h1>
+              <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
+                CONTROL <span className="text-primary">TOWER</span>
+              </h1>
               <div className="flex items-center gap-2 mt-1">
                  <p className="text-[8px] uppercase font-bold text-gray-400 tracking-widest">Superadmin Terminal</p>
                  {stats && (

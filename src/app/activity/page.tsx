@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -61,9 +60,9 @@ export default function Activity() {
       <header className="px-6 py-4 border-b border-gray-100 bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 uppercase">
+            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 uppercase text-gray-900">
               <Zap className="h-5 w-5 text-primary fill-primary" />
-              LIVE FEED
+              LIVE <span className="text-primary">FEED</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
                <p className="text-[8px] text-gray-400 font-black uppercase tracking-widest">Match Pulse</p>
