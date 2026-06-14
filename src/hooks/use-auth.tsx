@@ -1,3 +1,4 @@
+
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
@@ -34,7 +35,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Single point of truth for auth state
+    // Initial session check
+    const checkInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUser(session.user)
+        await fetchProfile(session.user.id)
+      }
+      setLoading(false)
+    }
+
+    checkInitialSession()
+
+    // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUser(session.user)
@@ -55,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
     })
     if (error) throw error
-    router.refresh() // Refresh to ensure server-side state is updated
+    router.refresh()
     router.push("/dashboard")
   }
 

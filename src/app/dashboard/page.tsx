@@ -7,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Bell, RefreshCw } from "lucide-react"
+import { Bell, RefreshCw, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 
@@ -47,6 +47,7 @@ export default function Dashboard() {
   }, [user, authLoading])
 
   const fetchData = async () => {
+    if (!user) return
     setIsLoading(true)
     try {
       // Fetch Fixtures
@@ -62,7 +63,7 @@ export default function Dashboard() {
       const { data: predData, error: pError } = await supabase
         .from("predictions")
         .select("*")
-        .eq("user_id", user?.id)
+        .eq("user_id", user.id)
       
       if (pError) throw pError
       setPredictions(predData || [])
@@ -72,7 +73,7 @@ export default function Dashboard() {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Could not load latest match data.",
+        description: "Could not load match data. Please try again.",
       })
     } finally {
       setIsLoading(false)
@@ -82,10 +83,11 @@ export default function Dashboard() {
   const handleSync = async () => {
     setIsSyncing(true)
     try {
+      const syncSecret = process.env.NEXT_PUBLIC_SYNC_SECRET || 'your-secret-here'
       const res = await fetch('/api/fixtures/sync', {
         method: 'POST',
         headers: {
-          'x-sync-secret': process.env.NEXT_PUBLIC_SYNC_SECRET || 'your-secret-here' // In production, this should be handled securely
+          'x-sync-secret': syncSecret
         }
       })
       const data = await res.json()
@@ -93,7 +95,7 @@ export default function Dashboard() {
         toast({ title: "Sync Complete", description: `Updated ${data.count} fixtures.` })
         fetchData()
       } else {
-        throw new Error(data.error || 'Sync failed')
+        throw new Error(data.error || data.details || 'Sync failed')
       }
     } catch (error: any) {
       toast({
@@ -107,7 +109,10 @@ export default function Dashboard() {
   }
 
   const handlePredict = async (fId: string, h: number, a: number) => {
-    if (!user) return
+    if (!user) {
+      toast({ variant: "destructive", title: "Error", description: "You must be logged in." })
+      return
+    }
 
     const { error } = await supabase
       .from("predictions")
@@ -123,21 +128,22 @@ export default function Dashboard() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to save prediction.",
+        description: "Failed to save prediction. Check your connection.",
       })
     } else {
+      // Optimistic update
       setPredictions(prev => {
-        const existing = prev.findIndex(p => p.fixture_id === fId)
-        if (existing > -1) {
+        const existingIdx = prev.findIndex(p => p.fixture_id === fId)
+        if (existingIdx > -1) {
           const updated = [...prev]
-          updated[existing] = { ...updated[existing], home_score: h, away_score: a }
+          updated[existingIdx] = { ...updated[existingIdx], home_score: h, away_score: a }
           return updated
         }
-        return [...prev, { fixture_id: fId, home_score: h, away_score: a }]
+        return [...prev, { fixture_id: fId, home_score: h, away_score: a, user_id: user.id }]
       })
       toast({
-        title: "Success",
-        description: "Prediction updated!",
+        title: "Prediction Saved",
+        description: "Your pick has been locked in!",
       })
     }
   }
@@ -145,8 +151,13 @@ export default function Dashboard() {
   if (authLoading || (isLoading && user)) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-xl">
-          Loading Arena...
+        <div className="flex flex-col items-center gap-4">
+          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">
+            WC26
+          </div>
+          <div className="h-1 w-32 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-full bg-primary animate-[loading_1.5s_ease-in-out_infinite]" style={{ width: '30%' }} />
+          </div>
         </div>
       </div>
     )
@@ -158,9 +169,12 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 text-foreground pb-32">
       <MainNav />
       
-      <header className="px-6 pt-12 pb-6 flex justify-between items-center bg-white border-b border-gray-100">
+      <header className="px-6 pt-12 pb-6 flex justify-between items-center bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="space-y-1">
-          <h1 className="text-2xl font-black italic tracking-tighter">MATCH CENTER</h1>
+          <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">
+            <Trophy className="h-6 w-6 text-primary" />
+            MATCH CENTER
+          </h1>
           <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">World Cup 2026 Edition</p>
         </div>
         <div className="flex gap-2">
@@ -169,7 +183,7 @@ export default function Dashboard() {
             variant="ghost" 
             onClick={handleSync}
             disabled={isSyncing}
-            className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10"
+            className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10 active:scale-95 transition-transform"
           >
             <RefreshCw className={`h-4 w-4 text-gray-400 ${isSyncing ? 'animate-spin' : ''}`} />
           </Button>
@@ -186,7 +200,7 @@ export default function Dashboard() {
               key={d.date}
               onClick={() => setActiveDate(d.date)}
               className={`flex flex-col items-center min-w-[3.5rem] py-4 rounded-3xl transition-all duration-300 ${
-                activeDate === d.date ? "active-pill" : "text-gray-400 bg-white border border-gray-100"
+                activeDate === d.date ? "active-pill" : "text-gray-400 bg-white border border-gray-100 hover:border-primary/20"
               }`}
             >
               <span className="text-[10px] font-bold mb-1 uppercase tracking-wider">{d.day}</span>
@@ -196,19 +210,28 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <main className="px-6 space-y-8">
+      <main className="px-6 space-y-8 max-w-2xl mx-auto">
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-black uppercase italic tracking-tight">Upcoming Fixtures</h2>
-            <span className="bg-primary/10 text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase italic">Live Data</span>
+            <h2 className="text-lg font-black uppercase italic tracking-tight">Available Fixtures</h2>
+            <span className="bg-primary/10 text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase italic">Live Sync</span>
           </div>
+          
           {fixtures.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
-              <div className="space-y-4 max-w-xs mx-auto">
-                <RefreshCw className="h-10 w-10 text-gray-200 mx-auto" />
-                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed">
-                  No fixtures in the arena yet. <br/> Hit the sync button above to fetch the latest matches.
-                </p>
+            <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
+              <div className="space-y-6 max-w-xs mx-auto">
+                <div className="bg-gray-50 h-20 w-20 rounded-full flex items-center justify-center mx-auto">
+                  <RefreshCw className="h-8 w-8 text-gray-200" />
+                </div>
+                <div className="space-y-2">
+                  <p className="text-gray-900 font-black uppercase text-sm tracking-tight">Arena is Empty</p>
+                  <p className="text-gray-400 font-bold uppercase text-[9px] tracking-widest leading-relaxed">
+                    Hit the sync button in the header to populate the latest match schedules.
+                  </p>
+                </div>
+                <Button onClick={handleSync} disabled={isSyncing} className="bg-primary text-white font-black uppercase rounded-full px-8">
+                  Populate Arena
+                </Button>
               </div>
             </div>
           ) : (

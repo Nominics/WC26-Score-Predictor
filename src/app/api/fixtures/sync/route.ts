@@ -71,10 +71,14 @@ export async function POST(req: Request) {
   try {
     const secret = req.headers.get("x-sync-secret");
 
-    // In local dev, allow empty secret if env is not set, otherwise check it
-    const expectedSecret = process.env.SYNC_SECRET;
-    if (expectedSecret && secret !== expectedSecret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Default secret for prototype/dev if not configured
+    const expectedSecret = process.env.SYNC_SECRET || 'your-secret-here';
+    
+    if (secret !== expectedSecret) {
+      return NextResponse.json({ 
+        error: "Unauthorized", 
+        details: "The sync secret provided does not match the server configuration." 
+      }, { status: 401 });
     }
 
     const apiUrl = process.env.FIXTURES_API_URL;
