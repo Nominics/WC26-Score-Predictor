@@ -72,7 +72,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Fetch from World Cup API
     const apiUrl = process.env.FIXTURES_API_URL;
     const apiKey = process.env.FIXTURES_API_KEY;
 
@@ -112,8 +111,6 @@ export async function POST(req: Request) {
         home_score: parseScore(game.home_score, status),
         away_score: parseScore(game.away_score, status),
         updated_at: new Date().toISOString(),
-        // Initialize result sync metadata for internal tracking if needed
-        result_sync_due_at: kickoffUtc ? DateTime.fromISO(kickoffUtc).plus({ minutes: 110 }).toUTC().toISO() : null
       };
     });
 
