@@ -5,24 +5,24 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 263.4 70% 50.4%; /* Vibrant Purple */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 263.4 70% 50.4%;
-    --accent-foreground: 240 5.9% 10%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 45 93% 47%; /* Premium Gold */
+    --primary-foreground: 0 0% 0%; /* Black text on Gold */
+    --secondary: 0 0% 9%; /* Near Black */
+    --secondary-foreground: 45 93% 47%; /* Gold text on Black */
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 45 93% 47%;
+    --accent-foreground: 0 0% 0%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 263.4 70% 50.4%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 45 93% 47%;
     --radius: 1.25rem;
   }
 }
@@ -41,11 +41,11 @@
 }
 
 .nav-pill {
-  @apply fixed bottom-8 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-xl border border-gray-200 rounded-full px-4 py-2 flex items-center gap-2 shadow-xl z-50;
+  @apply fixed bottom-8 left-1/2 -translate-x-1/2 bg-black/95 backdrop-blur-xl border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-50;
 }
 
 .active-pill {
-  @apply bg-primary text-white shadow-[0_4px_12px_rgba(124,58,237,0.3)];
+  @apply bg-primary text-black shadow-[0_4px_12px_rgba(234,179,8,0.4)];
 }
 
 /* Hide scrollbar for cleaner mobile look */
@@ -55,4 +55,9 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Custom Gold Gradient for special elements */
+.gold-gradient {
+  background: linear-gradient(135deg, #facc15 0%, #ca8a04 100%);
 }

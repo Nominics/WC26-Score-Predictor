@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -75,8 +74,8 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-50 overflow-hidden relative">
-      <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none grayscale">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-black overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none grayscale">
         <Image 
           src={bg?.imageUrl || "https://picsum.photos/seed/stadium/1200/800"} 
           alt="Stadium Background" 
@@ -90,11 +89,11 @@ export default function LandingPage() {
       
       {/* Dynamic Background Accents */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/10 blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
 
       <div className="relative z-10 w-full max-w-sm space-y-8 text-center">
         <div className="flex flex-col items-center space-y-6">
-          <div className="relative h-44 w-44 drop-shadow-2xl">
+          <div className="relative h-44 w-44 drop-shadow-[0_0_20px_rgba(234,179,8,0.3)]">
             {logo && (
               <Image 
                 src={logo.imageUrl} 
@@ -102,12 +101,12 @@ export default function LandingPage() {
                 fill 
                 priority
                 sizes="(max-width: 768px) 176px, 176px"
-                className="object-contain"
+                className="object-contain brightness-110"
               />
             )}
           </div>
           <div className="space-y-1">
-            <h1 className="text-5xl font-black text-gray-900 tracking-tighter leading-none">
+            <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
               WC26<br/><span className="text-primary italic">PREDICTOR</span>
             </h1>
             <div className="flex items-center justify-center gap-2 mt-2">
@@ -120,12 +119,12 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <Card className="border-0 bg-white shadow-[0_32px_80px_-12px_rgba(0,0,0,0.15)] rounded-[2.5rem] overflow-hidden">
+        <Card className="border-0 bg-white shadow-[0_32px_80px_-12px_rgba(0,0,0,0.5)] rounded-[2.5rem] overflow-hidden">
           <CardHeader className="pb-4 pt-8 px-8">
             <Tabs defaultValue="signin" onValueChange={(v) => setMode(v as any)} className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-full p-1.5 h-14">
-                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Sign In</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Register</TabsTrigger>
+                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-black data-[state=active]:text-primary data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-black data-[state=active]:text-primary data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Register</TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
@@ -173,11 +172,11 @@ export default function LandingPage() {
               </div>
 
               {mode === "signup" && (
-                <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-3">
-                  <TrendingUp className="h-4 w-4 text-blue-500 mt-0.5" />
+                <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3">
+                  <TrendingUp className="h-4 w-4 text-primary mt-0.5" />
                   <div className="text-left">
-                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Late Join Bonus Active</p>
-                    <p className="text-[9px] font-bold text-blue-500 leading-tight mt-0.5">Register now to receive a one-time points bonus based on current leaderboards!</p>
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">Late Join Bonus Active</p>
+                    <p className="text-[9px] font-bold text-gray-500 leading-tight mt-0.5">Register now to receive a one-time points bonus based on current leaderboards!</p>
                   </div>
                 </div>
               )}
@@ -185,7 +184,7 @@ export default function LandingPage() {
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-primary text-white font-black uppercase tracking-tight text-xl h-16 rounded-2xl hover:bg-primary/90 transition-all active:scale-95 shadow-2xl mt-4"
+                className="w-full bg-primary text-black font-black uppercase tracking-tight text-xl h-16 rounded-2xl hover:bg-black hover:text-primary transition-all active:scale-95 shadow-2xl mt-4 border-2 border-primary"
               >
                 {isSubmitting ? (
                     <div className="flex items-center gap-3">
@@ -198,7 +197,7 @@ export default function LandingPage() {
           </CardContent>
         </Card>
         
-        <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] opacity-60">
+        <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.3em] opacity-80">
             Powered by Registration Department Created by EOS Studios
         </p>
       </div>

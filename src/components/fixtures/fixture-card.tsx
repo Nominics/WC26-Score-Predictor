@@ -116,7 +116,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                     type="number" 
                     value={hScore} 
                     onChange={(e) => setHScore(e.target.value)}
-                    className="w-14 h-14 text-center text-2xl font-black bg-gray-50 border-2 border-primary/30 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-inner"
+                    className="w-14 h-14 text-center text-2xl font-black bg-gray-50 border-2 border-primary rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-inner"
                     autoFocus
                   />
                   <span className="text-2xl font-black text-gray-300 italic">:</span>
@@ -124,10 +124,10 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                     type="number" 
                     value={aScore} 
                     onChange={(e) => setAScore(e.target.value)}
-                    className="w-14 h-14 text-center text-2xl font-black bg-gray-50 border-2 border-primary/30 rounded-2xl focus:ring-4 focus:ring-primary/10 focus:border-primary outline-none transition-all shadow-inner"
+                    className="w-14 h-14 text-center text-2xl font-black bg-gray-50 border-2 border-primary rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-inner"
                   />
                 </div>
-                <Button onClick={() => handleSave(isStandardLocked)} className="rounded-full bg-primary hover:bg-primary/90 px-8 h-11 font-black uppercase text-[11px] tracking-widest shadow-xl active:scale-95 transition-all">
+                <Button onClick={() => handleSave(isStandardLocked)} className="rounded-full bg-primary hover:bg-black hover:text-primary px-8 h-11 font-black uppercase text-[11px] tracking-widest shadow-xl active:scale-95 transition-all text-black border-2 border-primary">
                   <Check className="h-4 w-4 mr-2" /> {isStandardLocked ? 'Use Lifeline' : 'Lock Prediction'}
                 </Button>
               </div>
@@ -139,14 +139,14 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                 )}>
                   <span className={cn(
                     "text-5xl font-black italic tracking-tighter tabular-nums",
-                    initialHome === undefined ? "text-gray-200" : "text-primary"
+                    initialHome === undefined ? "text-gray-200" : "text-black"
                   )}>
                     {initialHome ?? '0'}
                   </span>
                   <span className="text-3xl font-black text-gray-200 italic">:</span>
                   <span className={cn(
                     "text-5xl font-black italic tracking-tighter tabular-nums",
-                    initialAway === undefined ? "text-gray-200" : "text-primary"
+                    initialAway === undefined ? "text-gray-200" : "text-black"
                   )}>
                     {initialAway ?? '0'}
                   </span>
@@ -179,7 +179,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                  !isStandardLocked ? (
                     <Button 
                       onClick={() => setEditing(true)} 
-                      className="rounded-full bg-white border-2 border-primary/20 h-12 px-6 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-lg font-black uppercase text-[11px] tracking-widest group/btn"
+                      className="rounded-full bg-primary text-black border-2 border-primary h-12 px-8 hover:bg-black hover:text-primary transition-all shadow-xl font-black uppercase text-[11px] tracking-widest group/btn"
                     >
                       <Edit2 className="h-4 w-4 mr-2 group-hover/btn:rotate-12 transition-transform" /> {initialHome !== undefined ? 'Change Pick' : 'Set Prediction'}
                     </Button>
