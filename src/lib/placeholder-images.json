@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "fifa-logo",
+      "description": "Official FIFA World Cup 2026 Logo",
+      "imageUrl": "https://imagescdn.designweek.co.uk/uploads/2023/05/22133229/FWC26_Official-Emblem_9-with-pattern.jpg?fit=max&crop=faces&q=50&auto=compress,format&cs=origin&w=2559&h=1.0&dpr=1",
+      "imageHint": "world cup logo"
+    },
+    {
+      "id": "stadium-bg",
+      "description": "World Cup Stadium Background",
+      "imageUrl": "https://picsum.photos/seed/stadium/1200/800",
+      "imageHint": "soccer stadium"
+    }
+  ]
 }

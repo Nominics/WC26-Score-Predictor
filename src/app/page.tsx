@@ -21,9 +21,10 @@ export default function LandingPage() {
   const { login, register, user, loading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  
   const logo = PlaceHolderImages.find(img => img.id === 'fifa-logo')
+  const bg = PlaceHolderImages.find(img => img.id === 'stadium-bg')
 
-  // Auto-redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
       router.replace("/dashboard")
@@ -61,7 +62,6 @@ export default function LandingPage() {
     }
   }
 
-  // Strictly block rendering while auth state is being determined OR if user exists (to prevent form flash)
   if (loading || user) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -77,9 +77,11 @@ export default function LandingPage() {
     <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-white overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none grayscale">
         <Image 
-          src="https://picsum.photos/seed/stadium/1200/800" 
+          src={bg?.imageUrl || "https://picsum.photos/seed/stadium/1200/800"} 
           alt="Stadium Background" 
           fill 
+          priority
+          sizes="100vw"
           className="object-cover"
           data-ai-hint="soccer stadium"
         />
@@ -87,13 +89,17 @@ export default function LandingPage() {
       
       <div className="relative z-10 w-full max-w-sm space-y-10 text-center">
         <div className="flex flex-col items-center space-y-6">
-          <div className="relative h-24 w-24 grayscale brightness-50 contrast-125">
-            <Image 
-              src={logo?.imageUrl || "https://picsum.photos/seed/fifa26/400/400"} 
-              alt="WC26 Logo" 
-              fill 
-              className="object-contain"
-            />
+          <div className="relative h-32 w-32 grayscale brightness-50 contrast-125">
+            {logo && (
+              <Image 
+                src={logo.imageUrl} 
+                alt="WC26 Official Logo" 
+                fill 
+                priority
+                sizes="(max-width: 768px) 128px, 128px"
+                className="object-contain"
+              />
+            )}
           </div>
           <div className="space-y-1">
             <h1 className="text-4xl font-black text-gray-900 tracking-tighter leading-none">
