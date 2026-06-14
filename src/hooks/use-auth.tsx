@@ -1,4 +1,3 @@
-
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
@@ -31,19 +30,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchProfile = useCallback(
     async (userId: string) => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .maybeSingle()
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .maybeSingle()
 
-      if (error) {
-        console.error("Error fetching profile:", error.message)
-        setProfile(null)
-        return
+        if (error) {
+          console.error("Error fetching profile:", error.message)
+          setProfile(null)
+          return
+        }
+
+        setProfile(data)
+      } catch (err) {
+        console.error("Profile fetch exception:", err)
       }
-
-      setProfile(data)
     },
     [supabase]
   )
@@ -52,7 +55,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return
 
     try {
-      // Get user points from leaderboard view
       const { data: userData } = await supabase
         .from("leaderboard")
         .select("total_points")
@@ -61,7 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const points = userData?.total_points || 0
 
-      // Get rank (count users with more points)
       const { count } = await supabase
         .from("leaderboard")
         .select("*", { count: "exact", head: true })
@@ -82,26 +83,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function loadInitialSession() {
       setLoading(true)
 
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession()
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
 
-      if (!mounted) return
+        if (!mounted) return
 
-      if (error) {
-        console.error("Session error:", error.message)
+        if (error) {
+          console.error("Session error:", error.message)
+        }
+
+        if (session?.user) {
+          setUser(session.user)
+          await fetchProfile(session.user.id)
+        } else {
+          setUser(null)
+          setProfile(null)
+        }
+      } catch (err) {
+        console.error("Initial session load exception:", err)
+      } finally {
+        if (mounted) setLoading(false)
       }
-
-      if (session?.user) {
-        setUser(session.user)
-        await fetchProfile(session.user.id)
-      } else {
-        setUser(null)
-        setProfile(null)
-      }
-
-      setLoading(false)
     }
 
     loadInitialSession()
@@ -129,7 +134,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [supabase, fetchProfile])
 
-  // Refresh stats when user or profile changes
   useEffect(() => {
     if (user) {
       refreshStats()
