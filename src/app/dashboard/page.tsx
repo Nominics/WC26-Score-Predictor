@@ -7,13 +7,13 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Trophy, Calendar as CalendarIcon, Loader2, Sparkles } from "lucide-react"
+import { Trophy, Calendar as CalendarIcon, Loader2, Sparkles, Zap } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 
 export default function Dashboard() {
-  const { user, loading: authLoading, stats } = useAuth()
+  const { user, loading: authLoading, stats, useLifeline } = useAuth()
   const { toast } = useToast()
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
@@ -91,8 +91,17 @@ export default function Dashboard() {
     return fixtures.filter(f => DateTime.fromISO(f.kickoff_at).toISODate() === activeDate)
   }, [fixtures, activeDate])
 
-  const handlePredict = async (fixtureId: string, h: number, a: number) => {
+  const handlePredict = async (fixtureId: string, h: number, a: number, isLifeline: boolean) => {
     if (!user) return
+
+    if (isLifeline) {
+      try {
+        await useLifeline()
+      } catch (e) {
+        toast({ variant: "destructive", title: "Lifeline Failed", description: "Could not deduct lifeline." })
+        return
+      }
+    }
 
     const { error } = await supabase
       .from("predictions")
@@ -105,14 +114,16 @@ export default function Dashboard() {
       }, { onConflict: 'fixture_id,user_id' })
 
     if (error) {
-      const isLocked = error.message.toLowerCase().includes('lock') || error.code === '42501'
       toast({ 
         variant: "destructive", 
-        title: isLocked ? "Prediction Locked" : "Error", 
-        description: isLocked ? "Window is closed for this match." : "Failed to save pick." 
+        title: "Error", 
+        description: "Failed to save pick." 
       })
     } else {
-      toast({ title: "Success", description: "Pick locked in!" })
+      toast({ 
+        title: isLifeline ? "Lifeline Used!" : "Success", 
+        description: isLifeline ? "Prediction updated during the match!" : "Pick locked in!" 
+      })
       fetchData()
     }
   }
@@ -145,6 +156,11 @@ export default function Dashboard() {
                    <span className="h-1 w-1 rounded-full bg-gray-200" />
                    <span className="text-[10px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
                    <span className="text-[10px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
+                   <span className="h-1 w-1 rounded-full bg-gray-200" />
+                   <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-100">
+                      <Zap className="h-2.5 w-2.5 text-yellow-500 fill-yellow-500" />
+                      <span className="text-[9px] font-black text-yellow-600">{stats.lifelines}</span>
+                   </div>
                  </div>
                )}
             </div>
@@ -208,6 +224,7 @@ export default function Dashboard() {
                   initialHome={pred?.home_score}
                   initialAway={pred?.away_score}
                   onSave={handlePredict}
+                  lifelinesRemaining={stats?.lifelines || 0}
                 />
               )
             })}

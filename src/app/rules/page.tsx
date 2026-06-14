@@ -3,13 +3,14 @@
 
 import { MainNav } from "@/components/layout/main-nav"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Info, Award, Calendar, Zap } from "lucide-react"
+import { Info, Award, Calendar, Zap, ShieldAlert } from "lucide-react"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 
 const RULES = [
   { title: "Exact Score", points: 3, description: "Predict the exact final score of the match.", icon: Award },
   { title: "Correct Result", points: 1, description: "Predict the correct winner or a draw outcome.", icon: Zap },
-  { title: "Time Limit", points: 0, description: "Predictions lock 15 minutes after kickoff.", icon: Calendar },
+  { title: "Time Limit", points: 0, description: "Standard lock: 15 minutes after kickoff.", icon: Calendar },
+  { title: "Lifeline usage", points: 0, description: "Use 1 of 5 lifelines to update picks until the 50th minute.", icon: ShieldAlert },
 ];
 
 export default function Rules() {
@@ -30,14 +31,12 @@ export default function Rules() {
         <Card className="bg-white border border-gray-100 shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="flex flex-row items-center gap-3 bg-gray-50/50 p-6">
             <div className="bg-primary/10 p-2 rounded-xl">
-              <span className="bg-primary/10 p-2 rounded-xl">
                 <Info className="text-primary h-5 w-5"/>
-              </span>
             </div>
             <CardTitle className="text-gray-900 font-black italic uppercase tracking-tight text-lg">How Scoring Works</CardTitle>
           </CardHeader>
           <CardContent className="p-6 text-sm text-gray-500 font-medium leading-relaxed">
-            Points are calculated automatically after each match is finalized in the official Arena Sync. Your leaderboard rank updates live based on these scores.
+            Points are calculated automatically after each match is finalized. Your leaderboard rank updates live.
           </CardContent>
         </Card>
 
@@ -46,7 +45,7 @@ export default function Rules() {
             <div key={i} className="p-6 bg-white rounded-3xl border border-gray-100 flex justify-between items-center shadow-sm">
               <div className="flex items-center gap-4">
                 <div className="bg-gray-50 p-3 rounded-2xl">
-                    <rule.icon className="h-5 w-5 text-gray-400" />
+                    <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : "text-gray-400")} />
                 </div>
                 <div className="space-y-0.5">
                     <h3 className="text-lg font-black italic text-gray-900 uppercase tracking-tight">{rule.title}</h3>
@@ -63,8 +62,8 @@ export default function Rules() {
           ))}
         </div>
 
-        <div className="p-5 bg-primary/5 border border-primary/10 rounded-3xl text-center">
-            <p className="text-[10px] text-primary font-black uppercase italic tracking-[0.2em]">Prediction window closes 15 mins after kickoff</p>
+        <div className="p-5 bg-yellow-500/5 border border-yellow-500/10 rounded-3xl text-center">
+            <p className="text-[10px] text-yellow-600 font-black uppercase italic tracking-[0.2em]">Lifelines allow late changes until minute 50</p>
         </div>
       </main>
     </div>
