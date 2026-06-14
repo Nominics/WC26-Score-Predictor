@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit2, Check, Lock } from "lucide-react"
+import { Edit2, Check, Lock, Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DateTime } from "luxon"
 import Image from "next/image"
@@ -36,7 +36,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
     }
 
     checkLock()
-    const interval = setInterval(checkLock, 30000) // Check every 30s
+    const interval = setInterval(checkLock, 30000)
     return () => clearInterval(interval)
   }, [fixture.kickoff_at, fixture.status])
 
@@ -51,47 +51,55 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
   }
 
   const isLive = fixture.status === 'live'
+  const isFinished = fixture.status === 'finished'
   
   return (
-    <Card className="relative overflow-hidden border border-gray-100 bg-white rounded-[2.5rem] shadow-sm hover:shadow-md transition-all duration-300 group">
-      <CardContent className="p-8 relative z-10">
-        <div className="flex items-center justify-between gap-4">
+    <Card className={cn(
+      "relative overflow-hidden border-2 rounded-[2.5rem] transition-all duration-300 group shadow-sm",
+      isLive ? "border-green-500 bg-green-50/30" : 
+      isFinished ? "border-orange-400 bg-orange-50/30" : 
+      "border-gray-100 bg-white"
+    )}>
+      <CardContent className="p-6 relative z-10">
+        <div className="flex items-center justify-between gap-2">
           {/* Home Team */}
-          <div className="flex flex-col items-center flex-1 text-center">
-            <div className="mb-3 transition-transform group-hover:scale-105">
+          <div className="flex flex-col items-center flex-1 text-center min-w-0">
+            <div className="mb-2">
               {fixture.home_flag ? (
-                <div className="relative h-12 w-12 sm:h-14 sm:w-14">
+                <div className="relative h-12 w-12 sm:h-16 sm:w-16">
                   <Image 
                     src={fixture.home_flag} 
                     alt={`${fixture.home_team} flag`} 
-                    width={56} 
-                    height={56} 
-                    className="h-full w-full rounded-full object-cover ring-2 ring-gray-100 shadow-sm"
+                    fill
+                    className="rounded-full object-cover ring-4 ring-white shadow-md"
                   />
                 </div>
               ) : (
-                <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gray-50 border border-gray-100 text-[10px] font-black text-gray-300 uppercase italic">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gray-100 border-2 border-dashed border-gray-200 text-[10px] font-black text-gray-400 uppercase italic">
                   TBD
                 </div>
               )}
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.home_team}</span>
-            <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.home_team.substring(0, 3).toUpperCase()}</span>
+            <span className="text-[11px] font-black uppercase tracking-tight text-gray-900 truncate w-full px-1">{fixture.home_team}</span>
           </div>
 
           {/* Center Area (Score/Status) */}
-          <div className="flex flex-col items-center justify-center min-w-[120px]">
+          <div className="flex flex-col items-center justify-center min-w-[140px]">
             {isLive ? (
-              <div className="flex items-center gap-1.5 bg-red-50 text-red-600 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-4 animate-pulse">
-                <span className="h-1.5 w-1.5 bg-red-600 rounded-full" /> Live
+              <div className="flex items-center gap-1.5 bg-green-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase mb-3 animate-pulse shadow-sm">
+                <span className="h-1.5 w-1.5 bg-white rounded-full" /> Live
+              </div>
+            ) : isFinished ? (
+              <div className="flex items-center gap-1.5 bg-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase mb-3 shadow-sm">
+                <Trophy className="h-3 w-3" /> Result
               </div>
             ) : isLocked ? (
-              <div className="flex items-center gap-1 bg-gray-100 text-gray-400 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-4">
-                <Lock className="h-2 w-2" /> {fixture.status === 'finished' ? 'Finished' : 'Locked'}
+              <div className="flex items-center gap-1 bg-gray-200 text-gray-500 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-3">
+                <Lock className="h-2 w-2" /> Locked
               </div>
             ) : (
-              <div className="text-[9px] font-black text-primary uppercase mb-4 tracking-widest">
-                {dateStr} • {timeStr}
+              <div className="text-[10px] font-black text-primary uppercase mb-3 tracking-widest bg-primary/5 px-3 py-1 rounded-full">
+                {timeStr} • {dateStr}
               </div>
             )}
             
@@ -101,45 +109,56 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
                   type="number" 
                   value={hScore} 
                   onChange={(e) => setHScore(e.target.value)}
-                  className="w-14 h-14 text-center text-2xl font-black bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none"
+                  className="w-12 h-12 text-center text-xl font-black bg-white border-2 border-primary/20 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   autoFocus
                 />
-                <span className="text-2xl font-black text-gray-300">:</span>
+                <span className="text-xl font-black text-gray-300">:</span>
                 <input 
                   type="number" 
                   value={aScore} 
                   onChange={(e) => setAScore(e.target.value)}
-                  className="w-14 h-14 text-center text-2xl font-black bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none"
+                  className="w-12 h-12 text-center text-xl font-black bg-white border-2 border-primary/20 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                <div className="flex items-center gap-4">
-                  <span className={cn("text-4xl font-black italic tracking-tighter", initialHome === undefined ? "text-gray-200" : "text-gray-900")}>
+                <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm px-5 py-2 rounded-2xl border border-gray-100/50 shadow-inner">
+                  <span className={cn(
+                    "text-4xl font-black italic tracking-tighter tabular-nums",
+                    initialHome === undefined ? "text-gray-200" : "text-primary"
+                  )}>
                     {initialHome ?? '0'}
                   </span>
-                  <span className="text-2xl font-black text-gray-100 italic">:</span>
-                  <span className={cn("text-4xl font-black italic tracking-tighter", initialAway === undefined ? "text-gray-200" : "text-gray-900")}>
+                  <span className="text-2xl font-black text-gray-200 italic">:</span>
+                  <span className={cn(
+                    "text-4xl font-black italic tracking-tighter tabular-nums",
+                    initialAway === undefined ? "text-gray-200" : "text-primary"
+                  )}>
                     {initialAway ?? '0'}
                   </span>
                 </div>
-                {fixture.status === 'finished' && (
-                  <div className="mt-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                {isFinished && (
+                  <div className="mt-2 text-[11px] font-black text-orange-600 uppercase tracking-widest bg-orange-100 px-3 py-0.5 rounded-full">
                     Final: {fixture.home_score} - {fixture.away_score}
+                  </div>
+                )}
+                {isLive && (
+                  <div className="mt-2 text-[11px] font-black text-green-600 uppercase tracking-widest">
+                    Score: {fixture.home_score ?? 0} - {fixture.away_score ?? 0}
                   </div>
                 )}
               </div>
             )}
 
-            <div className="mt-6">
+            <div className="mt-4">
                {!isLocked && (
                   editing ? (
-                    <Button size="sm" onClick={handleSave} className="rounded-full bg-primary hover:bg-primary/90 px-6 h-9 font-black uppercase text-[10px] tracking-wider">
-                      <Check className="h-4 w-4 mr-1" /> Save Pick
+                    <Button size="sm" onClick={handleSave} className="rounded-full bg-primary hover:bg-primary/90 px-6 h-9 font-black uppercase text-[10px] tracking-wider shadow-md">
+                      <Check className="h-4 w-4 mr-1" /> Lock Pick
                     </Button>
                   ) : (
-                    <Button variant="ghost" size="icon" onClick={() => setEditing(true)} className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10 hover:bg-gray-100 transition-colors">
-                      <Edit2 className="h-4 w-4 text-gray-400" />
+                    <Button variant="ghost" size="icon" onClick={() => setEditing(true)} className="rounded-full bg-white border-2 border-gray-100 h-10 w-10 hover:bg-primary/10 hover:border-primary/20 transition-all shadow-sm">
+                      <Edit2 className="h-4 w-4 text-primary" />
                     </Button>
                   )
                )}
@@ -147,26 +166,24 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
           </div>
 
           {/* Away Team */}
-          <div className="flex flex-col items-center flex-1 text-center">
-            <div className="mb-3 transition-transform group-hover:scale-105">
+          <div className="flex flex-col items-center flex-1 text-center min-w-0">
+            <div className="mb-2">
               {fixture.away_flag ? (
-                <div className="relative h-12 w-12 sm:h-14 sm:w-14">
+                <div className="relative h-12 w-12 sm:h-16 sm:w-16">
                   <Image 
                     src={fixture.away_flag} 
                     alt={`${fixture.away_team} flag`} 
-                    width={56} 
-                    height={56} 
-                    className="h-full w-full rounded-full object-cover ring-2 ring-gray-100 shadow-sm"
+                    fill
+                    className="rounded-full object-cover ring-4 ring-white shadow-md"
                   />
                 </div>
               ) : (
-                <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gray-50 border border-gray-100 text-[10px] font-black text-gray-300 uppercase italic">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gray-100 border-2 border-dashed border-gray-200 text-[10px] font-black text-gray-400 uppercase italic">
                   TBD
                 </div>
               )}
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.away_team}</span>
-            <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.away_team.substring(0, 3).toUpperCase()}</span>
+            <span className="text-[11px] font-black uppercase tracking-tight text-gray-900 truncate w-full px-1">{fixture.away_team}</span>
           </div>
         </div>
       </CardContent>

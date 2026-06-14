@@ -7,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Trophy, Calendar as CalendarIcon, Loader2 } from "lucide-react"
+import { Trophy, Calendar as CalendarIcon, Loader2, Sparkles } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
@@ -57,7 +57,6 @@ export default function Dashboard() {
       setPredictions(pRes.data || [])
 
       if (fRes.data && fRes.data.length > 0 && !activeDate) {
-        // Find nearest match to today
         const now = DateTime.now().toISODate()
         const nearestMatch = fRes.data.find((f: any) => DateTime.fromISO(f.kickoff_at).toISODate() >= now)
         setActiveDate(nearestMatch ? DateTime.fromISO(nearestMatch.kickoff_at).toISODate() : DateTime.fromISO(fRes.data[0].kickoff_at).toISODate())
@@ -162,13 +161,13 @@ export default function Dashboard() {
                 key={d.iso}
                 onClick={() => setActiveDate(d.iso)}
                 className={cn(
-                  "flex flex-col items-center min-w-[4.5rem] py-3 rounded-2xl transition-all border",
-                  activeDate === d.iso ? "active-pill border-primary" : "bg-white border-gray-100 text-gray-400"
+                  "flex flex-col items-center min-w-[4.5rem] py-3 rounded-2xl transition-all border-2",
+                  activeDate === d.iso ? "bg-primary border-primary text-white shadow-lg scale-105" : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
                 )}
               >
-                <span className="text-[9px] font-bold uppercase mb-0.5">{d.day}</span>
+                <span className={cn("text-[9px] font-bold uppercase mb-0.5", activeDate === d.iso ? "text-white/70" : "text-gray-400")}>{d.day}</span>
                 <span className="text-lg font-black leading-none">{d.date}</span>
-                <span className="text-[8px] font-black uppercase mt-0.5">{d.month}</span>
+                <span className={cn("text-[8px] font-black uppercase mt-0.5", activeDate === d.iso ? "text-white/70" : "text-gray-400")}>{d.month}</span>
               </button>
             ))}
           </div>
@@ -181,6 +180,11 @@ export default function Dashboard() {
             <CalendarIcon className="h-4 w-4" />
             {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Loading Schedule...'}
           </h2>
+          {displayFixtures.some(f => f.status === 'live') && (
+            <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1 rounded-full text-[10px] font-black uppercase italic animate-pulse">
+              <Sparkles className="h-3 w-3" /> Live Matches
+            </div>
+          )}
         </div>
 
         {isLoading && fixtures.length === 0 ? (
