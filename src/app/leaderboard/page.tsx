@@ -30,7 +30,6 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     try {
       // Step 1: Fetch core ranking data from leaderboard view
-      // Removed 'completed_predictions' as it is not in the DB view
       const { data: lbData, error: lbError } = await supabase
         .from("leaderboard")
         .select(`user_id, display_name, total_points, total_predictions`)
@@ -84,7 +83,7 @@ export default function Leaderboard() {
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div>
             <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none">
-              THE <span className="text-primary">ARENA</span>
+              THE <span className="text-primary">LEADERBOARD</span>
             </h1>
             <p className="text-[8px] uppercase font-black text-gray-400 mt-1 tracking-[0.2em]">Global Standings</p>
           </div>
@@ -157,14 +156,6 @@ export default function Leaderboard() {
                             {entry.total_predictions} <span className="text-gray-300">Picks</span>
                           </span>
                        </div>
-                       {entry.completed_predictions !== undefined && (
-                         <div className="flex items-center gap-1.5 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
-                            <ClipboardCheck className="h-2.5 w-2.5 text-primary" />
-                            <span className="text-[9px] font-black text-primary uppercase tracking-tighter">
-                              {entry.completed_predictions} <span className="text-primary/40">Final</span>
-                            </span>
-                         </div>
-                       )}
                     </div>
                   </div>
 
