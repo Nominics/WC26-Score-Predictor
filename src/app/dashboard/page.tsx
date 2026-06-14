@@ -21,12 +21,6 @@ const DATES = [
   { day: "Fri", date: "18" },
 ]
 
-const LEAGUES = [
-  { id: "wc", name: "World Cup 26", icon: "🏆" },
-  { id: "pl", name: "Premier League", icon: "🦁" },
-  { id: "ll", name: "LA LIGA", icon: "🇪🇸" },
-]
-
 export default function Dashboard() {
   const { user, profile, loading: authLoading } = useAuth()
   const { toast } = useToast()
@@ -98,7 +92,7 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-xl">
-          Loading Stadium...
+          Loading Arena...
         </div>
       </div>
     )
@@ -111,7 +105,10 @@ export default function Dashboard() {
       <MainNav />
       
       <header className="px-6 pt-12 pb-6 flex justify-between items-center bg-white border-b border-gray-100">
-        <h1 className="text-2xl font-black italic tracking-tighter">LEAGUE CENTER</h1>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-black italic tracking-tighter">MATCH CENTER</h1>
+          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">World Cup 2026 Edition</p>
+        </div>
         <Button size="icon" variant="ghost" className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10">
           <Bell className="h-5 w-5 text-gray-400" />
         </Button>
@@ -135,23 +132,11 @@ export default function Dashboard() {
       </div>
 
       <main className="px-6 space-y-8">
-        <section>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-black uppercase italic tracking-tight">Active Leagues</h2>
-            <button className="text-[10px] text-gray-400 font-bold uppercase">See All</button>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-black uppercase italic tracking-tight">Upcoming Fixtures</h2>
+            <span className="bg-primary/10 text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase italic">Live Odds</span>
           </div>
-          <div className="flex gap-3 no-scrollbar overflow-x-auto pb-2">
-            {LEAGUES.map((l) => (
-              <button key={l.id} className="flex items-center gap-2 bg-white border border-gray-100 px-4 py-2.5 rounded-full whitespace-nowrap text-xs font-bold uppercase tracking-tight hover:bg-gray-50 transition-colors">
-                <span className="bg-gray-50 p-1.5 rounded-full">{l.icon}</span>
-                {l.name}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <div className="space-y-4">
-          <h2 className="text-lg font-black uppercase italic tracking-tight mb-4">Upcoming Matches</h2>
           {FIXTURES.map((fixture) => {
             const pred = predictions.find(p => p.fixture_id === fixture.id)
             return (
