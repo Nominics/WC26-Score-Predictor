@@ -187,7 +187,7 @@ export default function LandingPage() {
         </Card>
         
         <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] opacity-60">
-            Powered by Genkit • Secured by Supabase
+            Powered by Registration Department, Created by EOS Studios
         </p>
       </div>
     </div>
