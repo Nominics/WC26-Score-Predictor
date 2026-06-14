@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -55,8 +56,8 @@ function parseScore(value: string, status: string) {
 }
 
 export async function GET(req: Request) {
+  // Authorization check for Cron
   const authHeader = req.headers.get("authorization");
-
   if (process.env.CRON_SECRET) {
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -65,9 +66,10 @@ export async function GET(req: Request) {
 
   const nowIso = new Date().toISOString();
 
+  // 1. Fetch fixtures due for sync (kickoff + 110 mins) that haven't been synced yet
   const { data: dueFixtures, error: dueError } = await supabaseAdmin
     .from("fixtures")
-    .select("id, external_id, home_team, away_team, kickoff_at, result_sync_due_at")
+    .select("id, external_id, home_team, away_team, kickoff_at, result_sync_due_at, result_sync_attempts")
     .lte("result_sync_due_at", nowIso)
     .is("result_synced_at", null)
     .order("kickoff_at", { ascending: true })
@@ -80,11 +82,12 @@ export async function GET(req: Request) {
   if (!dueFixtures || dueFixtures.length === 0) {
     return NextResponse.json({
       success: true,
-      message: "No fixtures due for result sync.",
+      message: "No fixtures currently due for result sync.",
       synced: 0,
     });
   }
 
+  // 2. Fetch Latest Data from World Cup API
   const apiUrl = process.env.FIXTURES_API_URL;
   const apiKey = process.env.FIXTURES_API_KEY;
 
@@ -110,16 +113,14 @@ export async function GET(req: Request) {
   }
 
   const data = (await response.json()) as WorldCupApiResponse;
-
   const dueExternalIds = new Set(dueFixtures.map((fixture) => fixture.external_id));
-
   const apiGamesDue = data.games.filter((game) => dueExternalIds.has(game.id));
 
+  // 3. Prepare Updates
   const updates = apiGamesDue.map((game) => {
     const status = mapStatus(game);
-
+    const existingFixture = dueFixtures.find(f => f.external_id === game.id);
     const kickoffUtc = parseKickoffToUtc(game.local_date);
-    if (!kickoffUtc) throw new Error("Could not parse kickoff date");
 
     return {
       external_id: game.id,
@@ -133,35 +134,38 @@ export async function GET(req: Request) {
       status,
       home_score: parseScore(game.home_score, status),
       away_score: parseScore(game.away_score, status),
-      result_sync_due_at: DateTime.fromISO(kickoffUtc)
-        .plus({ minutes: 110 })
-        .toUTC()
-        .toISO(),
-      result_synced_at: new Date().toISOString(),
-      result_sync_attempts: 1,
+      // Mark as synced if finished
+      result_synced_at: status === 'finished' ? new Date().toISOString() : null,
+      // Increment attempts
+      result_sync_attempts: (existingFixture?.result_sync_attempts || 0) + 1,
+      // If not finished, push the next check 10 minutes into the future
+      result_sync_due_at: status !== 'finished' 
+        ? DateTime.now().plus({ minutes: 10 }).toUTC().toISO()
+        : existingFixture?.result_sync_due_at
     };
   });
 
-  const { error: upsertError } = await supabaseAdmin
-    .from("fixtures")
-    .upsert(updates, {
-      onConflict: "external_id",
-    });
+  // 4. Upsert to Supabase
+  if (updates.length > 0) {
+    const { error: upsertError } = await supabaseAdmin
+      .from("fixtures")
+      .upsert(updates, {
+        onConflict: "external_id",
+      });
 
-  if (upsertError) {
-    return NextResponse.json({ error: upsertError.message }, { status: 500 });
+    if (upsertError) {
+      return NextResponse.json({ error: upsertError.message }, { status: 500 });
+    }
   }
 
   return NextResponse.json({
     success: true,
-    due: dueFixtures.length,
-    synced: updates.length,
-    matches: updates.map((fixture) => ({
-      match_number: fixture.match_number,
-      home_team: fixture.home_team,
-      away_team: fixture.away_team,
-      status: fixture.status,
-      score: `${fixture.home_score ?? "-"}-${fixture.away_score ?? "-"}`,
-    })),
+    due_count: dueFixtures.length,
+    processed_count: updates.length,
+    matches: updates.map((f) => ({
+      match: `${f.home_team} vs ${f.away_team}`,
+      status: f.status,
+      synced: !!f.result_synced_at
+    }))
   });
 }

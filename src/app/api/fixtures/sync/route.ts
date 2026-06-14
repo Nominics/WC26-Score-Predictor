@@ -28,11 +28,6 @@ type WorldCupApiResponse = {
   games: WorldCupApiGame[];
 };
 
-/**
- * Temporary MVP mapping.
- * The API gives local stadium date/time, but not timezone in the games response.
- * Until we map every stadium_id to its real timezone, we store using America/New_York as fallback.
- */
 function parseKickoffToUtc(localDate: string) {
   const dt = DateTime.fromFormat(localDate, "MM/dd/yyyy HH:mm", {
     zone: "America/New_York",
@@ -67,7 +62,6 @@ function parseScore(value: string, status: string) {
 
 export async function POST(req: Request) {
   try {
-    // 1. Authorization Check: Allow if secret matches OR if user is logged in
     const secret = req.headers.get("x-sync-secret");
     const expectedSecret = process.env.SYNC_SECRET || 'your-secret-here';
     
@@ -116,6 +110,7 @@ export async function POST(req: Request) {
 
     const fixtures = data.games.map((game) => {
       const status = mapStatus(game);
+      const kickoffUtc = parseKickoffToUtc(game.local_date);
 
       return {
         external_id: game.id,
@@ -123,25 +118,19 @@ export async function POST(req: Request) {
         stage: game.type,
         group_name: game.group,
         venue: game.stadium_id ? `Stadium ${game.stadium_id}` : null,
-
-        home_team:
-          game.home_team_name_en ||
-          game.home_team_label ||
-          "TBD",
-
-        away_team:
-          game.away_team_name_en ||
-          game.away_team_label ||
-          "TBD",
-
-        home_flag: null,
-        away_flag: null,
-
-        kickoff_at: parseKickoffToUtc(game.local_date),
-
+        home_team: game.home_team_name_en || game.home_team_label || "TBD",
+        away_team: game.away_team_name_en || game.away_team_label || "TBD",
+        kickoff_at: kickoffUtc,
         status,
         home_score: parseScore(game.home_score, status),
         away_score: parseScore(game.away_score, status),
+        // Initialize result sync metadata
+        result_sync_due_at: DateTime.fromISO(kickoffUtc!)
+          .plus({ minutes: 110 })
+          .toUTC()
+          .toISO(),
+        result_sync_attempts: 0,
+        result_synced_at: null,
       };
     });
 

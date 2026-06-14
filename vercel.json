@@ -1,8 +1,9 @@
+
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/results-sync-wc26-private-randomstring",
+      "path": "/api/cron/results-sync",
       "schedule": "*/10 * * * *"
     }
   ]
