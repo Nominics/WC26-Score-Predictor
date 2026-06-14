@@ -1,10 +1,10 @@
-
 "use client"
 
 import { MainNav } from "@/components/layout/main-nav"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Info, Award, Calendar, Zap, ShieldAlert } from "lucide-react"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
+import { PwaInstallButton } from "@/components/pwa-install-button"
 import { cn } from "@/lib/utils"
 
 const RULES = [
@@ -19,17 +19,20 @@ export default function Rules() {
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
       <header className="px-6 py-4 bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto flex justify-between items-center">
+        <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-2xl font-black italic tracking-tighter">THE RULES</h1>
+            <h1 className="text-xl font-black italic tracking-tighter uppercase">THE RULES</h1>
             <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Arena Guidelines</p>
           </div>
-          <ProfileSheet />
+          <div className="flex items-center gap-2">
+            <PwaInstallButton />
+            <ProfileSheet />
+          </div>
         </div>
       </header>
 
       <main className="p-4 space-y-4 max-w-2xl mx-auto mt-6">
-        <Card className="bg-white border border-gray-100 shadow-sm rounded-3xl overflow-hidden">
+        <Card className="bg-white border border-gray-100 shadow-xl rounded-3xl overflow-hidden">
           <CardHeader className="flex flex-row items-center gap-3 bg-gray-50/50 p-6">
             <div className="bg-primary/10 p-2 rounded-xl">
                 <Info className="text-primary h-5 w-5"/>
@@ -43,7 +46,7 @@ export default function Rules() {
 
         <div className="grid gap-4">
           {RULES.map((rule, i) => (
-            <div key={i} className="p-6 bg-white rounded-3xl border border-gray-100 flex justify-between items-center shadow-sm">
+            <div key={i} className="p-6 bg-white rounded-3xl border border-gray-100 flex justify-between items-center shadow-lg transition-transform hover:scale-[1.01]">
               <div className="flex items-center gap-4">
                 <div className="bg-gray-50 p-3 rounded-2xl">
                     <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : "text-gray-400")} />
@@ -63,7 +66,7 @@ export default function Rules() {
           ))}
         </div>
 
-        <div className="p-5 bg-yellow-500/5 border border-yellow-500/10 rounded-3xl text-center">
+        <div className="p-5 bg-yellow-500/5 border border-yellow-500/10 rounded-3xl text-center shadow-sm">
             <p className="text-[10px] text-yellow-600 font-black uppercase italic tracking-[0.2em]">Lifelines allow late changes until minute 50</p>
         </div>
       </main>

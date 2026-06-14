@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -7,6 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Trophy, Medal, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
+import { PwaInstallButton } from "@/components/pwa-install-button"
 
 export default function Leaderboard() {
   const [entries, setEntries] = useState<any[]>([])
@@ -55,13 +55,13 @@ export default function Leaderboard() {
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
       <header className="px-6 py-4 bg-primary text-white shadow-lg sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+        <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div>
             <h1 className="text-2xl font-black italic tracking-tighter">LEADERBOARD</h1>
             <p className="text-[10px] uppercase font-bold opacity-80 mt-0.5">Season 2026 · LIVE</p>
           </div>
-          <div className="flex items-center gap-4">
-            <Trophy className="h-6 w-6 text-white/20" />
+          <div className="flex items-center gap-2">
+            <PwaInstallButton />
             <ProfileSheet />
           </div>
         </div>

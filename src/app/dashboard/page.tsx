@@ -13,6 +13,7 @@ import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { PwaInstallButton } from "@/components/pwa-install-button"
 
 export default function Dashboard() {
   const { user, loading: authLoading, stats, useLifeline } = useAuth()
@@ -192,7 +193,10 @@ export default function Dashboard() {
                )}
             </div>
           </div>
-          <ProfileSheet />
+          <div className="flex items-center gap-2">
+            <PwaInstallButton />
+            <ProfileSheet />
+          </div>
         </div>
       </header>
 

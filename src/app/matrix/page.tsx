@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -8,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Grid2X2, Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
+import { PwaInstallButton } from "@/components/pwa-install-button"
 import Image from "next/image"
 import { DateTime } from "luxon"
 
@@ -93,17 +93,20 @@ export default function Matrix() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-32">
       <MainNav />
-      <header className="px-6 py-6 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-gray-900">
-              Results <span className="text-orange-500">Matrix</span>
+            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase">
+              STRATEGY <span className="text-primary">MATRIX</span>
             </h1>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-              Global predictions overview for {fixtures.length} fixtures
+            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">
+              Live Arena Insights
             </p>
           </div>
-          <ProfileSheet />
+          <div className="flex items-center gap-2">
+            <PwaInstallButton />
+            <ProfileSheet />
+          </div>
         </div>
       </header>
 
@@ -132,17 +135,17 @@ export default function Matrix() {
                             {DateTime.fromISO(f.kickoff_at).toFormat('LLL dd')}
                           </span>
                           <div className="flex items-center gap-2">
-                            {f.home_flag && <Image src={f.home_flag} alt="" width={16} height={12} className="rounded-sm shadow-sm" />}
+                            {f.home_flag && <div className="relative h-4 w-4 rounded-full overflow-hidden shadow-sm"><Image src={f.home_flag} alt="" fill className="object-cover" /></div>}
                             <span className="text-[10px] font-black text-gray-900">{f.home_team.substring(0,3).toUpperCase()}</span>
                             <span className="text-[10px] font-black text-gray-900">{f.home_score ?? ''}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            {f.away_flag && <Image src={f.away_flag} alt="" width={16} height={12} className="rounded-sm shadow-sm" />}
+                            {f.away_flag && <div className="relative h-4 w-4 rounded-full overflow-hidden shadow-sm"><Image src={f.away_flag} alt="" fill className="object-cover" /></div>}
                             <span className="text-[10px] font-black text-gray-900">{f.away_team.substring(0,3).toUpperCase()}</span>
                             <span className="text-[10px] font-black text-gray-900">{f.away_score ?? ''}</span>
                           </div>
                           {f.status === 'finished' ? (
-                             <span className="bg-green-500 text-white px-2 py-0.5 rounded-md text-[8px] font-black uppercase">Final</span>
+                             <span className="bg-green-500 text-white px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest italic">Final</span>
                           ) : (
                              <span className="bg-gray-200 text-gray-500 px-2 py-0.5 rounded-md text-[8px] font-black uppercase">{f.match_number}</span>
                           )}
@@ -157,8 +160,8 @@ export default function Matrix() {
                       <TableCell className="px-8 py-6 sticky left-0 bg-white z-10 border-r border-gray-100">
                         <div className="flex flex-col">
                           <span className="font-black text-sm uppercase tracking-tight text-gray-900">{profile.display_name}</span>
-                          <span className="text-[10px] font-black text-orange-500 uppercase mt-0.5">
-                            {getPlayerPoints(profile.id)} <span className="text-gray-400">PTS</span>
+                          <span className="text-[10px] font-black text-primary uppercase mt-0.5 italic">
+                            {getPlayerPoints(profile.id)} <span className="text-gray-400 not-italic">PTS</span>
                           </span>
                         </div>
                       </TableCell>
@@ -168,7 +171,7 @@ export default function Matrix() {
                           <TableCell key={f.id} className="text-center p-4">
                             <div className="relative inline-block">
                               <div className={cn(
-                                "flex items-center justify-center min-w-[70px] h-10 rounded-xl font-black text-[13px] border transition-all",
+                                "flex items-center justify-center min-w-[70px] h-10 rounded-xl font-black text-[13px] border transition-all shadow-sm",
                                 color
                               )}>
                                 <span className="tabular-nums tracking-tighter">{text}</span>

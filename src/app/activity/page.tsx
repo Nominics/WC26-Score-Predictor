@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -8,6 +7,7 @@ import { Zap, MessageSquare, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
+import { PwaInstallButton } from "@/components/pwa-install-button"
 
 export default function Activity() {
   const [logs, setLogs] = useState<any[]>([])
@@ -56,12 +56,15 @@ export default function Activity() {
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
       <header className="px-6 py-4 border-b border-gray-100 bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">
-            <Zap className="h-6 w-6 text-primary fill-primary" />
+        <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
+          <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 uppercase">
+            <Zap className="h-5 w-5 text-primary fill-primary" />
             LIVE FEED
           </h1>
-          <ProfileSheet />
+          <div className="flex items-center gap-2">
+            <PwaInstallButton />
+            <ProfileSheet />
+          </div>
         </div>
       </header>
 
@@ -71,14 +74,14 @@ export default function Activity() {
             <Loader2 className="h-6 w-6 text-primary animate-spin" />
           </div>
         ) : logs.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-[2.5rem] border shadow-sm">
+          <div className="text-center py-20 bg-white rounded-[2.5rem] border shadow-xl">
             <p className="text-[10px] font-black uppercase text-gray-400">No activity yet</p>
           </div>
         ) : (
           logs.map((log) => (
             <div key={log.id} className="flex gap-4 p-5 bg-white rounded-3xl border border-gray-100 items-center shadow-xl transition-all hover:scale-[1.01]">
-              <Avatar className="h-12 w-12 border border-gray-50 shadow-sm">
-                <AvatarFallback className="bg-gray-50 text-primary font-black text-xs">
+              <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">
                   {getInitials(log.display_name)}
                 </AvatarFallback>
               </Avatar>
