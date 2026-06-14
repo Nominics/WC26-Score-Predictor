@@ -29,33 +29,44 @@ export default function Leaderboard() {
 
   const fetchLeaderboard = async () => {
     try {
-      // Fix: Joining with profiles table to get the favorite_team since it's not in the leaderboard view directly
-      const { data, error } = await supabase
+      // Step 1: Fetch the core leaderboard data
+      const { data: lbData, error: lbError } = await supabase
         .from("leaderboard")
         .select(`
           user_id,
           display_name,
           total_points,
-          total_predictions,
-          profiles:user_id (
-            favorite_team
-          )
+          total_predictions
         `)
         .order("total_points", { ascending: false })
         .order("total_predictions", { ascending: false })
       
-      if (error) {
-        console.error("Leaderboard fetch error details:", error)
-        throw error
-      }
+      if (lbError) throw lbError
 
-      // We simulate movement for visual variety as per the "nice and attractive" requirement
-      const processedEntries = (data || []).map((entry: any, idx: number) => ({
-        ...entry,
-        favorite_team: entry.profiles?.favorite_team,
-        movement: (entry.total_predictions % 3) - 1 
-      }))
-      setEntries(processedEntries)
+      if (lbData && lbData.length > 0) {
+        // Step 2: Fetch the favorite teams separately to avoid view/table join limitations
+        const userIds = lbData.map(d => d.user_id)
+        const { data: profData, error: profError } = await supabase
+          .from("profiles")
+          .select("id, favorite_team")
+          .in("id", userIds)
+
+        if (profError) throw profError
+
+        // Step 3: Merge the data locally
+        const processedEntries = lbData.map((entry: any) => {
+          const profile = profData?.find(p => p.id === entry.user_id)
+          return {
+            ...entry,
+            favorite_team: profile?.favorite_team,
+            // Simulated movement for visual engagement
+            movement: (entry.total_predictions % 3) - 1 
+          }
+        })
+        setEntries(processedEntries)
+      } else {
+        setEntries([])
+      }
     } catch (err: any) {
       console.error("Leaderboard fetch error caught:", err.message || err)
     } finally {
