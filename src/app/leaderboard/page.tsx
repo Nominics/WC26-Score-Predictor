@@ -83,7 +83,9 @@ export default function Leaderboard() {
       <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter uppercase text-gray-900 leading-none">THE ARENA</h1>
+            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none">
+              THE <span className="text-primary">ARENA</span>
+            </h1>
             <p className="text-[8px] uppercase font-black text-gray-400 mt-1 tracking-[0.2em]">Live Global Rankings</p>
           </div>
           <div className="flex items-center gap-2">
