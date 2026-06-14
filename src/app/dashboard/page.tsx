@@ -45,34 +45,26 @@ export default function Dashboard() {
   const fetchData = async () => {
     if (!user) return
     try {
-      const { data: fixturesData, error: fError } = await supabase
-        .from("fixtures")
-        .select("*")
-        .order("kickoff_at", { ascending: true })
+      const [fRes, pRes] = await Promise.all([
+        supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true }),
+        supabase.from("predictions").select("*").eq("user_id", user.id)
+      ])
       
-      if (fError) throw fError
-      setFixtures(fixturesData || [])
+      if (fRes.error) throw fRes.error
+      if (pRes.error) throw pRes.error
 
-      if (fixturesData && fixturesData.length > 0 && !activeDate) {
-        const firstDate = DateTime.fromISO(fixturesData[0].kickoff_at).toISODate()
-        setActiveDate(firstDate)
+      setFixtures(fRes.data || [])
+      setPredictions(pRes.data || [])
+
+      if (fRes.data && fRes.data.length > 0 && !activeDate) {
+        // Find nearest match to today
+        const now = DateTime.now().toISODate()
+        const nearestMatch = fRes.data.find((f: any) => DateTime.fromISO(f.kickoff_at).toISODate() >= now)
+        setActiveDate(nearestMatch ? DateTime.fromISO(nearestMatch.kickoff_at).toISODate() : DateTime.fromISO(fRes.data[0].kickoff_at).toISODate())
       }
-
-      const { data: predData, error: pError } = await supabase
-        .from("predictions")
-        .select("*")
-        .eq("user_id", user.id)
-      
-      if (pError) throw pError
-      setPredictions(predData || [])
 
     } catch (error: any) {
       console.error("Error fetching data:", error)
-      toast({
-        variant: "destructive",
-        title: "Connection Error",
-        description: "Could not load match data.",
-      })
     } finally {
       setIsLoading(false)
     }
@@ -126,10 +118,13 @@ export default function Dashboard() {
     }
   }
 
-  if (authLoading || (isLoading && fixtures.length === 0)) {
+  if (authLoading && fixtures.length === 0) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">WC26</div>
+          <Loader2 className="h-6 w-6 text-gray-200 animate-spin" />
+        </div>
       </div>
     )
   }
@@ -140,12 +135,12 @@ export default function Dashboard() {
       <header className="px-6 pt-12 pb-6 bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-start">
           <div>
-            <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">
+            <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900">
               <Trophy className="h-6 w-6 text-primary" />
               MATCH CENTER
             </h1>
             <div className="flex items-center gap-3 mt-1">
-               <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Real-time Arena</p>
+               <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Global Arena</p>
                {stats && (
                  <div className="flex items-center gap-2">
                    <span className="h-1 w-1 rounded-full bg-gray-200" />
@@ -160,14 +155,14 @@ export default function Dashboard() {
       </header>
 
       {dateTabs.length > 0 && (
-        <div className="px-6 py-4 sticky top-[92px] bg-gray-50/80 backdrop-blur-md z-30 border-b border-gray-100/50">
+        <div className="px-6 py-4 sticky top-[92px] bg-white/80 backdrop-blur-md z-30 border-b border-gray-100/50">
           <div className="flex items-center no-scrollbar overflow-x-auto gap-3 max-w-2xl mx-auto">
             {dateTabs.map((d) => (
               <button
                 key={d.iso}
                 onClick={() => setActiveDate(d.iso)}
                 className={cn(
-                  "flex flex-col items-center min-w-[4rem] py-3 rounded-2xl transition-all border",
+                  "flex flex-col items-center min-w-[4.5rem] py-3 rounded-2xl transition-all border",
                   activeDate === d.iso ? "active-pill border-primary" : "bg-white border-gray-100 text-gray-400"
                 )}
               >
@@ -184,13 +179,19 @@ export default function Dashboard() {
         <div className="flex justify-between items-center">
           <h2 className="text-sm font-black uppercase italic text-gray-400 tracking-tight flex items-center gap-2">
             <CalendarIcon className="h-4 w-4" />
-            {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Loading...'}
+            {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Loading Schedule...'}
           </h2>
         </div>
 
-        {displayFixtures.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed">
-            <p className="text-gray-400 font-bold uppercase text-[10px]">No matches scheduled for this date</p>
+        {isLoading && fixtures.length === 0 ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-48 bg-white rounded-[2.5rem] animate-pulse border border-gray-100 shadow-sm" />
+            ))}
+          </div>
+        ) : displayFixtures.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
+            <p className="text-gray-400 font-bold uppercase text-[10px]">No matches on this date</p>
           </div>
         ) : (
           <div className="space-y-4">

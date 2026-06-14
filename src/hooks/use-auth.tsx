@@ -1,3 +1,4 @@
+
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
@@ -8,6 +9,7 @@ import type { User } from "@supabase/supabase-js"
 interface AuthContextType {
   user: User | null
   profile: any | null
+  stats: { points: number; rank: number } | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
@@ -21,29 +23,34 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any | null>(null)
+  const [stats, setStats] = useState<{ points: number; rank: number } | null>(null)
   const [loading, setLoading] = useState(true)
   const [isConfigured] = useState(isSupabaseConfigured())
 
   const router = useRouter()
   const supabase = createClient()
 
-  const fetchProfile = useCallback(
+  const fetchUserData = useCallback(
     async (userId: string) => {
       if (!isConfigured) return
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .maybeSingle()
+      try {
+        // Fetch Profile and Leaderboard stats in parallel
+        const [profileRes, statsRes] = await Promise.all([
+          supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+          supabase.from("leaderboard").select("total_points, rank").eq("user_id", userId).maybeSingle()
+        ])
 
-      if (error) {
-        console.error("Error fetching profile:", error.message)
-        setProfile(null)
-        return
+        if (!profileRes.error) setProfile(profileRes.data)
+        if (!statsRes.error && statsRes.data) {
+          setStats({
+            points: statsRes.data.total_points || 0,
+            rank: statsRes.data.rank || 0
+          })
+        }
+      } catch (err) {
+        console.error("Error fetching user data:", err)
       }
-
-      setProfile(data)
     },
     [supabase, isConfigured]
   )
@@ -51,117 +58,84 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    async function loadInitialSession() {
-      if (!isConfigured) {
-        setLoading(false)
-        return
-      }
-
-      setLoading(true)
-
-      try {
-        const {
-          data: { session },
-          error,
-        } = await supabase.auth.getSession()
-
-        if (!mounted) return
-
-        if (error) {
-          console.error("Session error:", error.message)
-        }
-
-        if (session?.user) {
-          setUser(session.user)
-          await fetchProfile(session.user.id)
-        } else {
-          setUser(null)
-          setProfile(null)
-        }
-      } catch (err) {
-        console.error("Auth initialization error:", err)
-      } finally {
-        if (mounted) setLoading(false)
-      }
-    }
-
-    loadInitialSession()
-
-    if (isConfigured) {
-      const {
-        data: { subscription },
-      } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (!mounted) return
-
-        if (session?.user) {
-          setUser(session.user)
-          await fetchProfile(session.user.id)
-        } else if (event === "SIGNED_OUT") {
-          setUser(null)
-          setProfile(null)
-        }
-
-        setLoading(false)
-      })
-
-      return () => {
-        mounted = false
-        subscription.unsubscribe()
-      }
-    } else {
+    if (!isConfigured) {
       setLoading(false)
+      return
     }
-  }, [supabase, fetchProfile, isConfigured])
+
+    // Single source of truth for auth state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+
+      const currentUser = session?.user || null
+      setUser(currentUser)
+
+      if (currentUser) {
+        // Load profile data but don't necessarily block 'loading' state if we already have the user
+        fetchUserData(currentUser.id).finally(() => {
+          if (mounted) setLoading(false)
+        })
+      } else {
+        setProfile(null)
+        setStats(null)
+        setLoading(false)
+      }
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase, fetchUserData, isConfigured])
 
   const login = async (email: string, password: string) => {
     if (!isConfigured) {
-      throw new Error("Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables.")
+      throw new Error("Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.")
     }
     
+    setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (error) throw error
+    if (error) {
+      setLoading(false)
+      throw error
+    }
 
     router.replace("/dashboard")
-    router.refresh()
   }
 
   const register = async (email: string, password: string, name: string) => {
     if (!isConfigured) {
-      throw new Error("Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables.")
+      throw new Error("Supabase is not configured.")
     }
 
+    setLoading(true)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: {
-          display_name: name,
-        },
+        data: { display_name: name },
       },
     })
 
-    if (error) throw error
+    if (error) {
+      setLoading(false)
+      throw error
+    }
 
     if (data.user) {
-      const { error: profileError } = await supabase.from("profiles").upsert({
+      await supabase.from("profiles").upsert({
         id: data.user.id,
         display_name: name,
         updated_at: new Date().toISOString(),
       })
-
-      if (profileError) {
-        console.error("Error creating profile:", profileError.message)
-      }
-
-      await fetchProfile(data.user.id)
+      await fetchUserData(data.user.id)
     }
 
     router.replace("/dashboard")
-    router.refresh()
   }
 
   const logout = async () => {
@@ -170,8 +144,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setUser(null)
     setProfile(null)
+    setStats(null)
     router.replace("/")
-    router.refresh()
   }
 
   const updateDisplayName = async (name: string) => {
@@ -184,8 +158,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     if (error) throw error
-
-    await fetchProfile(user.id)
+    await fetchUserData(user.id)
   }
 
   return (
@@ -193,6 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         profile,
+        stats,
         loading,
         login,
         register,
@@ -208,10 +182,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-
   if (!context) {
     throw new Error("useAuth must be used within AuthProvider")
   }
-
   return context
 }
