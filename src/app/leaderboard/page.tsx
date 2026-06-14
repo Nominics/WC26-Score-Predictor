@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -41,16 +42,24 @@ export default function Leaderboard() {
         .order("total_points", { ascending: false })
         .order("total_predictions", { ascending: false })
       
-      if (error) throw error
-      // Mock rank movement for visual effect if not in DB
+      if (error) {
+        console.error("Leaderboard fetch error details:", {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
+        throw error
+      }
+
       const processedEntries = (data || []).map((entry, idx) => ({
         ...entry,
         // Using total_predictions % 3 to simulate a movement for visual variety
         movement: (entry.total_predictions % 3) - 1 
       }))
       setEntries(processedEntries)
-    } catch (err) {
-      console.error("Leaderboard fetch error:", err)
+    } catch (err: any) {
+      console.error("Leaderboard fetch error caught:", err.message || err)
     } finally {
       setLoading(false)
     }
@@ -96,7 +105,7 @@ export default function Leaderboard() {
           entries.map((entry, i) => {
             const rank = i + 1;
             const flagUrl = getTeamFlagUrl(entry.favorite_team);
-            const movement = entry.movement; // Mocked -1, 0, or 1
+            const movement = entry.movement;
 
             return (
               <div 
@@ -106,7 +115,6 @@ export default function Leaderboard() {
                   rank <= 3 && "ring-2 ring-primary/5"
                 )}
               >
-                {/* Rank Number / Medal */}
                 <div className="w-10 flex flex-col items-center justify-center">
                   {rank === 1 ? <Medal className="h-7 w-7 text-yellow-500 drop-shadow-md" /> : 
                    rank === 2 ? <Medal className="h-7 w-7 text-gray-400 drop-shadow-md" /> :
@@ -114,7 +122,6 @@ export default function Leaderboard() {
                    <span className="text-lg font-black text-gray-900">#{rank}</span>}
                 </div>
                 
-                {/* Profile Pic */}
                 <Avatar className="h-14 w-14 border-4 border-white shadow-xl">
                   {flagUrl ? (
                     <AvatarImage src={flagUrl} className="object-cover" />
@@ -125,7 +132,6 @@ export default function Leaderboard() {
                   )}
                 </Avatar>
 
-                {/* Name & Points */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-col">
                     <span className="font-black text-sm uppercase tracking-tight text-gray-900 truncate">
@@ -140,7 +146,6 @@ export default function Leaderboard() {
                   </div>
                 </div>
 
-                {/* Rank Movement */}
                 <div className="flex items-center justify-center w-8">
                   {movement > 0 ? (
                     <ArrowUp className="h-5 w-5 text-green-500 fill-green-500 drop-shadow-sm" />

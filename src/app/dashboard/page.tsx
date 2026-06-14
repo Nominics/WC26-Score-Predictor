@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -16,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 
 export default function Dashboard() {
-  const { user, loading: authLoading, stats, useLifeline } = useAuth()
+  const { user: authUser, loading: authLoading, stats, useLifeline } = useAuth()
   const { toast } = useToast()
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
@@ -26,7 +27,7 @@ export default function Dashboard() {
   const supabase = createClient()
 
   useEffect(() => {
-    if (user) {
+    if (authUser) {
       fetchData()
       fetchActivity()
       
@@ -54,14 +55,14 @@ export default function Dashboard() {
         supabase.removeChannel(activityChannel)
       }
     }
-  }, [user])
+  }, [authUser])
 
   const fetchData = async () => {
-    if (!user) return
+    if (!authUser) return
     try {
       const [fRes, pRes] = await Promise.all([
         supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true }),
-        supabase.from("predictions").select("*").eq("user_id", user.id)
+        supabase.from("predictions").select("*").eq("user_id", authUser.id)
       ])
       
       if (fRes.error) throw fRes.error
@@ -115,39 +116,45 @@ export default function Dashboard() {
   }, [fixtures, activeDate])
 
   const handlePredict = async (fixtureId: string, h: number, a: number, isLifeline: boolean) => {
-    if (!user) return
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (!currentUser) throw new Error("No authenticated user session found.")
 
-    if (isLifeline) {
-      try {
-        await useLifeline()
-      } catch (e) {
-        toast({ variant: "destructive", title: "Lifeline Failed", description: "Could not deduct lifeline." })
-        return
+      if (isLifeline) {
+        try {
+          await useLifeline()
+        } catch (e: any) {
+          toast({ variant: "destructive", title: "Lifeline Failed", description: e.message || "Could not deduct lifeline." })
+          return
+        }
       }
-    }
 
-    const { error } = await supabase
-      .from("predictions")
-      .upsert({
-        user_id: user.id,
-        fixture_id: fixtureId,
-        predicted_home_score: Number(h),
-        predicted_away_score: Number(a),
-      }, { onConflict: 'user_id,fixture_id' })
+      const { error } = await supabase
+        .from("predictions")
+        .upsert({
+          user_id: currentUser.id,
+          fixture_id: fixtureId,
+          predicted_home_score: Number(h),
+          predicted_away_score: Number(a),
+        }, { onConflict: 'user_id,fixture_id' })
 
-    if (error) {
-      console.error("Prediction save error:", error)
-      toast({ 
-        variant: "destructive", 
-        title: "Error", 
-        description: error.message 
-      })
-    } else {
+      if (error) {
+        console.error("Prediction save error:", error)
+        throw error
+      }
+
       toast({ 
         title: isLifeline ? "Lifeline Used!" : "Success", 
         description: isLifeline ? "Prediction updated during the match!" : "Pick locked in!" 
       })
       fetchData()
+    } catch (error: any) {
+      console.error("HandlePredict outer error:", error)
+      toast({ 
+        variant: "destructive", 
+        title: "Save Failed", 
+        description: error.message || "Failed to save pick." 
+      })
     }
   }
 
