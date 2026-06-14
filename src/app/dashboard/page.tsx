@@ -50,7 +50,6 @@ export default function Dashboard() {
     if (!user) return
     setIsLoading(true)
     try {
-      // Fetch Fixtures
       const { data: fixturesData, error: fError } = await supabase
         .from("fixtures")
         .select("*")
@@ -59,7 +58,6 @@ export default function Dashboard() {
       if (fError) throw fError
       setFixtures(fixturesData || [])
 
-      // Fetch Predictions
       const { data: predData, error: pError } = await supabase
         .from("predictions")
         .select("*")
@@ -73,7 +71,7 @@ export default function Dashboard() {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Could not load match data. Please try again.",
+        description: "Could not load match data.",
       })
     } finally {
       setIsLoading(false)
@@ -83,12 +81,9 @@ export default function Dashboard() {
   const handleSync = async () => {
     setIsSyncing(true)
     try {
-      const syncSecret = process.env.NEXT_PUBLIC_SYNC_SECRET || 'your-secret-here'
+      // No need for client-side secret if the server checks session
       const res = await fetch('/api/fixtures/sync', {
         method: 'POST',
-        headers: {
-          'x-sync-secret': syncSecret
-        }
       })
       const data = await res.json()
       if (data.success) {
@@ -98,10 +93,11 @@ export default function Dashboard() {
         throw new Error(data.error || data.details || 'Sync failed')
       }
     } catch (error: any) {
+      console.error("Sync Error:", error)
       toast({
         variant: "destructive",
         title: "Sync Failed",
-        description: error.message,
+        description: error.message === "Unauthorized" ? "Access denied. Try logging in again." : error.message,
       })
     } finally {
       setIsSyncing(false)
@@ -109,10 +105,7 @@ export default function Dashboard() {
   }
 
   const handlePredict = async (fId: string, h: number, a: number) => {
-    if (!user) {
-      toast({ variant: "destructive", title: "Error", description: "You must be logged in." })
-      return
-    }
+    if (!user) return
 
     const { error } = await supabase
       .from("predictions")
@@ -125,13 +118,8 @@ export default function Dashboard() {
       }, { onConflict: 'fixture_id,user_id' })
 
     if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to save prediction. Check your connection.",
-      })
+      toast({ variant: "destructive", title: "Error", description: "Failed to save pick." })
     } else {
-      // Optimistic update
       setPredictions(prev => {
         const existingIdx = prev.findIndex(p => p.fixture_id === fId)
         if (existingIdx > -1) {
@@ -141,10 +129,7 @@ export default function Dashboard() {
         }
         return [...prev, { fixture_id: fId, home_score: h, away_score: a, user_id: user.id }]
       })
-      toast({
-        title: "Prediction Saved",
-        description: "Your pick has been locked in!",
-      })
+      toast({ title: "Prediction Saved", description: "Your pick has been locked in!" })
     }
   }
 
@@ -152,11 +137,9 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">
-            WC26
-          </div>
+          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">WC26</div>
           <div className="h-1 w-32 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-primary animate-[loading_1.5s_ease-in-out_infinite]" style={{ width: '30%' }} />
+            <div className="h-full bg-primary animate-[loading_1.5s_ease-in-out_infinite]" style={{ width: '40%' }} />
           </div>
         </div>
       </div>
@@ -168,7 +151,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-32">
       <MainNav />
-      
       <header className="px-6 pt-12 pb-6 flex justify-between items-center bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="space-y-1">
           <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">

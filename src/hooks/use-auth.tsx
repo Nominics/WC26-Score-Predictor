@@ -35,20 +35,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Initial session check
-    const checkInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        setUser(session.user)
-        await fetchProfile(session.user.id)
+    // 1. Check current session immediately
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          setUser(session.user)
+          await fetchProfile(session.user.id)
+        }
+      } catch (err) {
+        console.error("Auth init error:", err)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
-    checkInitialSession()
+    initAuth()
 
-    // Listen for changes
+    // 2. Listen for auth changes (login, logout, refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth Event:", event)
       if (session?.user) {
         setUser(session.user)
         await fetchProfile(session.user.id)
@@ -63,10 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ 
-      email,
-      password,
-    })
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     router.refresh()
     router.push("/dashboard")
@@ -76,11 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        data: {
-          display_name: name
-        }
-      }
+      options: { data: { display_name: name } }
     })
     
     if (error) throw error

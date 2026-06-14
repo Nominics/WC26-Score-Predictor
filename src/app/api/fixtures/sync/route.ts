@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 
 type WorldCupApiGame = {
   _id: string;
@@ -57,27 +58,26 @@ function mapStatus(game: WorldCupApiGame) {
 }
 
 function parseScore(value: string, status: string) {
-  // Keep scheduled match scores as null.
-  // This prevents leaderboard points from calculating before final result.
   if (status === "scheduled") {
     return null;
   }
-
   const number = Number.parseInt(value, 10);
   return Number.isFinite(number) ? number : null;
 }
 
 export async function POST(req: Request) {
   try {
+    // 1. Authorization Check: Allow if secret matches OR if user is logged in
     const secret = req.headers.get("x-sync-secret");
-
-    // Default secret for prototype/dev if not configured
     const expectedSecret = process.env.SYNC_SECRET || 'your-secret-here';
     
-    if (secret !== expectedSecret) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (secret !== expectedSecret && !user) {
       return NextResponse.json({ 
         error: "Unauthorized", 
-        details: "The sync secret provided does not match the server configuration." 
+        details: "Requires valid sync secret or active user session." 
       }, { status: 401 });
     }
 
