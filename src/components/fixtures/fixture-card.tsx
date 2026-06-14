@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -57,17 +58,21 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
         <div className="flex items-center justify-between gap-4">
           {/* Home Team */}
           <div className="flex flex-col items-center flex-1 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center overflow-hidden mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
+            <div className="mb-3 transition-transform group-hover:scale-105">
               {fixture.home_flag ? (
-                <Image 
-                  src={fixture.home_flag} 
-                  alt={fixture.home_team} 
-                  width={64} 
-                  height={64} 
-                  className="object-cover w-full h-full"
-                />
+                <div className="relative h-12 w-12 sm:h-14 sm:w-14">
+                  <Image 
+                    src={fixture.home_flag} 
+                    alt={`${fixture.home_team} flag`} 
+                    width={56} 
+                    height={56} 
+                    className="h-full w-full rounded-full object-cover ring-2 ring-gray-100 shadow-sm"
+                  />
+                </div>
               ) : (
-                <span className="text-3xl">⚽</span>
+                <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gray-50 border border-gray-100 text-[10px] font-black text-gray-300 uppercase italic">
+                  TBD
+                </div>
               )}
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.home_team}</span>
@@ -120,7 +125,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
                 </div>
                 {fixture.status === 'finished' && (
                   <div className="mt-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                    Final Result: {fixture.home_score} - {fixture.away_score}
+                    Final: {fixture.home_score} - {fixture.away_score}
                   </div>
                 )}
               </div>
@@ -143,17 +148,21 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
 
           {/* Away Team */}
           <div className="flex flex-col items-center flex-1 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center overflow-hidden mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
+            <div className="mb-3 transition-transform group-hover:scale-105">
               {fixture.away_flag ? (
-                <Image 
-                  src={fixture.away_flag} 
-                  alt={fixture.away_team} 
-                  width={64} 
-                  height={64} 
-                  className="object-cover w-full h-full"
-                />
+                <div className="relative h-12 w-12 sm:h-14 sm:w-14">
+                  <Image 
+                    src={fixture.away_flag} 
+                    alt={`${fixture.away_team} flag`} 
+                    width={56} 
+                    height={56} 
+                    className="h-full w-full rounded-full object-cover ring-2 ring-gray-100 shadow-sm"
+                  />
+                </div>
               ) : (
-                <span className="text-3xl">⚽</span>
+                <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-gray-50 border border-gray-100 text-[10px] font-black text-gray-300 uppercase italic">
+                  TBD
+                </div>
               )}
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.away_team}</span>
