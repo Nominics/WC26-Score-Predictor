@@ -7,12 +7,31 @@ import { FIXTURES } from "@/lib/mock-data"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
+import { Bell, ChevronRight } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+const DATES = [
+  { day: "Sun", date: "12" },
+  { day: "Sat", date: "13" },
+  { day: "Mon", date: "14" },
+  { day: "Tue", date: "15" },
+  { day: "Wed", date: "16" },
+  { day: "Thu", date: "17" },
+  { day: "Fri", date: "18" },
+]
+
+const LEAGUES = [
+  { id: "wc", name: "World Cup 26", icon: "🏆" },
+  { id: "pl", name: "Premier League", icon: "🦁" },
+  { id: "ll", name: "LA LIGA", icon: "🇪🇸" },
+]
 
 export default function Dashboard() {
   const { user, profile, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [predictions, setPredictions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [activeDate, setActiveDate] = useState("15")
   const supabase = createClient()
 
   useEffect(() => {
@@ -60,40 +79,71 @@ export default function Dashboard() {
   }
 
   if (authLoading || isLoading) {
-    return <div className="min-h-screen bg-white flex items-center justify-center text-primary font-black italic animate-pulse">LOADING...</div>
+    return <div className="min-h-screen bg-black flex items-center justify-center text-primary font-black italic animate-pulse uppercase">Predicting...</div>
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-foreground pb-24 md:pt-20">
+    <div className="min-h-screen bg-black text-white pb-32">
       <MainNav />
-      <header className="p-6 bg-white border-b border-gray-100 sticky top-0 z-40 md:relative">
-        <div className="max-w-2xl mx-auto flex justify-between items-end">
-          <div>
-            <h1 className="text-2xl font-black italic tracking-tighter text-primary">FIXTURES</h1>
-            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-1">
-              Hi, {profile?.display_name || 'Expert'}
-            </p>
-          </div>
-          <div className="text-right">
-             <span className="text-3xl font-black italic leading-none">{profile?.points || 0}</span>
-             <p className="text-[8px] font-bold text-muted-foreground uppercase">Total Points</p>
-          </div>
-        </div>
+      
+      {/* Header */}
+      <header className="px-6 pt-12 pb-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold tracking-tight">League Center</h1>
+        <Button size="icon" variant="ghost" className="rounded-full bg-white/5 border border-white/10 h-10 w-10">
+          <Bell className="h-5 w-5" />
+        </Button>
       </header>
 
-      <main className="p-4 space-y-4 max-w-2xl mx-auto">
-        {FIXTURES.map((fixture) => {
-          const pred = predictions.find(p => p.fixture_id === fixture.id)
-          return (
-            <FixtureCard 
-              key={fixture.id} 
-              fixture={fixture} 
-              initialHome={pred?.home_score}
-              initialAway={pred?.away_score}
-              onSave={handlePredict}
-            />
-          )
-        })}
+      {/* Date Selector */}
+      <div className="px-6 mb-8">
+        <div className="flex justify-between items-center no-scrollbar overflow-x-auto gap-4 py-2">
+          {DATES.map((d) => (
+            <button
+              key={d.date}
+              onClick={() => setActiveDate(d.date)}
+              className={`flex flex-col items-center min-w-[3rem] py-3 rounded-3xl transition-all duration-300 ${
+                activeDate === d.date ? "active-pill" : "text-gray-400"
+              }`}
+            >
+              <span className="text-[10px] font-medium mb-1 uppercase tracking-wider">{d.day}</span>
+              <span className="text-lg font-bold">{d.date}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <main className="px-6 space-y-8">
+        {/* League Filter */}
+        <section>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold">Live Games</h2>
+            <button className="text-xs text-gray-500 font-medium">See All</button>
+          </div>
+          <div className="flex gap-3 no-scrollbar overflow-x-auto pb-2">
+            {LEAGUES.map((l) => (
+              <button key={l.id} className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium hover:bg-white/10 transition-colors">
+                <span className="bg-primary/20 p-1.5 rounded-full text-xs">{l.icon}</span>
+                {l.name}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Fixtures */}
+        <div className="space-y-4">
+          {FIXTURES.map((fixture) => {
+            const pred = predictions.find(p => p.fixture_id === fixture.id)
+            return (
+              <FixtureCard 
+                key={fixture.id} 
+                fixture={fixture} 
+                initialHome={pred?.home_score}
+                initialAway={pred?.away_score}
+                onSave={handlePredict}
+              />
+            )
+          })}
+        </div>
       </main>
     </div>
   )
