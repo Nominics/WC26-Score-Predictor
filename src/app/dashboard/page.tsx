@@ -9,15 +9,23 @@ import { createClient } from "@/lib/supabase/client"
 import { Trophy, Calendar as CalendarIcon, Loader2 } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
+import { useRouter } from "next/navigation"
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth()
   const { toast } = useToast()
+  const router = useRouter()
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const supabase = createClient()
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/")
+    }
+  }, [user, authLoading, router])
 
   useEffect(() => {
     if (user) {

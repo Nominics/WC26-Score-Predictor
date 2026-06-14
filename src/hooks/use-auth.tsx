@@ -42,8 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function initializeAuth() {
       try {
-        // Initial session check
+        // Initial session check from storage/cookies
         const { data: { session } } = await supabase.auth.getSession()
+        
         if (mounted) {
           if (session?.user) {
             setUser(session.user)
@@ -52,27 +53,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null)
             setProfile(null)
           }
+          // Only stop loading after we've confirmed the initial session state
+          setLoading(false)
         }
       } catch (err) {
         console.error("Initialization error:", err)
-      } finally {
         if (mounted) setLoading(false)
       }
     }
 
     initializeAuth()
 
-    // Listen for auth changes
+    // Listen for auth changes (SIGN_IN, SIGN_OUT, INITIAL_SESSION, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth Event:", event)
+      
       if (mounted) {
         if (session?.user) {
           setUser(session.user)
           await fetchProfile(session.user.id)
         } else {
-          setUser(null)
-          setProfile(null)
+          // Only treat as logged out if the event is actually a sign out or there's no session
+          if (event === 'SIGNED_OUT' || !session) {
+            setUser(null)
+            setProfile(null)
+          }
         }
+        
+        // Ensure loading is false after the first event, especially INITIAL_SESSION
         setLoading(false)
       }
     })
@@ -86,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    router.refresh()
+    router.push("/dashboard")
   }
 
   const register = async (email: string, password: string, name: string) => {
@@ -109,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (profileError) console.error("Error creating profile:", profileError)
       await fetchProfile(data.user.id)
-      router.refresh()
+      router.push("/dashboard")
     }
   }
 
@@ -117,7 +125,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
-    router.refresh()
     router.push("/")
   }
 
