@@ -29,8 +29,7 @@ export default function Leaderboard() {
 
   const fetchLeaderboard = async () => {
     try {
-      // Removing 'rank' from the select because it's a reserved keyword in Postgres 
-      // and causing an ordered-set aggregate error. We calculate rank locally.
+      // Fix: Joining with profiles table to get the favorite_team since it's not in the leaderboard view directly
       const { data, error } = await supabase
         .from("leaderboard")
         .select(`
@@ -38,7 +37,9 @@ export default function Leaderboard() {
           display_name,
           total_points,
           total_predictions,
-          favorite_team
+          profiles:user_id (
+            favorite_team
+          )
         `)
         .order("total_points", { ascending: false })
         .order("total_predictions", { ascending: false })
@@ -49,8 +50,9 @@ export default function Leaderboard() {
       }
 
       // We simulate movement for visual variety as per the "nice and attractive" requirement
-      const processedEntries = (data || []).map((entry, idx) => ({
+      const processedEntries = (data || []).map((entry: any, idx: number) => ({
         ...entry,
+        favorite_team: entry.profiles?.favorite_team,
         movement: (entry.total_predictions % 3) - 1 
       }))
       setEntries(processedEntries)
@@ -91,7 +93,7 @@ export default function Leaderboard() {
         {loading ? (
           <div className="p-20 flex flex-col items-center gap-3">
             <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            <p className="text-[10px] font-black uppercase text-gray-300 tracking-[0.2em]">Syncing Rankings...</p>
+            <p className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em]">Syncing Rankings...</p>
           </div>
         ) : entries.length === 0 ? (
           <div className="p-20 text-center text-gray-300 font-bold uppercase text-[10px]">
@@ -138,15 +140,22 @@ export default function Leaderboard() {
                           <Trophy className="h-3 w-3 text-primary fill-primary" />
                           <span className="text-[11px] font-black italic text-primary">{entry.total_points}</span>
                        </div>
+                       <span className="text-[9px] font-black text-gray-300 uppercase">{entry.total_predictions} PICKS</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-center w-8">
                   {movement > 0 ? (
-                    <ArrowUp className="h-5 w-5 text-green-500 fill-green-500 drop-shadow-sm" />
+                    <div className="flex flex-col items-center">
+                      <ArrowUp className="h-5 w-5 text-green-500 fill-green-500 drop-shadow-sm" />
+                      <span className="text-[8px] font-black text-green-500">+{movement}</span>
+                    </div>
                   ) : movement < 0 ? (
-                    <ArrowDown className="h-5 w-5 text-red-500 fill-red-500 drop-shadow-sm" />
+                    <div className="flex flex-col items-center">
+                      <ArrowDown className="h-5 w-5 text-red-500 fill-red-500 drop-shadow-sm" />
+                      <span className="text-[8px] font-black text-red-500">{movement}</span>
+                    </div>
                   ) : (
                     <Minus className="h-4 w-4 text-gray-200 stroke-[3px]" />
                   )}
