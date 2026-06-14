@@ -4,6 +4,7 @@
 import { MainNav } from "@/components/layout/main-nav"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Info, Award, Calendar, Zap } from "lucide-react"
+import { ProfileSheet } from "@/components/profile/profile-sheet"
 
 const RULES = [
   { title: "Exact Score", points: 3, description: "Predict the exact final score of the match.", icon: Award },
@@ -16,9 +17,12 @@ export default function Rules() {
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
       <header className="p-8 bg-white border-b border-gray-100">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-black italic tracking-tighter">THE RULES</h1>
-          <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1">Arena Guidelines</p>
+        <div className="max-w-2xl mx-auto flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-black italic tracking-tighter">THE RULES</h1>
+            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1">Arena Guidelines</p>
+          </div>
+          <ProfileSheet />
         </div>
       </header>
 
@@ -26,7 +30,9 @@ export default function Rules() {
         <Card className="bg-white border border-gray-100 shadow-sm rounded-3xl overflow-hidden">
           <CardHeader className="flex flex-row items-center gap-3 bg-gray-50/50 p-6">
             <div className="bg-primary/10 p-2 rounded-xl">
-              <Info className="text-primary h-5 w-5"/>
+              <span className="bg-primary/10 p-2 rounded-xl">
+                <Info className="text-primary h-5 w-5"/>
+              </span>
             </div>
             <CardTitle className="text-gray-900 font-black italic uppercase tracking-tight text-lg">How Scoring Works</CardTitle>
           </CardHeader>

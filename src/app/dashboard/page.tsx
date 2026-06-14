@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -9,9 +10,10 @@ import { createClient } from "@/lib/supabase/client"
 import { Trophy, Calendar as CalendarIcon, Loader2 } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
+import { ProfileSheet } from "@/components/profile/profile-sheet"
 
 export default function Dashboard() {
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, stats } = useAuth()
   const { toast } = useToast()
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
@@ -136,12 +138,24 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 text-foreground pb-32">
       <MainNav />
       <header className="px-6 pt-12 pb-6 bg-white border-b border-gray-100 sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">
-            <Trophy className="h-6 w-6 text-primary" />
-            MATCH CENTER
-          </h1>
-          <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Real-time Arena</p>
+        <div className="max-w-2xl mx-auto flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">
+              <Trophy className="h-6 w-6 text-primary" />
+              MATCH CENTER
+            </h1>
+            <div className="flex items-center gap-3 mt-1">
+               <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Real-time Arena</p>
+               {stats && (
+                 <div className="flex items-center gap-2">
+                   <span className="h-1 w-1 rounded-full bg-gray-200" />
+                   <span className="text-[10px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                   <span className="text-[10px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
+                 </div>
+               )}
+            </div>
+          </div>
+          <ProfileSheet />
         </div>
       </header>
 

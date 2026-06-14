@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -5,6 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
 import { Trophy, Medal, Star, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ProfileSheet } from "@/components/profile/profile-sheet"
 
 export default function Leaderboard() {
   const [entries, setEntries] = useState<any[]>([])
@@ -48,7 +50,10 @@ export default function Leaderboard() {
             <h1 className="text-3xl font-black italic tracking-tighter">LEADERBOARD</h1>
             <p className="text-[10px] uppercase font-bold opacity-80 mt-1">Season 2026 · LIVE</p>
           </div>
-          <Trophy className="h-10 w-10 text-white/20" />
+          <div className="flex items-center gap-4">
+            <Trophy className="h-10 w-10 text-white/20" />
+            <ProfileSheet />
+          </div>
         </div>
       </header>
 

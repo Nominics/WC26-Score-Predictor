@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,6 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Zap, MessageSquare, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DateTime } from "luxon"
+import { ProfileSheet } from "@/components/profile/profile-sheet"
 
 export default function Activity() {
   const [logs, setLogs] = useState<any[]>([])
@@ -44,11 +46,12 @@ export default function Activity() {
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
       <header className="p-6 border-b border-gray-100 bg-white sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">
             <Zap className="h-6 w-6 text-primary fill-primary" />
             LIVE FEED
           </h1>
+          <ProfileSheet />
         </div>
       </header>
 

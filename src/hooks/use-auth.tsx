@@ -1,3 +1,4 @@
+
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
@@ -8,11 +9,13 @@ import type { User } from "@supabase/supabase-js"
 interface AuthContextType {
   user: User | null
   profile: any | null
+  stats: { points: number; rank: number } | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
   updateDisplayName: (name: string) => Promise<void>
+  refreshStats: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -20,6 +23,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any | null>(null)
+  const [stats, setStats] = useState<{ points: number; rank: number } | null>(null)
   const [loading, setLoading] = useState(true)
 
   const router = useRouter()
@@ -44,6 +48,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [supabase]
   )
 
+  const refreshStats = useCallback(async () => {
+    if (!user) return
+
+    try {
+      // Get user points from leaderboard view
+      const { data: userData } = await supabase
+        .from("leaderboard")
+        .select("total_points")
+        .eq("user_id", user.id)
+        .maybeSingle()
+
+      const points = userData?.total_points || 0
+
+      // Get rank (count users with more points)
+      const { count } = await supabase
+        .from("leaderboard")
+        .select("*", { count: "exact", head: true })
+        .gt("total_points", points)
+
+      setStats({
+        points,
+        rank: (count || 0) + 1,
+      })
+    } catch (err) {
+      console.error("Error fetching stats:", err)
+    }
+  }, [supabase, user])
+
   useEffect(() => {
     let mounted = true
 
@@ -61,8 +93,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Session error:", error.message)
       }
 
-      console.log("Initial session exists:", !!session)
-
       if (session?.user) {
         setUser(session.user)
         await fetchProfile(session.user.id)
@@ -71,9 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(null)
       }
 
-      if (mounted) {
-        setLoading(false)
-      }
+      setLoading(false)
     }
 
     loadInitialSession()
@@ -81,8 +109,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth Event:", event, !!session)
-
       if (!mounted) return
 
       if (session?.user) {
@@ -91,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (event === "SIGNED_OUT") {
         setUser(null)
         setProfile(null)
+        setStats(null)
       }
 
       setLoading(false)
@@ -102,16 +129,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [supabase, fetchProfile])
 
+  // Refresh stats when user or profile changes
+  useEffect(() => {
+    if (user) {
+      refreshStats()
+    }
+  }, [user, profile, refreshStats])
+
   const login = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
     if (error) throw error
-
-    console.log("Login session saved:", !!data.session)
-
     router.replace("/dashboard")
     router.refresh()
   }
@@ -151,6 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
+    setStats(null)
     router.replace("/")
     router.refresh()
   }
@@ -174,11 +206,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         profile,
+        stats,
         loading,
         login,
         register,
         logout,
         updateDisplayName,
+        refreshStats,
       }}
     >
       {children}
