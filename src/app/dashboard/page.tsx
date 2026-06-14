@@ -87,7 +87,7 @@ export default function Dashboard() {
       .from("activity_feed")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(3)
+      .limit(7)
     setActivityLogs(data || [])
   }
 
