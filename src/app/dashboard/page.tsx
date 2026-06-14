@@ -126,21 +126,22 @@ export default function Dashboard() {
       }
     }
 
+    // According to instructions: use correct fields, convert to numbers, remove updated_at, and log full error
     const { error } = await supabase
       .from("predictions")
       .upsert({
-        fixture_id: fixtureId,
         user_id: user.id,
-        home_score: h,
-        away_score: a,
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'fixture_id,user_id' })
+        fixture_id: fixtureId,
+        predicted_home_score: Number(h),
+        predicted_away_score: Number(a),
+      }, { onConflict: 'user_id,fixture_id' })
 
     if (error) {
+      console.error("Prediction save error:", error)
       toast({ 
         variant: "destructive", 
         title: "Error", 
-        description: "Failed to save pick." 
+        description: error.message 
       })
     } else {
       toast({ 
@@ -292,8 +293,8 @@ export default function Dashboard() {
                 <FixtureCard 
                   key={fixture.id} 
                   fixture={fixture} 
-                  initialHome={pred?.home_score}
-                  initialAway={pred?.away_score}
+                  initialHome={pred?.predicted_home_score}
+                  initialAway={pred?.predicted_away_score}
                   onSave={handlePredict}
                   lifelinesRemaining={stats?.lifelines || 0}
                 />

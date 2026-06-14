@@ -45,7 +45,7 @@ export default function Matrix() {
     const pred = predictions.find(p => p.user_id === userId && p.fixture_id === fixture.id)
     if (!pred) return { text: "-", color: "bg-white/5", points: null }
 
-    const text = `${pred.home_score}-${pred.away_score}`
+    const text = `${pred.predicted_home_score}-${pred.predicted_away_score}`
     
     // Scoring logic
     if (fixture.status !== 'finished') {
@@ -53,13 +53,13 @@ export default function Matrix() {
     }
 
     // Exact score: +3
-    if (fixture.home_score === pred.home_score && fixture.away_score === pred.away_score) {
+    if (fixture.home_score === pred.predicted_home_score && fixture.away_score === pred.predicted_away_score) {
       return { text, color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30", points: "+3" }
     }
 
     // Correct result: +1
     const fixtureResult = Math.sign(fixture.home_score - fixture.away_score)
-    const predResult = Math.sign(pred.home_score - pred.away_score)
+    const predResult = Math.sign(pred.predicted_home_score - pred.predicted_away_score)
     if (fixtureResult === predResult) {
       return { text, color: "bg-amber-500/20 text-amber-400 border-amber-500/30", points: "+1" }
     }
