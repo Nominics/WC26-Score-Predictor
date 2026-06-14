@@ -3,10 +3,17 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 let supabase: ReturnType<typeof createSupabaseClient> | undefined;
 
 export function createClient() {
-  if (!supabase) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error("Supabase environment variables are missing. Please check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.");
+  }
+
+  if (!supabase && supabaseUrl && supabaseKey) {
     supabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      supabaseUrl,
+      supabaseKey,
       {
         auth: {
           persistSession: true,
@@ -18,5 +25,5 @@ export function createClient() {
     );
   }
 
-  return supabase;
+  return supabase!;
 }
