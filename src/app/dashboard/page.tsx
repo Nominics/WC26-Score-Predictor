@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -126,7 +125,6 @@ export default function Dashboard() {
       }
     }
 
-    // According to instructions: use correct fields, convert to numbers, remove updated_at, and log full error
     const { error } = await supabase
       .from("predictions")
       .upsert({
@@ -171,7 +169,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-32">
       <MainNav />
-      <header className="px-6 pt-12 pb-6 bg-white border-b border-gray-100 sticky top-0 z-40">
+      <header className="px-6 pt-12 pb-6 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900">
@@ -198,9 +196,8 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Live Feed Card Section */}
       <div className="max-w-2xl mx-auto px-6 pt-6">
-        <Card className="rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden bg-white">
+        <Card className="rounded-[2.5rem] border-gray-100 shadow-xl overflow-hidden bg-white">
           <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center gap-2">
             <Activity className="h-4 w-4 text-primary" />
             <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Arena Feed</h3>
@@ -213,9 +210,9 @@ export default function Dashboard() {
                 </div>
               ) : (
                 activityLogs.map((log) => (
-                  <div key={log.id} className="flex gap-4 p-4 bg-gray-50/30 rounded-3xl border border-gray-50 items-center transition-colors hover:bg-gray-50/50">
+                  <div key={log.id} className="flex gap-4 p-4 bg-white rounded-3xl border border-gray-50 items-center transition-all hover:bg-gray-50/30">
                     <Avatar className="h-8 w-8 border border-white shadow-sm">
-                      <AvatarFallback className="bg-white text-primary font-black text-[10px]">
+                      <AvatarFallback className="bg-gray-50 text-primary font-black text-[10px]">
                         {getInitials(log.display_name)}
                       </AvatarFallback>
                     </Avatar>
@@ -230,7 +227,7 @@ export default function Dashboard() {
                         {log.home_team} vs {log.away_team}
                       </p>
                     </div>
-                    <span className="text-[8px] text-gray-300 font-black uppercase bg-white px-2 py-1 rounded-full whitespace-nowrap shadow-sm">
+                    <span className="text-[8px] text-gray-300 font-black uppercase bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap shadow-sm">
                       {DateTime.fromISO(log.created_at).toRelative()}
                     </span>
                   </div>
@@ -250,7 +247,7 @@ export default function Dashboard() {
                 onClick={() => setActiveDate(d.iso)}
                 className={cn(
                   "flex flex-col items-center min-w-[4.5rem] py-3 rounded-2xl transition-all border-2",
-                  activeDate === d.iso ? "bg-primary border-primary text-white shadow-lg scale-105" : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                  activeDate === d.iso ? "bg-primary border-primary text-white shadow-xl scale-105" : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
                 )}
               >
                 <span className={cn("text-[9px] font-bold uppercase mb-0.5", activeDate === d.iso ? "text-white/70" : "text-gray-400")}>{d.day}</span>
@@ -270,7 +267,7 @@ export default function Dashboard() {
           </h2>
           {displayFixtures.some(f => f.status === 'live') && (
             <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1 rounded-full text-[10px] font-black uppercase italic animate-pulse">
-              <Sparkles className="h-3 w-3" /> Live Matches
+              <div className="h-1.5 w-1.5 rounded-full bg-green-500" /> Live Matches
             </div>
           )}
         </div>
@@ -278,11 +275,11 @@ export default function Dashboard() {
         {isLoading && fixtures.length === 0 ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-48 bg-white rounded-[2.5rem] animate-pulse border border-gray-100 shadow-sm" />
+              <div key={i} className="h-48 bg-white rounded-[2.5rem] animate-pulse border border-gray-100 shadow-md" />
             ))}
           </div>
         ) : displayFixtures.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
+          <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-gray-200 shadow-sm">
             <p className="text-gray-400 font-bold uppercase text-[10px]">No matches on this date</p>
           </div>
         ) : (

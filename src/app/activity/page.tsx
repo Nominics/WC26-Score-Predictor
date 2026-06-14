@@ -54,7 +54,7 @@ export default function Activity() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
-      <header className="p-6 border-b border-gray-100 bg-white sticky top-0 z-40">
+      <header className="p-6 border-b border-gray-100 bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">
             <Zap className="h-6 w-6 text-primary fill-primary" />
@@ -70,13 +70,13 @@ export default function Activity() {
             <Loader2 className="h-6 w-6 text-primary animate-spin" />
           </div>
         ) : logs.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-[2.5rem] border">
+          <div className="text-center py-20 bg-white rounded-[2.5rem] border shadow-sm">
             <p className="text-[10px] font-black uppercase text-gray-400">No activity yet</p>
           </div>
         ) : (
           logs.map((log) => (
-            <div key={log.id} className="flex gap-4 p-5 bg-white rounded-3xl border border-gray-100 items-center shadow-sm">
-              <Avatar className="h-12 w-12 border border-gray-50">
+            <div key={log.id} className="flex gap-4 p-5 bg-white rounded-3xl border border-gray-100 items-center shadow-xl transition-all hover:scale-[1.01]">
+              <Avatar className="h-12 w-12 border border-gray-50 shadow-sm">
                 <AvatarFallback className="bg-gray-50 text-primary font-black text-xs">
                   {getInitials(log.display_name)}
                 </AvatarFallback>
@@ -94,7 +94,7 @@ export default function Activity() {
                       {log.home_team} vs {log.away_team}
                     </p>
                   </div>
-                  <span className="text-[9px] text-gray-300 font-black uppercase bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap">
+                  <span className="text-[9px] text-gray-300 font-black uppercase bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap shadow-inner">
                     {DateTime.fromISO(log.created_at).toRelative()}
                   </span>
                 </div>

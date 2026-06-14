@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -61,11 +60,12 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
   
   return (
     <Card className={cn(
-      "relative overflow-hidden border-2 rounded-[2.5rem] transition-all duration-300 group shadow-sm",
-      isLive ? "border-green-500 bg-green-50/30" : 
-      isFinished ? "border-orange-400 bg-orange-50/30" : 
+      "relative overflow-hidden border-2 rounded-[2.5rem] transition-all duration-300 group shadow-lg hover:shadow-xl",
+      isLive ? "border-green-500 bg-white" : 
+      isFinished ? "border-orange-400 bg-white" : 
       "border-gray-100 bg-white"
     )}>
+      {isLive && <div className="absolute top-0 left-0 w-full h-1 bg-green-500 animate-pulse" />}
       <CardContent className="p-6 relative z-10">
         <div className="flex items-center justify-between gap-2">
           {/* Home Team */}
@@ -77,11 +77,11 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                     src={fixture.home_flag} 
                     alt={`${fixture.home_team} flag`} 
                     fill
-                    className="rounded-full object-cover ring-4 ring-white shadow-md"
+                    className="rounded-full object-cover ring-4 ring-gray-50 shadow-md"
                   />
                 </div>
               ) : (
-                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gray-100 border-2 border-dashed border-gray-200 text-[10px] font-black text-gray-400 uppercase italic">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gray-50 border-2 border-dashed border-gray-200 text-[10px] font-black text-gray-400 uppercase italic">
                   TBD
                 </div>
               )}
@@ -92,19 +92,19 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
           {/* Center Area (Score/Status) */}
           <div className="flex flex-col items-center justify-center min-w-[140px]">
             {isLive ? (
-              <div className="flex items-center gap-1.5 bg-green-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase mb-3 animate-pulse shadow-sm">
+              <div className="flex items-center gap-1.5 bg-green-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase mb-3 animate-pulse shadow-md">
                 <span className="h-1.5 w-1.5 bg-white rounded-full" /> Live
               </div>
             ) : isFinished ? (
-              <div className="flex items-center gap-1.5 bg-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase mb-3 shadow-sm">
+              <div className="flex items-center gap-1.5 bg-orange-500 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase mb-3 shadow-md">
                 <Trophy className="h-3 w-3" /> Result
               </div>
             ) : isStandardLocked ? (
-              <div className="flex items-center gap-1 bg-gray-200 text-gray-500 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-3">
+              <div className="flex items-center gap-1 bg-gray-100 text-gray-400 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-3">
                 <Lock className="h-2 w-2" /> Locked
               </div>
             ) : (
-              <div className="text-[10px] font-black text-primary uppercase mb-3 tracking-widest bg-primary/5 px-3 py-1 rounded-full">
+              <div className="text-[10px] font-black text-primary uppercase mb-3 tracking-widest bg-primary/5 px-3 py-1 rounded-full border border-primary/10">
                 {timeStr} • {dateStr}
               </div>
             )}
@@ -116,7 +116,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                     type="number" 
                     value={hScore} 
                     onChange={(e) => setHScore(e.target.value)}
-                    className="w-12 h-12 text-center text-xl font-black bg-white border-2 border-primary/20 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                    className="w-12 h-12 text-center text-xl font-black bg-gray-50 border-2 border-primary/20 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all"
                     autoFocus
                   />
                   <span className="text-xl font-black text-gray-300">:</span>
@@ -124,16 +124,16 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                     type="number" 
                     value={aScore} 
                     onChange={(e) => setAScore(e.target.value)}
-                    className="w-12 h-12 text-center text-xl font-black bg-white border-2 border-primary/20 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                    className="w-12 h-12 text-center text-xl font-black bg-gray-50 border-2 border-primary/20 rounded-xl focus:ring-2 focus:ring-primary outline-none transition-all"
                   />
                 </div>
-                <Button size="sm" onClick={() => handleSave(isStandardLocked)} className="rounded-full bg-primary hover:bg-primary/90 px-6 h-9 font-black uppercase text-[10px] tracking-wider shadow-md">
+                <Button size="sm" onClick={() => handleSave(isStandardLocked)} className="rounded-full bg-primary hover:bg-primary/90 px-6 h-9 font-black uppercase text-[10px] tracking-wider shadow-lg">
                   <Check className="h-4 w-4 mr-1" /> {isStandardLocked ? 'Use Lifeline' : 'Lock Pick'}
                 </Button>
               </div>
             ) : (
               <div className="flex flex-col items-center">
-                <div className="flex items-center gap-4 bg-white/80 backdrop-blur-sm px-5 py-2 rounded-2xl border border-gray-100/50 shadow-inner">
+                <div className="flex items-center gap-4 bg-gray-50/50 backdrop-blur-sm px-5 py-2 rounded-2xl border border-gray-100/50 shadow-inner">
                   <span className={cn(
                     "text-4xl font-black italic tracking-tighter tabular-nums",
                     initialHome === undefined ? "text-gray-200" : "text-primary"
@@ -149,12 +149,12 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                   </span>
                 </div>
                 {isFinished && (
-                  <div className="mt-2 text-[11px] font-black text-orange-600 uppercase tracking-widest bg-orange-100 px-3 py-0.5 rounded-full">
+                  <div className="mt-2 text-[11px] font-black text-orange-600 uppercase tracking-widest bg-orange-100 px-3 py-0.5 rounded-full shadow-sm">
                     Final: {fixture.home_score} - {fixture.away_score}
                   </div>
                 )}
                 {(isLive || isStandardLocked) && !isFinished && (
-                  <div className="mt-2 text-[11px] font-black text-green-600 uppercase tracking-widest">
+                  <div className="mt-2 text-[11px] font-black text-green-600 uppercase tracking-widest bg-green-50 px-3 py-0.5 rounded-full shadow-sm">
                     Live Score: {fixture.home_score ?? 0} - {fixture.away_score ?? 0}
                   </div>
                 )}
@@ -164,13 +164,13 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
             <div className="mt-4">
                {editing ? null : (
                  !isStandardLocked ? (
-                    <Button variant="ghost" size="icon" onClick={() => setEditing(true)} className="rounded-full bg-white border-2 border-gray-100 h-10 w-10 hover:bg-primary/10 hover:border-primary/20 transition-all shadow-sm">
-                      <Edit2 className="h-4 w-4 text-primary" />
+                    <Button variant="ghost" size="icon" onClick={() => setEditing(true)} className="rounded-full bg-white border border-gray-100 h-10 w-10 hover:bg-primary hover:text-white hover:border-primary transition-all shadow-md">
+                      <Edit2 className="h-4 w-4" />
                     </Button>
                  ) : isLifelineAvailable ? (
                     <Button 
                       onClick={() => setEditing(true)} 
-                      className="rounded-full bg-yellow-500 hover:bg-yellow-600 text-white px-4 h-9 font-black uppercase text-[9px] tracking-widest flex items-center gap-2 shadow-lg animate-bounce"
+                      className="rounded-full bg-yellow-500 hover:bg-yellow-600 text-white px-4 h-9 font-black uppercase text-[9px] tracking-widest flex items-center gap-2 shadow-xl animate-bounce"
                     >
                       <Zap className="h-3 w-3 fill-white" /> Use Lifeline ({lifelinesRemaining})
                     </Button>
@@ -188,11 +188,11 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                     src={fixture.away_flag} 
                     alt={`${fixture.away_team} flag`} 
                     fill
-                    className="rounded-full object-cover ring-4 ring-white shadow-md"
+                    className="rounded-full object-cover ring-4 ring-gray-50 shadow-md"
                   />
                 </div>
               ) : (
-                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gray-100 border-2 border-dashed border-gray-200 text-[10px] font-black text-gray-400 uppercase italic">
+                <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gray-50 border-2 border-dashed border-gray-200 text-[10px] font-black text-gray-400 uppercase italic">
                   TBD
                 </div>
               )}

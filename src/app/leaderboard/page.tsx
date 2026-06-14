@@ -53,7 +53,7 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
-      <header className="p-8 bg-primary text-white">
+      <header className="p-8 bg-primary text-white shadow-lg">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-black italic tracking-tighter">LEADERBOARD</h1>
@@ -67,7 +67,7 @@ export default function Leaderboard() {
       </header>
 
       <main className="max-w-2xl mx-auto -mt-6 px-4">
-        <div className="bg-white shadow-xl rounded-[2.5rem] overflow-hidden border border-gray-50">
+        <div className="bg-white shadow-2xl rounded-[2.5rem] overflow-hidden border border-gray-100">
           {loading ? (
              <div className="p-20 flex flex-col items-center gap-3">
                 <Loader2 className="h-6 w-6 text-primary animate-spin" />
@@ -81,7 +81,7 @@ export default function Leaderboard() {
             entries.map((entry, i) => (
               <div 
                 key={entry.user_id} 
-                className={`flex items-center justify-between p-6 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors ${i < 3 ? 'bg-primary/5' : ''}`}
+                className={`flex items-center justify-between p-6 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all ${i < 3 ? 'bg-primary/5' : ''}`}
               >
                 <div className="flex items-center gap-4">
                   <div className="w-8 text-center">
@@ -91,7 +91,7 @@ export default function Leaderboard() {
                      <span className="text-sm font-black text-gray-300">#{i + 1}</span>}
                   </div>
                   
-                  <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
+                  <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                     <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
                       {getInitials(entry.display_name)}
                     </AvatarFallback>

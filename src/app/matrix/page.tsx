@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -55,24 +54,24 @@ export default function Matrix() {
 
     // Exact score: +3
     if (fixture.home_score === pred.predicted_home_score && fixture.away_score === pred.predicted_away_score) {
-      return { text, color: "bg-green-100 text-green-700 border-green-200", points: "+3" }
+      return { text, color: "bg-green-100 text-green-700 border-green-200 shadow-sm", points: "+3" }
     }
 
     // Correct result: +1
     const fixtureResult = Math.sign((fixture.home_score || 0) - (fixture.away_score || 0))
     const predResult = Math.sign(pred.predicted_home_score - pred.predicted_away_score)
     if (fixtureResult === predResult) {
-      return { text, color: "bg-amber-100 text-amber-700 border-amber-200", points: "+1" }
+      return { text, color: "bg-amber-100 text-amber-700 border-amber-200 shadow-sm", points: "+1" }
     }
 
     // Wrong result: +0
-    return { text, color: "bg-red-50 text-red-600 border-red-100", points: "+0" }
+    return { text, color: "bg-red-50 text-red-600 border-red-100 shadow-sm", points: "+0" }
   }
 
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-32">
       <MainNav />
-      <header className="px-6 pt-12 pb-6 bg-white border-b border-gray-100 sticky top-0 z-40">
+      <header className="px-6 pt-12 pb-6 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900">
@@ -104,7 +103,7 @@ export default function Matrix() {
             <Loader2 className="h-8 w-8 text-primary animate-spin" />
           </div>
         ) : (
-          <div className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-sm">
+          <div className="bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden shadow-2xl">
             <div className="overflow-x-auto no-scrollbar">
               <Table>
                 <TableHeader>
@@ -117,7 +116,7 @@ export default function Matrix() {
                         <div className="flex flex-col items-center">
                           <span className="text-gray-400 mb-1">{f.home_team.substring(0,3)} v {f.away_team.substring(0,3)}</span>
                           {f.status === 'finished' ? (
-                            <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-[9px]">
+                            <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-[9px] shadow-sm">
                               {f.home_score}-{f.away_score}
                             </span>
                           ) : (
@@ -159,7 +158,7 @@ export default function Matrix() {
         )}
 
         <div className="max-w-2xl mx-auto mt-8">
-          <div className="bg-white border border-gray-100 rounded-[2rem] p-6 flex gap-4 items-start shadow-sm">
+          <div className="bg-white border border-gray-100 rounded-[2rem] p-6 flex gap-4 items-start shadow-xl">
             <div className="bg-primary/10 p-2 rounded-xl">
               <Info className="h-5 w-5 text-primary shrink-0" />
             </div>
@@ -175,4 +174,3 @@ export default function Matrix() {
     </div>
   )
 }
-
