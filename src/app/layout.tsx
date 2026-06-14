@@ -38,7 +38,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet" />
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>
-      <body className="font-body antialiased bg-background text-foreground pb-20 md:pb-0 md:pt-20">
+      <body className="font-body antialiased bg-background text-foreground pb-24 md:pb-0">
         <AuthProvider>
           {children}
           <Toaster />
