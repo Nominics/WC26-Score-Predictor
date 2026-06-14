@@ -1,9 +1,10 @@
+
 {
   "placeholderImages": [
     {
       "id": "fifa-logo",
       "description": "Official FIFA World Cup 2026 Logo",
-      "imageUrl": "https://imagescdn.designweek.co.uk/uploads/2023/05/22133229/FWC26_Official-Emblem_9-with-pattern.jpg?fit=crop&crop=faces&q=45&auto=compress,format&cs=origin&w=500&h=500",
+      "imageUrl": "/logo.png",
       "imageHint": "world cup logo"
     },
     {
