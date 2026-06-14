@@ -1,54 +1,92 @@
+
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { User } from "@supabase/supabase-js"
 
 interface AuthContextType {
-  user: any | null
-  login: (email: string) => void
-  logout: () => void
-  updateDisplayName: (name: string) => void
+  user: User | null
+  profile: any | null
+  loading: boolean
+  login: (email: string) => Promise<void>
+  logout: () => Promise<void>
+  updateDisplayName: (name: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
+  const supabase = createClient()
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("wc26_user")
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    const fetchSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        await fetchProfile(session.user.id)
+      }
+      setLoading(false)
     }
-    setLoading(false)
+
+    fetchSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        await fetchProfile(session.user.id)
+      } else {
+        setProfile(null)
+      }
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  const login = (email: string) => {
-    const newUser = { id: Math.random().toString(36).substr(2, 9), email, displayName: "" }
-    setUser(newUser)
-    localStorage.setItem("wc26_user", JSON.stringify(newUser))
-    router.push("/onboarding")
+  const fetchProfile = async (userId: string) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .single()
+    setProfile(data)
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("wc26_user")
+  const login = async (email: string) => {
+    // Using magic link for simple WC26 experience
+    const { error } = await supabase.auth.signInWithOtp({ 
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/dashboard`
+      }
+    })
+    if (error) throw error
+  }
+
+  const logout = async () => {
+    await supabase.auth.signOut()
     router.push("/")
   }
 
-  const updateDisplayName = (name: string) => {
-    const updated = { ...user, displayName: name }
-    setUser(updated)
-    localStorage.setItem("wc26_user", JSON.stringify(updated))
+  const updateDisplayName = async (name: string) => {
+    if (!user) return
+    const { error } = await supabase
+      .from("profiles")
+      .upsert({ id: user.id, display_name: name, updated_at: new Date().toISOString() })
+    
+    if (error) throw error
+    await fetchProfile(user.id)
     router.push("/dashboard")
   }
 
-  if (loading) return null
-
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateDisplayName }}>
+    <AuthContext.Provider value={{ user, profile, loading, login, logout, updateDisplayName }}>
       {children}
     </AuthContext.Provider>
   )

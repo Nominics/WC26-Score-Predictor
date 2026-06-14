@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -7,15 +8,35 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
+import { useToast } from "@/hooks/use-toast"
 
 export default function LandingPage() {
   const [email, setEmail] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { login } = useAuth()
+  const { toast } = useToast()
   const logo = PlaceHolderImages.find(img => img.id === 'fifa-logo')
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (email) login(email)
+    if (!email) return
+    
+    setIsSubmitting(true)
+    try {
+      await login(email)
+      toast({
+        title: "Check your email!",
+        description: "We've sent a magic link to your inbox.",
+      })
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Something went wrong.",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -51,7 +72,7 @@ export default function LandingPage() {
         <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
           <CardHeader>
             <CardTitle className="text-white">Join the Challenge</CardTitle>
-            <CardDescription className="text-gray-400">Enter your email to get started</CardDescription>
+            <CardDescription className="text-gray-400">Enter your email to get a magic link</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -61,10 +82,15 @@ export default function LandingPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isSubmitting}
                 className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
               />
-              <Button type="submit" className="w-full bg-secondary text-primary font-black uppercase tracking-tighter text-lg py-6 hover:bg-secondary/90">
-                Continue
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full bg-secondary text-primary font-black uppercase tracking-tighter text-lg py-6 hover:bg-secondary/90"
+              >
+                {isSubmitting ? "Sending..." : "Continue"}
               </Button>
             </form>
           </CardContent>

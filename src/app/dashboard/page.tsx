@@ -1,30 +1,67 @@
+
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { MainNav } from "@/components/layout/main-nav"
-import { FIXTURES, MOCK_PREDICTIONS } from "@/lib/mock-data"
+import { FIXTURES } from "@/lib/mock-data"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
+import { createClient } from "@/lib/supabase/client"
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, profile, loading: authLoading } = useAuth()
   const { toast } = useToast()
-  const [predictions, setPredictions] = useState(MOCK_PREDICTIONS)
+  const [predictions, setPredictions] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const supabase = createClient()
 
-  const handlePredict = (fId: string, h: number, a: number) => {
-    const existing = predictions.find(p => p.fixtureId === fId && p.userId === user?.id)
-    if (existing) {
-      setPredictions(predictions.map(p => 
-        p.fixtureId === fId && p.userId === user?.id ? { ...p, homeScore: h, awayScore: a, updatedAt: new Date().toISOString() } : p
-      ))
-    } else {
-      setPredictions([...predictions, { fixtureId: fId, userId: user?.id, homeScore: h, awayScore: a, updatedAt: new Date().toISOString() }])
+  useEffect(() => {
+    if (user) {
+      fetchPredictions()
     }
-    toast({
-      title: "Prediction Saved!",
-      description: "Good luck with your score.",
-    })
+  }, [user])
+
+  const fetchPredictions = async () => {
+    const { data, error } = await supabase
+      .from("predictions")
+      .select("*")
+      .eq("user_id", user?.id)
+    
+    if (data) setPredictions(data)
+    setIsLoading(false)
+  }
+
+  const handlePredict = async (fId: string, h: number, a: number) => {
+    if (!user) return
+
+    const { error } = await supabase
+      .from("predictions")
+      .upsert({
+        fixture_id: fId,
+        user_id: user.id,
+        home_score: h,
+        away_score: a,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'fixture_id,user_id' })
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save prediction.",
+      })
+    } else {
+      await fetchPredictions()
+      toast({
+        title: "Prediction Saved!",
+        description: "Good luck with your score.",
+      })
+    }
+  }
+
+  if (authLoading || isLoading) {
+    return <div className="min-h-screen bg-black flex items-center justify-center text-white font-black italic">LOADING...</div>
   }
 
   return (
@@ -32,18 +69,20 @@ export default function Dashboard() {
       <MainNav />
       <header className="p-6 bg-gradient-to-b from-secondary/10 to-transparent">
         <h1 className="text-3xl font-black italic tracking-tighter">FIXTURES</h1>
-        <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest mt-1">Predict and win points</p>
+        <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest mt-1">
+          Welcome back, {profile?.display_name || 'Pro'}
+        </p>
       </header>
 
       <main className="p-4 space-y-4 max-w-2xl mx-auto">
         {FIXTURES.map((fixture) => {
-          const pred = predictions.find(p => p.fixtureId === fixture.id && p.userId === user?.id)
+          const pred = predictions.find(p => p.fixture_id === fixture.id)
           return (
             <FixtureCard 
               key={fixture.id} 
               fixture={fixture} 
-              initialHome={pred?.homeScore}
-              initialAway={pred?.awayScore}
+              initialHome={pred?.home_score}
+              initialAway={pred?.away_score}
               onSave={handlePredict}
             />
           )
