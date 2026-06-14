@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,12 +7,12 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, ShieldCheck, AlertCircle, Loader2 } from "lucide-react"
+import { RefreshCcw, ShieldCheck, AlertCircle, Loader2, Zap } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 export default function AdminPage() {
-  const { user, profile, loading: authLoading } = useAuth()
+  const { user, profile, stats, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [isSyncing, setIsSyncing] = useState(false)
   const router = useRouter()
@@ -72,12 +73,28 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       <MainNav />
-      <header className="p-8 bg-gray-900 text-white shadow-lg">
-        <div className="max-w-2xl mx-auto flex items-center gap-4">
-          <ShieldCheck className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-2xl font-black italic tracking-tighter">CONTROL TOWER</h1>
-            <p className="text-[10px] uppercase font-bold text-gray-400">Superadmin Only • Priority Access</p>
+      <header className="px-6 py-4 bg-gray-900 text-white shadow-lg sticky top-0 z-40">
+        <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
+          <div className="flex items-center gap-4">
+            <ShieldCheck className="h-6 w-6 text-primary" />
+            <div>
+              <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">CONTROL TOWER</h1>
+              <div className="flex items-center gap-2 mt-1">
+                 <p className="text-[8px] uppercase font-bold text-gray-400 tracking-widest">Superadmin Terminal</p>
+                 {stats && (
+                   <div className="flex items-center gap-1.5">
+                     <span className="h-0.5 w-0.5 rounded-full bg-gray-700" />
+                     <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                     <span className="text-[9px] font-black text-white uppercase">({stats.points} pts)</span>
+                     <span className="h-0.5 w-0.5 rounded-full bg-gray-700" />
+                     <div className="flex items-center gap-1 bg-yellow-400/10 px-1.5 py-0.5 rounded-full border border-yellow-400/20">
+                        <Zap className="h-2 w-2 text-yellow-400 fill-yellow-400" />
+                        <span className="text-[8px] font-black text-yellow-400">{stats.lifelines}</span>
+                     </div>
+                   </div>
+                 )}
+              </div>
+            </div>
           </div>
         </div>
       </header>

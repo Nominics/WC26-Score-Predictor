@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -9,8 +10,10 @@ import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function Leaderboard() {
+  const { stats } = useAuth()
   const [entries, setEntries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -28,7 +31,6 @@ export default function Leaderboard() {
 
   const fetchLeaderboard = async () => {
     try {
-      // Step 1: Fetch core ranking data from updated leaderboard view
       const { data: lbData, error: lbError } = await supabase
         .from("leaderboard")
         .select(`
@@ -48,7 +50,6 @@ export default function Leaderboard() {
       if (lbData && lbData.length > 0) {
         const userIds = lbData.map(d => d.user_id)
         
-        // Step 2: Fetch profile details (flags) safely
         const { data: profData, error: profError } = await supabase
           .from("profiles")
           .select("id, favorite_team")
@@ -58,7 +59,6 @@ export default function Leaderboard() {
           console.warn("Profile fetch warning:", profError)
         }
 
-        // Step 3: Merge and calculate simulated movement for visual flair
         const processedEntries = lbData.map((entry: any) => {
           const profile = profData?.find(p => p.id === entry.user_id)
           return {
@@ -92,7 +92,21 @@ export default function Leaderboard() {
             <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none">
               THE <span className="text-primary">LEADERBOARD</span>
             </h1>
-            <p className="text-[8px] uppercase font-black text-gray-400 mt-1 tracking-[0.2em]">Global Standings</p>
+            <div className="flex items-center gap-2 mt-1">
+               <p className="text-[8px] uppercase font-black text-gray-400 tracking-widest">Global Standings</p>
+               {stats && (
+                 <div className="flex items-center gap-1.5">
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                   <span className="text-[9px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-100">
+                      <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
+                      <span className="text-[8px] font-black text-yellow-600">{stats.lifelines}</span>
+                   </div>
+                 </div>
+               )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <PwaInstallButton />
@@ -200,7 +214,6 @@ export default function Leaderboard() {
                     </div>
                   </div>
                   
-                  {/* Additional stats breakdown in a subtle row */}
                   <div className="mt-3 pt-3 border-t border-gray-50 flex justify-end gap-4">
                      <div className="flex items-center gap-1">
                         <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Picks:</span>

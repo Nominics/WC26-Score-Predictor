@@ -1,17 +1,20 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, Grid2X2, Trophy } from "lucide-react"
+import { Loader2, Grid2X2, Trophy, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import Image from "next/image"
 import { DateTime } from "luxon"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function Matrix() {
+  const { stats } = useAuth()
   const [profiles, setProfiles] = useState<any[]>([])
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
@@ -62,7 +65,6 @@ export default function Matrix() {
       return { text, color: "bg-white text-gray-900 border-gray-100", points: null }
     }
 
-    // Exact score: +3
     if (fixture.home_score === pred.predicted_home_score && fixture.away_score === pred.predicted_away_score) {
       return { 
         text, 
@@ -71,7 +73,6 @@ export default function Matrix() {
       }
     }
 
-    // Correct result: +1
     const fixtureResult = Math.sign((fixture.home_score || 0) - (fixture.away_score || 0))
     const predResult = Math.sign(pred.predicted_home_score - pred.predicted_away_score)
     if (fixtureResult === predResult) {
@@ -82,7 +83,6 @@ export default function Matrix() {
       }
     }
 
-    // Wrong result: +0
     return { 
       text, 
       color: "bg-gray-100 text-gray-400 border-gray-200", 
@@ -99,9 +99,21 @@ export default function Matrix() {
             <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase">
               STRATEGY <span className="text-primary">MATRIX</span>
             </h1>
-            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">
-              Live Arena Insights
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+               <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Live Arena Insights</p>
+               {stats && (
+                 <div className="flex items-center gap-1.5">
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                   <span className="text-[9px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-100">
+                      <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
+                      <span className="text-[8px] font-black text-yellow-600">{stats.lifelines}</span>
+                   </div>
+                 </div>
+               )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <PwaInstallButton />

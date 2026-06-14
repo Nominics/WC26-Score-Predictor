@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -8,8 +9,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function Activity() {
+  const { stats } = useAuth()
   const [logs, setLogs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -57,10 +60,27 @@ export default function Activity() {
       <MainNav />
       <header className="px-6 py-4 border-b border-gray-100 bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
-          <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 uppercase">
-            <Zap className="h-5 w-5 text-primary fill-primary" />
-            LIVE FEED
-          </h1>
+          <div>
+            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 uppercase">
+              <Zap className="h-5 w-5 text-primary fill-primary" />
+              LIVE FEED
+            </h1>
+            <div className="flex items-center gap-2 mt-1">
+               <p className="text-[8px] text-gray-400 font-black uppercase tracking-widest">Match Pulse</p>
+               {stats && (
+                 <div className="flex items-center gap-1.5">
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                   <span className="text-[9px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-100">
+                      <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
+                      <span className="text-[8px] font-black text-yellow-600">{stats.lifelines}</span>
+                   </div>
+                 </div>
+               )}
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <PwaInstallButton />
             <ProfileSheet />

@@ -9,6 +9,7 @@ import { PwaInstallButton } from "@/components/pwa-install-button"
 import { cn, copyToClipboard } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth"
 
 const RULES = [
   { title: "Exact Score", points: 3, description: "Predict the exact final score of the match.", icon: Award },
@@ -18,6 +19,7 @@ const RULES = [
 ];
 
 export default function Rules() {
+  const { stats } = useAuth()
   const { toast } = useToast()
 
   const handleInvite = async () => {
@@ -40,7 +42,21 @@ export default function Rules() {
             <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none">
               THE <span className="text-primary">RULES</span>
             </h1>
-            <p className="text-[8px] text-gray-400 uppercase font-black tracking-widest mt-1">Arena Guidelines</p>
+            <div className="flex items-center gap-2 mt-1">
+               <p className="text-[8px] text-gray-400 uppercase font-black tracking-widest">Arena Guidelines</p>
+               {stats && (
+                 <div className="flex items-center gap-1.5">
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                   <span className="text-[9px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-100">
+                      <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
+                      <span className="text-[8px] font-black text-yellow-600">{stats.lifelines}</span>
+                   </div>
+                 </div>
+               )}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <PwaInstallButton />
@@ -104,7 +120,7 @@ export default function Rules() {
         <Card className="bg-blue-600 text-white shadow-xl rounded-3xl overflow-hidden border-0">
           <CardHeader className="flex flex-row items-center gap-3 bg-white/10 p-6">
             <div className="bg-white/20 p-2 rounded-xl">
-                <Sparkles className="text-white h-5 w-5"/>
+                <span className="text-white"><Sparkles className="h-5 w-5"/></span>
             </div>
             <CardTitle className="text-white font-black italic uppercase tracking-tight text-lg">Late Join Bonus</CardTitle>
           </CardHeader>
