@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -169,14 +170,14 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-32">
       <MainNav />
-      <header className="px-6 pt-12 pb-6 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto flex justify-between items-start">
+      <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+        <div className="max-w-2xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900">
               <Trophy className="h-6 w-6 text-primary" />
               MATCH CENTER
             </h1>
-            <div className="flex items-center gap-3 mt-1">
+            <div className="flex items-center gap-3 mt-0.5">
                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Global Arena</p>
                {stats && (
                  <div className="flex items-center gap-2">
@@ -239,7 +240,7 @@ export default function Dashboard() {
       </div>
 
       {dateTabs.length > 0 && (
-        <div className="px-6 py-4 sticky top-[92px] bg-white/80 backdrop-blur-md z-30 border-b border-gray-100/50">
+        <div className="px-6 py-4 sticky top-[72px] bg-white/80 backdrop-blur-md z-30 border-b border-gray-100/50">
           <div className="flex items-center no-scrollbar overflow-x-auto gap-3 max-w-2xl mx-auto">
             {dateTabs.map((d) => (
               <button

@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -54,7 +55,7 @@ export default function Activity() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
-      <header className="p-6 border-b border-gray-100 bg-white shadow-sm sticky top-0 z-40">
+      <header className="px-6 py-4 border-b border-gray-100 bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2">
             <Zap className="h-6 w-6 text-primary fill-primary" />

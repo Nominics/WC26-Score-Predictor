@@ -18,11 +18,11 @@ export default function Rules() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
-      <header className="p-8 bg-white border-b border-gray-100">
+      <header className="px-6 py-4 bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-black italic tracking-tighter">THE RULES</h1>
-            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-1">Arena Guidelines</p>
+            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Arena Guidelines</p>
           </div>
           <ProfileSheet />
         </div>

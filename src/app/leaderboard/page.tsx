@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -53,20 +54,20 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
-      <header className="p-8 bg-primary text-white shadow-lg">
+      <header className="px-6 py-4 bg-primary text-white shadow-lg sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-black italic tracking-tighter">LEADERBOARD</h1>
-            <p className="text-[10px] uppercase font-bold opacity-80 mt-1">Season 2026 · LIVE</p>
+            <h1 className="text-2xl font-black italic tracking-tighter">LEADERBOARD</h1>
+            <p className="text-[10px] uppercase font-bold opacity-80 mt-0.5">Season 2026 · LIVE</p>
           </div>
           <div className="flex items-center gap-4">
-            <Trophy className="h-10 w-10 text-white/20" />
+            <Trophy className="h-6 w-6 text-white/20" />
             <ProfileSheet />
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto -mt-6 px-4">
+      <main className="max-w-2xl mx-auto mt-6 px-4">
         <div className="bg-white shadow-2xl rounded-[2.5rem] overflow-hidden border border-gray-100">
           {loading ? (
              <div className="p-20 flex flex-col items-center gap-3">
