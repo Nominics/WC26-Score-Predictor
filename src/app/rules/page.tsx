@@ -22,10 +22,10 @@ export default function Rules() {
       <header className="px-6 py-4 bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase">
+            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none">
               THE <span className="text-primary">RULES</span>
             </h1>
-            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mt-0.5">Arena Guidelines</p>
+            <p className="text-[8px] text-gray-400 uppercase font-black tracking-widest mt-1">Arena Guidelines</p>
           </div>
           <div className="flex items-center gap-2">
             <PwaInstallButton />

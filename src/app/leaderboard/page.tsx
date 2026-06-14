@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Medal, Loader2, Trophy, ArrowUp, ArrowDown, Minus, Hash } from "lucide-react"
+import { Medal, Loader2, Trophy, ArrowUp, ArrowDown, Minus, Hash, ClipboardCheck } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -30,7 +30,6 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     try {
       // Step 1: Fetch core ranking data from leaderboard view
-      // We attempt to fetch total and completed predictions for a richer breakdown
       const { data: lbData, error: lbError } = await supabase
         .from("leaderboard")
         .select(`user_id, display_name, total_points, total_predictions, completed_predictions`)
@@ -58,7 +57,6 @@ export default function Leaderboard() {
           return {
             ...entry,
             favorite_team: profile?.favorite_team,
-            // Simulated movement based on total predictions for visual flair
             movement: (entry.total_predictions % 3) - 1 
           }
         })
@@ -87,7 +85,7 @@ export default function Leaderboard() {
             <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none">
               THE <span className="text-primary">ARENA</span>
             </h1>
-            <p className="text-[8px] uppercase font-black text-gray-400 mt-1 tracking-[0.2em]">Live Global Rankings</p>
+            <p className="text-[8px] uppercase font-black text-gray-400 mt-1 tracking-[0.2em]">Global Standings</p>
           </div>
           <div className="flex items-center gap-2">
             <PwaInstallButton />
@@ -100,11 +98,11 @@ export default function Leaderboard() {
         {loading ? (
           <div className="p-20 flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            <p className="text-[10px] font-black uppercase text-gray-400 tracking-[0.3em]">Syncing Arena...</p>
+            <p className="text-[10px] font-black uppercase text-gray-400 tracking-[0.3em]">Syncing Rankings...</p>
           </div>
         ) : entries.length === 0 ? (
           <div className="p-20 text-center text-gray-300 font-bold uppercase text-[10px] tracking-widest bg-white rounded-[2.5rem] border-2 border-dashed">
-            The whistle hasn't blown yet.
+            Competition is yet to begin.
           </div>
         ) : (
           <div className="space-y-3">
@@ -122,7 +120,6 @@ export default function Leaderboard() {
                     isTopThree ? "border-primary/20 shadow-xl" : "border-gray-100 shadow-lg"
                   )}
                 >
-                  {/* Rank Indicator */}
                   <div className="w-10 flex flex-col items-center justify-center">
                     {rank === 1 ? (
                       <Medal className="h-6 w-6 text-yellow-500 fill-yellow-500" />
@@ -135,7 +132,6 @@ export default function Leaderboard() {
                     )}
                   </div>
                   
-                  {/* Profile / Flag */}
                   <Avatar className={cn(
                     "h-12 w-12 border-2 shadow-md",
                     isTopThree ? "border-primary/20" : "border-white"
@@ -149,25 +145,28 @@ export default function Leaderboard() {
                     )}
                   </Avatar>
 
-                  {/* Player Info */}
                   <div className="flex-1 min-w-0">
                     <span className="font-black text-[13px] uppercase tracking-tight text-gray-900 truncate block">
                       {entry.display_name}
                     </span>
-                    <div className="mt-1 flex items-center gap-3">
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
                           <Hash className="h-2.5 w-2.5 text-gray-400" />
                           <span className="text-[9px] font-black text-gray-500 uppercase tracking-tighter">
                             {entry.total_predictions} <span className="text-gray-300">Picks</span>
-                            {entry.completed_predictions !== undefined && (
-                              <span className="ml-1 text-primary">({entry.completed_predictions} Finished)</span>
-                            )}
                           </span>
                        </div>
+                       {entry.completed_predictions !== undefined && (
+                         <div className="flex items-center gap-1.5 bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10">
+                            <ClipboardCheck className="h-2.5 w-2.5 text-primary" />
+                            <span className="text-[9px] font-black text-primary uppercase tracking-tighter">
+                              {entry.completed_predictions} <span className="text-primary/40">Final</span>
+                            </span>
+                         </div>
+                       )}
                     </div>
                   </div>
 
-                  {/* Points and Movement */}
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col items-center min-w-[32px]">
                         {movement > 0 ? (

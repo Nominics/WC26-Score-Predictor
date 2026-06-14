@@ -213,18 +213,18 @@ export default function Dashboard() {
           <div className="px-6 py-3 bg-gray-900 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary" />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Live Arena Feed</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Live Updates</h3>
             </div>
             <div className="flex items-center gap-1.5">
                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-               <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Live Updates</span>
+               <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Match Pulse</span>
             </div>
           </div>
           <ScrollArea className="h-[180px]">
             <div className="p-3 space-y-2">
               {activityLogs.length === 0 ? (
                 <div className="py-12 text-center">
-                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Waiting for the first whistle...</p>
+                  <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Waiting for match action...</p>
                 </div>
               ) : (
                 activityLogs.map((log) => {
