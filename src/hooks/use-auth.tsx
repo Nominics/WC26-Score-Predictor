@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
 
 interface AuthContextType {
@@ -13,6 +13,7 @@ interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
   updateDisplayName: (name: string) => Promise<void>
+  isConfigured: boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -21,13 +22,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isConfigured] = useState(isSupabaseConfigured())
 
   const router = useRouter()
   const supabase = createClient()
 
   const fetchProfile = useCallback(
     async (userId: string) => {
-      if (!supabase) return
+      if (!isConfigured) return
 
       const { data, error } = await supabase
         .from("profiles")
@@ -43,18 +45,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setProfile(data)
     },
-    [supabase]
+    [supabase, isConfigured]
   )
 
   useEffect(() => {
-    if (!supabase?.auth) {
-      setLoading(false)
-      return
-    }
-
     let mounted = true
 
     async function loadInitialSession() {
+      if (!isConfigured) {
+        setLoading(false)
+        return
+      }
+
       setLoading(true)
 
       try {
@@ -85,30 +87,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     loadInitialSession()
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
+    if (isConfigured) {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!mounted) return
 
-      if (session?.user) {
-        setUser(session.user)
-        await fetchProfile(session.user.id)
-      } else if (event === "SIGNED_OUT") {
-        setUser(null)
-        setProfile(null)
+        if (session?.user) {
+          setUser(session.user)
+          await fetchProfile(session.user.id)
+        } else if (event === "SIGNED_OUT") {
+          setUser(null)
+          setProfile(null)
+        }
+
+        setLoading(false)
+      })
+
+      return () => {
+        mounted = false
+        subscription.unsubscribe()
       }
-
+    } else {
       setLoading(false)
-    })
-
-    return () => {
-      mounted = false
-      subscription.unsubscribe()
     }
-  }, [supabase, fetchProfile])
+  }, [supabase, fetchProfile, isConfigured])
 
   const login = async (email: string, password: string) => {
-    if (!supabase?.auth) throw new Error("Auth not configured")
+    if (!isConfigured) {
+      throw new Error("Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables.")
+    }
     
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -122,7 +130,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const register = async (email: string, password: string, name: string) => {
-    if (!supabase?.auth) throw new Error("Auth not configured")
+    if (!isConfigured) {
+      throw new Error("Supabase is not configured. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment variables.")
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -155,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = async () => {
-    if (supabase?.auth) {
+    if (isConfigured) {
       await supabase.auth.signOut()
     }
     setUser(null)
@@ -165,7 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const updateDisplayName = async (name: string) => {
-    if (!user || !supabase) return
+    if (!user || !isConfigured) return
 
     const { error } = await supabase.from("profiles").upsert({
       id: user.id,
@@ -188,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         updateDisplayName,
+        isConfigured,
       }}
     >
       {children}
