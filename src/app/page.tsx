@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useToast } from "@/hooks/use-toast"
-import { Lock, Mail, User, Loader2, Sparkles } from "lucide-react"
+import { Lock, Mail, User, Loader2, Sparkles, TrendingUp } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function LandingPage() {
@@ -170,6 +171,17 @@ export default function LandingPage() {
                   />
                 </div>
               </div>
+
+              {mode === "signup" && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-start gap-3">
+                  <TrendingUp className="h-4 w-4 text-blue-500 mt-0.5" />
+                  <div className="text-left">
+                    <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Late Join Bonus Active</p>
+                    <p className="text-[9px] font-bold text-blue-500 leading-tight mt-0.5">Register now to receive a one-time points bonus based on current leaderboards!</p>
+                  </div>
+                </div>
+              )}
+
               <Button 
                 type="submit" 
                 disabled={isSubmitting}

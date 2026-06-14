@@ -1,11 +1,14 @@
+
 "use client"
 
 import { MainNav } from "@/components/layout/main-nav"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Info, Award, Calendar, Zap, ShieldAlert, Sparkles, Flag } from "lucide-react"
+import { Info, Award, Calendar, Zap, ShieldAlert, Sparkles, Flag, Share2 } from "lucide-react"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
-import { cn } from "@/lib/utils"
+import { cn, copyToClipboard } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 
 const RULES = [
   { title: "Exact Score", points: 3, description: "Predict the exact final score of the match.", icon: Award },
@@ -16,6 +19,19 @@ const RULES = [
 ];
 
 export default function Rules() {
+  const { toast } = useToast()
+
+  const handleInvite = async () => {
+    const shareUrl = window.location.origin
+    const success = await copyToClipboard(shareUrl)
+    if (success) {
+      toast({
+        title: "Link Copied!",
+        description: "Share this link with your friends to invite them.",
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
@@ -100,15 +116,17 @@ export default function Rules() {
             <div className="bg-white/10 rounded-2xl p-4 text-[11px] font-bold uppercase tracking-tight leading-normal">
               The bonus is calculated automatically during registration based on current leaderboard scores. It helps late players stay competitive without overtaking active players unfairly.
             </div>
-            <p className="text-[10px] text-blue-200 font-black uppercase tracking-widest">
+            <Button 
+              onClick={handleInvite}
+              className="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-black uppercase text-xs tracking-widest h-12 rounded-2xl gap-2 shadow-lg"
+            >
+              <Share2 className="h-4 w-4" /> Invite a Friend
+            </Button>
+            <p className="text-[10px] text-blue-200 font-black uppercase tracking-widest text-center">
               The bonus is awarded once and does not change later.
             </p>
           </CardContent>
         </Card>
-
-        <div className="p-5 bg-yellow-500/5 border border-yellow-500/10 rounded-3xl text-center shadow-sm">
-            <p className="text-[10px] text-yellow-600 font-black uppercase italic tracking-[0.2em]">Lifelines allow late changes until minute 50</p>
-        </div>
       </main>
     </div>
   )
