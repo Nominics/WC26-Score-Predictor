@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -196,23 +195,6 @@ export function ProfileSheet() {
                 <span className="text-3xl font-black italic text-gray-900">{stats?.points || "0"}</span>
               </div>
             </div>
-          </div>
-
-          <div className="space-y-3">
-             <div className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
-                <Trophy className="h-5 w-5 text-yellow-500" />
-                <div className="flex-1">
-                  <p className="text-xs font-black uppercase text-gray-900">Career Best</p>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Rank #1 in WC22</p>
-                </div>
-             </div>
-             <div className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
-                <Star className="h-5 w-5 text-primary" />
-                <div className="flex-1">
-                  <p className="text-xs font-black uppercase text-gray-900">Elite Member</p>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Since Jan 2024</p>
-                </div>
-             </div>
           </div>
 
           <div className="pt-6 border-t border-gray-100">
