@@ -15,7 +15,6 @@ const RULES = [
   { title: "Correct Result", points: 1, description: "Predict the correct winner or a draw outcome.", icon: Zap },
   { title: "Time Limit", points: 0, description: "Standard lock: 15 minutes after kickoff.", icon: Calendar },
   { title: "Lifeline usage", points: 0, description: "Use 1 of 5 lifelines to update picks until the 50th minute.", icon: ShieldAlert },
-  { title: "National Pride", points: 0, description: "Choose a favorite team to represent in the standings.", icon: Flag },
 ];
 
 export default function Rules() {
@@ -68,7 +67,7 @@ export default function Rules() {
             <div key={i} className="p-6 bg-white rounded-3xl border border-gray-100 flex justify-between items-center shadow-lg transition-transform hover:scale-[1.01]">
               <div className="flex items-center gap-4">
                 <div className="bg-gray-50 p-3 rounded-2xl">
-                    <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : rule.title === "National Pride" ? "text-primary" : "text-gray-400")} />
+                    <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : "text-gray-400")} />
                 </div>
                 <div className="space-y-0.5">
                     <h3 className="text-lg font-black italic text-gray-900 uppercase tracking-tight">{rule.title}</h3>
