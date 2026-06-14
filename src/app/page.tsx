@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useToast } from "@/hooks/use-toast"
-import { Lock, Mail, User, Loader2 } from "lucide-react"
+import { Lock, Mail, User, Loader2, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function LandingPage() {
@@ -74,8 +74,8 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-white overflow-hidden relative">
-      <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none grayscale">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-gray-50 overflow-hidden relative">
+      <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none grayscale">
         <Image 
           src={bg?.imageUrl || "https://picsum.photos/seed/stadium/1200/800"} 
           alt="Stadium Background" 
@@ -87,45 +87,53 @@ export default function LandingPage() {
         />
       </div>
       
-      <div className="relative z-10 w-full max-w-sm space-y-10 text-center">
+      {/* Dynamic Background Accents */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/10 blur-[120px] rounded-full" />
+
+      <div className="relative z-10 w-full max-w-sm space-y-8 text-center">
         <div className="flex flex-col items-center space-y-6">
-          <div className="relative h-40 w-40">
+          <div className="relative h-44 w-44 drop-shadow-2xl">
             {logo && (
               <Image 
                 src={logo.imageUrl} 
                 alt="WC26 Official Logo" 
                 fill 
                 priority
-                sizes="(max-width: 768px) 160px, 160px"
+                sizes="(max-width: 768px) 176px, 176px"
                 className="object-contain"
               />
             )}
           </div>
           <div className="space-y-1">
-            <h1 className="text-4xl font-black text-gray-900 tracking-tighter leading-none">
+            <h1 className="text-5xl font-black text-gray-900 tracking-tighter leading-none">
               WC26<br/><span className="text-primary italic">PREDICTOR</span>
             </h1>
-            <p className="text-gray-400 text-[9px] uppercase tracking-[0.4em] font-black">
-              Official Fan Hub
-            </p>
+            <div className="flex items-center justify-center gap-2 mt-2">
+                <Sparkles className="h-3 w-3 text-primary" />
+                <p className="text-gray-400 text-[10px] uppercase tracking-[0.5em] font-black">
+                Official Fan Hub
+                </p>
+                <Sparkles className="h-3 w-3 text-primary" />
+            </div>
           </div>
         </div>
 
-        <Card className="border-gray-100 bg-white shadow-2xl rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="pb-4">
+        <Card className="border-0 bg-white shadow-[0_32px_80px_-12px_rgba(0,0,0,0.15)] rounded-[2.5rem] overflow-hidden">
+          <CardHeader className="pb-4 pt-8 px-8">
             <Tabs defaultValue="signin" onValueChange={(v) => setMode(v as any)} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-50 rounded-full p-1 h-12">
-                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white font-black text-[10px] uppercase tracking-wider">Sign In</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white font-black text-[10px] uppercase tracking-wider">Register</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-full p-1.5 h-14">
+                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Register</TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-8 pb-10">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-3 text-left">
                 {mode === "signup" && (
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <div className="relative group">
+                    <User className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                     <Input
                       type="text"
                       placeholder="Full Name"
@@ -133,12 +141,12 @@ export default function LandingPage() {
                       onChange={(e) => setName(e.target.value)}
                       required
                       disabled={isSubmitting}
-                      className="bg-gray-50 border-gray-100 h-14 pl-12 rounded-2xl text-gray-900 font-medium focus:ring-primary/20"
+                      className="bg-gray-50 border-gray-100 h-16 pl-14 rounded-2xl text-gray-900 font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all text-sm"
                     />
                   </div>
                 )}
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div className="relative group">
+                  <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                   <Input
                     type="email"
                     placeholder="Email Address"
@@ -146,11 +154,11 @@ export default function LandingPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={isSubmitting}
-                    className="bg-gray-50 border-gray-100 h-14 pl-12 rounded-2xl text-gray-900 font-medium focus:ring-primary/20"
+                    className="bg-gray-50 border-gray-100 h-16 pl-14 rounded-2xl text-gray-900 font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all text-sm"
                   />
                 </div>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div className="relative group">
+                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
                   <Input
                     type="password"
                     placeholder="Password"
@@ -158,20 +166,29 @@ export default function LandingPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={isSubmitting}
-                    className="bg-gray-50 border-gray-100 h-14 pl-12 rounded-2xl text-gray-900 font-medium focus:ring-primary/20"
+                    className="bg-gray-50 border-gray-100 h-16 pl-14 rounded-2xl text-gray-900 font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all text-sm"
                   />
                 </div>
               </div>
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-primary text-white font-black uppercase tracking-tight text-lg h-16 rounded-2xl hover:bg-primary/90 transition-all active:scale-95 shadow-lg mt-2"
+                className="w-full bg-primary text-white font-black uppercase tracking-tight text-xl h-16 rounded-2xl hover:bg-primary/90 transition-all active:scale-95 shadow-2xl mt-4"
               >
-                {isSubmitting ? "Authenticating..." : mode === "signin" ? "Enter Arena" : "Create Account"}
+                {isSubmitting ? (
+                    <div className="flex items-center gap-3">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        <span>Verifying...</span>
+                    </div>
+                ) : mode === "signin" ? "Enter Arena" : "Create Account"}
               </Button>
             </form>
           </CardContent>
         </Card>
+        
+        <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] opacity-60">
+            Powered by Genkit • Secured by Supabase
+        </p>
       </div>
     </div>
   )

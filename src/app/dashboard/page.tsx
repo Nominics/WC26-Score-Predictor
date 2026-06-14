@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -7,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Trophy, Calendar as CalendarIcon, Loader2, Sparkles, Zap, Activity } from "lucide-react"
+import { Trophy, Calendar as CalendarIcon, Loader2, Sparkles, Zap, Activity, ChevronRight } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
@@ -171,23 +170,23 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 text-foreground pb-32">
       <MainNav />
       <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto flex justify-between items-center">
+        <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-2xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900">
-              <Trophy className="h-6 w-6 text-primary" />
+            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900 leading-none">
+              <Trophy className="h-5 w-5 text-primary" />
               MATCH CENTER
             </h1>
-            <div className="flex items-center gap-3 mt-0.5">
-               <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Global Arena</p>
+            <div className="flex items-center gap-2 mt-1">
+               <p className="text-[8px] text-gray-400 font-black uppercase tracking-widest">Global Arena</p>
                {stats && (
-                 <div className="flex items-center gap-2">
-                   <span className="h-1 w-1 rounded-full bg-gray-200" />
-                   <span className="text-[10px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
-                   <span className="text-[10px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
-                   <span className="h-1 w-1 rounded-full bg-gray-200" />
-                   <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-100">
-                      <Zap className="h-2.5 w-2.5 text-yellow-500 fill-yellow-500" />
-                      <span className="text-[9px] font-black text-yellow-600">{stats.lifelines}</span>
+                 <div className="flex items-center gap-1.5">
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                   <span className="text-[9px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
+                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-100">
+                      <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
+                      <span className="text-[8px] font-black text-yellow-600">{stats.lifelines}</span>
                    </div>
                  </div>
                )}
@@ -197,40 +196,49 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 pt-6 mb-10">
-        <Card className="rounded-[2.5rem] border-gray-100 shadow-xl overflow-hidden bg-white">
-          <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center gap-2">
-            <Activity className="h-4 w-4 text-primary" />
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Arena Feed</h3>
+      <div className="max-w-2xl mx-auto px-4 pt-6 mb-10">
+        <Card className="rounded-[2rem] border-0 shadow-2xl overflow-hidden bg-white">
+          <div className="px-6 py-3 bg-gray-900 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Live Arena Feed</h3>
+            </div>
+            <div className="flex items-center gap-1.5">
+               <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+               <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Live Updates</span>
+            </div>
           </div>
-          <ScrollArea className="h-32">
-            <div className="p-4 space-y-3">
+          <ScrollArea className="h-[180px]">
+            <div className="p-3 space-y-2">
               {activityLogs.length === 0 ? (
-                <div className="py-10 text-center">
+                <div className="py-12 text-center">
                   <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Waiting for the first whistle...</p>
                 </div>
               ) : (
                 activityLogs.map((log) => (
-                  <div key={log.id} className="flex gap-4 p-4 bg-white rounded-3xl border border-gray-50 items-center transition-all hover:bg-gray-50/30">
-                    <Avatar className="h-8 w-8 border border-white shadow-sm">
-                      <AvatarFallback className="bg-gray-50 text-primary font-black text-[10px]">
+                  <div key={log.id} className="flex gap-4 p-4 bg-white rounded-2xl border border-gray-50 items-center transition-all hover:bg-gray-50/50 shadow-sm">
+                    <Avatar className="h-9 w-9 border-2 border-white shadow-md">
+                      <AvatarFallback className="bg-primary/5 text-primary font-black text-[11px]">
                         {getInitials(log.display_name)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 overflow-hidden">
-                      <p className="text-[10px] truncate">
-                        <span className="font-black text-gray-900 uppercase mr-1">{log.display_name}</span>
-                        <span className="text-gray-400 font-bold lowercase">
-                          {log.action === 'prediction_created' ? 'locked in' : 'updated'} a pick
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-xs uppercase tracking-tight text-gray-900">{log.display_name}</span>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase px-2 py-0.5 bg-gray-50 rounded-full border border-gray-100">
+                          {log.action === 'prediction_created' ? 'locked in' : 'updated'}
                         </span>
-                      </p>
-                      <p className="font-black text-primary uppercase italic text-[11px] tracking-tight truncate">
+                      </div>
+                      <p className="font-black text-primary uppercase italic text-[12px] tracking-tight truncate mt-0.5">
                         {log.home_team} vs {log.away_team}
                       </p>
                     </div>
-                    <span className="text-[8px] text-gray-300 font-black uppercase bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap shadow-sm">
-                      {DateTime.fromISO(log.created_at).toRelative()}
-                    </span>
+                    <div className="text-right">
+                       <span className="text-[8px] text-gray-300 font-black uppercase block">
+                        {DateTime.fromISO(log.created_at).toRelative()}
+                      </span>
+                      <ChevronRight className="h-3 w-3 text-gray-100 inline-block mt-1" />
+                    </div>
                   </div>
                 ))
               )}
@@ -240,51 +248,55 @@ export default function Dashboard() {
       </div>
 
       {dateTabs.length > 0 && (
-        <div className="px-6 py-4 sticky top-[72px] bg-white/80 backdrop-blur-md z-30 border-b border-gray-100/50">
-          <div className="flex items-center no-scrollbar overflow-x-auto gap-3 max-w-2xl mx-auto">
+        <div className="px-6 py-4 sticky top-[56px] bg-white/95 backdrop-blur-xl z-30 border-b border-gray-100 shadow-sm">
+          <div className="flex items-center no-scrollbar overflow-x-auto gap-4 max-w-2xl mx-auto">
             {dateTabs.map((d) => (
               <button
                 key={d.iso}
                 onClick={() => setActiveDate(d.iso)}
                 className={cn(
-                  "flex flex-col items-center min-w-[4.5rem] py-3 rounded-2xl transition-all border-2",
-                  activeDate === d.iso ? "bg-primary border-primary text-white shadow-xl scale-105" : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                  "flex flex-col items-center min-w-[4.5rem] py-3 rounded-2xl transition-all duration-300 border-2",
+                  activeDate === d.iso 
+                    ? "bg-primary border-primary text-white shadow-2xl scale-105" 
+                    : "bg-white border-gray-100 text-gray-400 hover:border-primary/20 hover:bg-gray-50 shadow-sm"
                 )}
               >
-                <span className={cn("text-[9px] font-bold uppercase mb-0.5", activeDate === d.iso ? "text-white/70" : "text-gray-400")}>{d.day}</span>
-                <span className="text-lg font-black leading-none">{d.date}</span>
-                <span className={cn("text-[8px] font-black uppercase mt-0.5", activeDate === d.iso ? "text-white/70" : "text-gray-400")}>{d.month}</span>
+                <span className={cn("text-[8px] font-black uppercase mb-0.5 tracking-widest", activeDate === d.iso ? "text-white/80" : "text-gray-400")}>{d.day}</span>
+                <span className="text-xl font-black leading-none">{d.date}</span>
+                <span className={cn("text-[9px] font-black uppercase mt-0.5 tracking-tighter", activeDate === d.iso ? "text-white/80" : "text-gray-400")}>{d.month}</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      <main className="px-6 py-8 space-y-8 max-w-2xl mx-auto">
-        <div className="flex justify-between items-center">
-          <h2 className="text-sm font-black uppercase italic text-gray-400 tracking-tight flex items-center gap-2">
-            <CalendarIcon className="h-4 w-4" />
-            {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Loading Schedule...'}
-          </h2>
+      <main className="px-4 py-8 space-y-8 max-w-2xl mx-auto">
+        <div className="flex justify-between items-center px-2">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-1 bg-primary rounded-full" />
+            <h2 className="text-sm font-black uppercase italic text-gray-900 tracking-tight">
+              {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Schedule'}
+            </h2>
+          </div>
           {displayFixtures.some(f => f.status === 'live') && (
-            <div className="flex items-center gap-2 bg-green-500/10 text-green-600 px-3 py-1 rounded-full text-[10px] font-black uppercase italic animate-pulse">
-              <div className="h-1.5 w-1.5 rounded-full bg-green-500" /> Live Matches
+            <div className="flex items-center gap-2 bg-green-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase italic animate-pulse shadow-lg">
+              <div className="h-1.5 w-1.5 rounded-full bg-white" /> Live Now
             </div>
           )}
         </div>
 
         {isLoading && fixtures.length === 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-48 bg-white rounded-[2.5rem] animate-pulse border border-gray-100 shadow-md" />
+              <div key={i} className="h-52 bg-white rounded-[2.5rem] animate-pulse border-0 shadow-xl" />
             ))}
           </div>
         ) : displayFixtures.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-gray-200 shadow-sm">
-            <p className="text-gray-400 font-bold uppercase text-[10px]">No matches on this date</p>
+          <div className="text-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 shadow-inner mx-2">
+            <p className="text-gray-300 font-black uppercase text-[11px] tracking-[0.3em]">No matches scheduled</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {displayFixtures.map((fixture) => {
               const pred = predictions.find(p => p.fixture_id === fixture.id)
               return (
