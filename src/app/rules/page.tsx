@@ -5,6 +5,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Info, Award, Calendar, Zap, ShieldAlert } from "lucide-react"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
+import { cn } from "@/lib/utils"
 
 const RULES = [
   { title: "Exact Score", points: 3, description: "Predict the exact final score of the match.", icon: Award },
