@@ -185,7 +185,7 @@ export function ProfileSheet() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-5 bg-primary/5 border border-primary/10 rounded-3xl text-center space-y-1">
-              <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-60">Global Rank</p>
+              <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-60">Your Rank</p>
               <div className="flex items-baseline justify-center gap-0.5">
                 <span className="text-3xl font-black italic text-primary">#{stats?.rank || "--"}</span>
               </div>
