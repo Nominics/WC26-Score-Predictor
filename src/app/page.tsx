@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -40,8 +39,9 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-black">
-      <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+    <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-white overflow-hidden relative">
+      {/* Subtle Background Decoration */}
+      <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
         <Image 
           src="https://picsum.photos/seed/stadium/1200/800" 
           alt="Stadium Background" 
@@ -51,9 +51,9 @@ export default function LandingPage() {
         />
       </div>
       
-      <div className="relative z-10 w-full max-w-sm space-y-8 text-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative h-32 w-32 animate-pulse">
+      <div className="relative z-10 w-full max-w-sm space-y-10 text-center">
+        <div className="flex flex-col items-center space-y-6">
+          <div className="relative h-24 w-24">
             <Image 
               src={logo?.imageUrl || ""} 
               alt="WC26 Logo" 
@@ -61,34 +61,36 @@ export default function LandingPage() {
               className="object-contain"
             />
           </div>
-          <h1 className="text-4xl font-black text-white tracking-tighter">
-            WC26 <br/><span className="fifa-text-gradient">PREDICTOR</span>
-          </h1>
-          <p className="text-muted-foreground text-sm uppercase tracking-widest font-bold">
-            Prove your football knowledge
-          </p>
+          <div className="space-y-2">
+            <h1 className="text-4xl font-black text-black tracking-tighter leading-none">
+              WC26<br/><span className="fifa-text-gradient">PREDICTOR</span>
+            </h1>
+            <p className="text-gray-500 text-xs uppercase tracking-[0.2em] font-bold">
+              Predict. Compete. Win.
+            </p>
+          </div>
         </div>
 
-        <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
-          <CardHeader>
-            <CardTitle className="text-white">Join the Challenge</CardTitle>
-            <CardDescription className="text-gray-400">Enter your email to get a magic link</CardDescription>
+        <Card className="border-none shadow-2xl shadow-primary/10 bg-white/80 backdrop-blur-md">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-black">GET STARTED</CardTitle>
+            <CardDescription>Enter your email for instant access</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 type="email"
-                placeholder="email@example.com"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isSubmitting}
-                className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
+                className="bg-gray-50 border-gray-100 h-12 text-center font-medium focus:ring-primary/20"
               />
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-secondary text-primary font-black uppercase tracking-tighter text-lg py-6 hover:bg-secondary/90"
+                className="w-full bg-primary text-white font-black uppercase tracking-tight text-lg h-14 rounded-2xl hover:bg-primary/90 transition-transform active:scale-95"
               >
                 {isSubmitting ? "Sending..." : "Continue"}
               </Button>

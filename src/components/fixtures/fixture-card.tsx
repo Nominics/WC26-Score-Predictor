@@ -5,9 +5,10 @@ import { Fixture } from "@/lib/mock-data"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Lock, Edit2, Check } from "lucide-react"
+import { Lock, Edit2, Check, ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { format, isAfter, addMinutes } from "date-fns"
+import { cn } from "@/lib/utils"
 
 interface FixtureCardProps {
   fixture: Fixture
@@ -29,83 +30,112 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
   }, [fixture.date])
 
   const handleSave = () => {
-    onSave(fixture.id, parseInt(hScore), parseInt(aScore))
-    setEditing(false)
+    const h = parseInt(hScore)
+    const a = parseInt(aScore)
+    if (!isNaN(h) && !isNaN(a)) {
+      onSave(fixture.id, h, a)
+      setEditing(false)
+    }
   }
 
   const isCompleted = fixture.status === 'finished'
 
   return (
-    <Card className="overflow-hidden border-white/10 bg-white/5">
+    <Card className="overflow-hidden border-none shadow-sm hover:shadow-md transition-shadow bg-white rounded-3xl">
       <CardContent className="p-4">
-        <div className="flex justify-between items-center mb-3">
-          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{fixture.group}</span>
-          <div className="flex items-center gap-2">
-             <span className="text-[10px] font-bold text-gray-400">{format(new Date(fixture.date), "MMM d, HH:mm")}</span>
-             {isLocked ? (
-                <Badge variant="destructive" className="text-[9px] uppercase"><Lock className="h-2 w-2 mr-1"/> Locked</Badge>
-             ) : (
-                <Badge className="bg-secondary text-primary text-[9px] uppercase">Open</Badge>
-             )}
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black text-primary uppercase tracking-wider">{fixture.group}</span>
+            <span className="text-[10px] font-bold text-gray-400">{format(new Date(fixture.date), "EEEE, d MMM · HH:mm")}</span>
           </div>
+          {isLocked ? (
+             <Badge variant="outline" className="text-[8px] uppercase border-gray-100 text-gray-400 gap-1 rounded-full"><Lock className="h-2 w-2"/> Locked</Badge>
+          ) : (
+             <Badge className="bg-secondary/10 text-secondary border-none text-[8px] uppercase rounded-full">Open</Badge>
+          )}
         </div>
 
-        <div className="grid grid-cols-3 items-center gap-4 py-2">
+        <div className="grid grid-cols-3 items-center gap-2 py-2">
           {/* Home Team */}
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className="text-3xl">{fixture.homeTeam.flag}</span>
-            <span className="text-xs font-black uppercase tracking-tight line-clamp-1">{fixture.homeTeam.name}</span>
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl shadow-inner">
+              {fixture.homeTeam.flag}
+            </div>
+            <span className="text-[11px] font-black uppercase text-center line-clamp-1">{fixture.homeTeam.name}</span>
           </div>
 
-          {/* Scores */}
-          <div className="flex items-center justify-center gap-2">
+          {/* Predict Area */}
+          <div className="flex flex-col items-center justify-center">
             {editing && !isLocked ? (
               <div className="flex items-center gap-1">
-                <Input 
+                <input 
                   type="number" 
                   value={hScore} 
                   onChange={(e) => setHScore(e.target.value)}
-                  className="w-12 h-12 text-center text-xl font-bold bg-white/10 border-secondary"
+                  className="w-10 h-10 text-center text-xl font-black bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
+                  autoFocus
                 />
-                <span className="text-white font-bold">:</span>
-                <Input 
+                <span className="text-gray-300 font-bold">-</span>
+                <input 
                   type="number" 
                   value={aScore} 
                   onChange={(e) => setAScore(e.target.value)}
-                  className="w-12 h-12 text-center text-xl font-bold bg-white/10 border-secondary"
+                  className="w-10 h-10 text-center text-xl font-black bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-primary/20 outline-none"
                 />
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <div className="text-3xl font-black text-white">{initialHome ?? '-'}</div>
-                <div className="text-xl font-bold text-muted-foreground">:</div>
-                <div className="text-3xl font-black text-white">{initialAway ?? '-'}</div>
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex items-center gap-3">
+                  <span className={cn("text-3xl font-black", initialHome === undefined ? "text-gray-200" : "text-black")}>
+                    {initialHome ?? '-'}
+                  </span>
+                  <span className="text-gray-300 font-black">-</span>
+                  <span className={cn("text-3xl font-black", initialAway === undefined ? "text-gray-200" : "text-black")}>
+                    {initialAway ?? '-'}
+                  </span>
+                </div>
+                {initialHome === undefined && !isLocked && !editing && (
+                  <span className="text-[9px] font-black text-secondary animate-pulse uppercase">Predict now</span>
+                )}
               </div>
             )}
           </div>
 
           {/* Away Team */}
-          <div className="flex flex-col items-center text-center gap-2">
-            <span className="text-3xl">{fixture.awayTeam.flag}</span>
-            <span className="text-xs font-black uppercase tracking-tight line-clamp-1">{fixture.awayTeam.name}</span>
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-3xl shadow-inner">
+              {fixture.awayTeam.flag}
+            </div>
+            <span className="text-[11px] font-black uppercase text-center line-clamp-1">{fixture.awayTeam.name}</span>
           </div>
         </div>
 
-        <div className="mt-4 flex justify-between items-end">
-          <div className="text-[10px] text-muted-foreground uppercase font-bold">{fixture.venue}</div>
+        <div className="mt-6 flex justify-between items-center border-t border-gray-50 pt-3">
+          <div className="flex items-center gap-1 text-[9px] text-gray-400 uppercase font-black">
+            <span className="bg-gray-100 px-2 py-0.5 rounded-full">{fixture.venue}</span>
+          </div>
+          
           {!isLocked && (
             editing ? (
-              <Button size="sm" onClick={handleSave} className="bg-secondary text-primary font-bold">
-                <Check className="h-4 w-4 mr-1"/> Save
+              <Button size="sm" onClick={handleSave} className="bg-primary text-white font-black uppercase text-[10px] h-8 rounded-xl px-4">
+                <Check className="h-3 w-3 mr-1"/> Confirm
               </Button>
             ) : (
-              <Button size="sm" variant="ghost" onClick={() => setEditing(true)} className="text-secondary hover:bg-secondary/10">
-                <Edit2 className="h-4 w-4 mr-1"/> {initialHome !== undefined ? 'Edit' : 'Predict'}
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={() => setEditing(true)} 
+                className="text-primary hover:bg-primary/5 font-black uppercase text-[10px] h-8 rounded-xl"
+              >
+                {initialHome !== undefined ? <Edit2 className="h-3 w-3 mr-1"/> : 'Set Score'}
               </Button>
             )
           )}
+          
           {isCompleted && (
-             <div className="text-[10px] bg-accent/20 text-accent font-bold px-2 py-1 rounded uppercase">Final: {fixture.homeScore}-{fixture.awayScore}</div>
+             <div className="bg-primary/5 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase">
+               Final: {fixture.homeScore}-{fixture.awayScore}
+             </div>
           )}
         </div>
       </CardContent>

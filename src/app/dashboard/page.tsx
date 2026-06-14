@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -54,24 +53,32 @@ export default function Dashboard() {
     } else {
       await fetchPredictions()
       toast({
-        title: "Prediction Saved!",
-        description: "Good luck with your score.",
+        title: "Success",
+        description: "Prediction updated!",
       })
     }
   }
 
   if (authLoading || isLoading) {
-    return <div className="min-h-screen bg-black flex items-center justify-center text-white font-black italic">LOADING...</div>
+    return <div className="min-h-screen bg-white flex items-center justify-center text-primary font-black italic animate-pulse">LOADING...</div>
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-24">
+    <div className="min-h-screen bg-gray-50 text-foreground pb-24 md:pt-20">
       <MainNav />
-      <header className="p-6 bg-gradient-to-b from-secondary/10 to-transparent">
-        <h1 className="text-3xl font-black italic tracking-tighter">FIXTURES</h1>
-        <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest mt-1">
-          Welcome back, {profile?.display_name || 'Pro'}
-        </p>
+      <header className="p-6 bg-white border-b border-gray-100 sticky top-0 z-40 md:relative">
+        <div className="max-w-2xl mx-auto flex justify-between items-end">
+          <div>
+            <h1 className="text-2xl font-black italic tracking-tighter text-primary">FIXTURES</h1>
+            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-1">
+              Hi, {profile?.display_name || 'Expert'}
+            </p>
+          </div>
+          <div className="text-right">
+             <span className="text-3xl font-black italic leading-none">{profile?.points || 0}</span>
+             <p className="text-[8px] font-bold text-muted-foreground uppercase">Total Points</p>
+          </div>
+        </div>
       </header>
 
       <main className="p-4 space-y-4 max-w-2xl mx-auto">

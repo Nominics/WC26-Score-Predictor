@@ -2,37 +2,63 @@
 
 import { MOCK_USERS } from "@/lib/mock-data"
 import { MainNav } from "@/components/layout/main-nav"
-import { Trophy } from "lucide-react"
+import { Trophy, Medal, Star } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Leaderboard() {
   const sortedUsers = [...MOCK_USERS].sort((a, b) => b.points - a.points)
 
   return (
-    <div className="min-h-screen bg-black text-white pb-24">
+    <div className="min-h-screen bg-white text-foreground pb-24 md:pt-20">
       <MainNav />
-      <header className="p-6 bg-gradient-to-b from-accent/10 to-transparent">
-        <h1 className="text-3xl font-black italic tracking-tighter">GLOBAL RANKING</h1>
+      <header className="p-6 bg-primary text-white">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-black italic tracking-tighter">GLOBAL RANKING</h1>
+            <p className="text-[10px] uppercase font-bold opacity-80 mt-1">Season 2026 · Live Updates</p>
+          </div>
+          <Trophy className="h-10 w-10 text-white/20" />
+        </div>
       </header>
 
-      <main className="px-4 max-w-2xl mx-auto">
-        <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+      <main className="max-w-2xl mx-auto -mt-6 px-4">
+        <div className="bg-white shadow-xl shadow-primary/10 rounded-3xl overflow-hidden border border-gray-50">
           {sortedUsers.map((u, i) => (
             <div 
               key={u.id} 
-              className={`flex items-center justify-between p-4 border-b border-white/5 last:border-0 ${i === 0 ? 'bg-secondary/10' : ''}`}
+              className={`flex items-center justify-between p-5 border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50/50 ${i === 0 ? 'bg-secondary/5' : ''}`}
             >
               <div className="flex items-center gap-4">
-                <span className={`text-sm font-black w-6 ${i === 0 ? 'text-secondary' : i === 1 ? 'text-accent' : 'text-gray-500'}`}>
-                  {i + 1}
-                </span>
+                <div className="relative w-8 text-center">
+                  {i === 0 ? (
+                    <Medal className="h-6 w-6 text-yellow-500 mx-auto" />
+                  ) : i === 1 ? (
+                    <Medal className="h-6 w-6 text-gray-400 mx-auto" />
+                  ) : i === 2 ? (
+                    <Medal className="h-6 w-6 text-orange-400 mx-auto" />
+                  ) : (
+                    <span className="text-sm font-black text-gray-300">#{i + 1}</span>
+                  )}
+                </div>
+                
+                <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+                  <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">
+                    {u.displayName.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+
                 <div className="flex flex-col">
-                  <span className="font-bold text-sm uppercase tracking-tight">{u.displayName}</span>
-                  <span className="text-[10px] text-gray-500 uppercase">{u.predictionsCount} predictions</span>
+                  <span className="font-black text-sm uppercase tracking-tight text-gray-800">{u.displayName}</span>
+                  <div className="flex items-center gap-1 text-[9px] text-gray-400 font-bold uppercase">
+                    <Star className="h-2 w-2 fill-gray-400" />
+                    {u.predictionsCount} Predicted
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-black italic">{u.points}</span>
-                <span className="text-[8px] uppercase font-black text-secondary">PTS</span>
+              
+              <div className="text-right flex flex-col items-end">
+                <span className="text-2xl font-black italic text-primary leading-none">{u.points}</span>
+                <span className="text-[8px] uppercase font-black text-gray-400">Points</span>
               </div>
             </div>
           ))}
