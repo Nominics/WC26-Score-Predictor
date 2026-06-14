@@ -1,10 +1,9 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Trophy, Medal, Star, Loader2 } from "lucide-react"
+import { Trophy, Medal, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 
@@ -39,6 +38,16 @@ export default function Leaderboard() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const getInitials = (name?: string) => {
+    if (!name) return "??"
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase()
   }
 
   return (
@@ -84,7 +93,7 @@ export default function Leaderboard() {
                   
                   <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
                     <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
-                      {entry.display_name?.substring(0, 2).toUpperCase() || '??'}
+                      {getInitials(entry.display_name)}
                     </AvatarFallback>
                   </Avatar>
 

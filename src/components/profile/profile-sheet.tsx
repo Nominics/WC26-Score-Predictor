@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useAuth } from "@/hooks/use-auth"
@@ -11,7 +10,7 @@ import {
 } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { User, LogOut, Mail, Trophy, Star, Share2, ShieldCheck } from "lucide-react"
+import { LogOut, Mail, Trophy, Star, Share2, ShieldCheck } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
@@ -22,7 +21,17 @@ export function ProfileSheet() {
 
   if (!user) return null
 
-  const initials = profile?.display_name?.substring(0, 2).toUpperCase() || "??"
+  const getInitials = (name?: string) => {
+    if (!name) return "??"
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase()
+  }
+
+  const initials = getInitials(profile?.display_name)
   const isSuperadmin = profile?.role === 'superadmin'
 
   const handleShare = async () => {

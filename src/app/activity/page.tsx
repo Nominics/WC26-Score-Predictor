@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -42,6 +41,16 @@ export default function Activity() {
     }
   }
 
+  const getInitials = (name?: string) => {
+    if (!name) return "??"
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase()
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
@@ -68,7 +77,9 @@ export default function Activity() {
           logs.map((log) => (
             <div key={log.id} className="flex gap-4 p-5 bg-white rounded-3xl border border-gray-100 items-center shadow-sm">
               <Avatar className="h-12 w-12 border border-gray-50">
-                <AvatarFallback className="bg-gray-50 text-primary font-black text-xs">{log.display_name?.[0]}</AvatarFallback>
+                <AvatarFallback className="bg-gray-50 text-primary font-black text-xs">
+                  {getInitials(log.display_name)}
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <div className="flex justify-between items-start">
