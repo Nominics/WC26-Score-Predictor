@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -7,8 +8,9 @@ import { FIXTURES } from "@/lib/mock-data"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Bell, ChevronRight } from "lucide-react"
+import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 const DATES = [
   { day: "Sun", date: "12" },
@@ -29,25 +31,40 @@ const LEAGUES = [
 export default function Dashboard() {
   const { user, profile, loading: authLoading } = useAuth()
   const { toast } = useToast()
+  const router = useRouter()
   const [predictions, setPredictions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeDate, setActiveDate] = useState("15")
   const supabase = createClient()
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/")
+    }
+  }, [user, authLoading, router])
+
+  useEffect(() => {
     if (user) {
       fetchPredictions()
+    } else if (!authLoading) {
+      setIsLoading(false)
     }
-  }, [user])
+  }, [user, authLoading])
 
   const fetchPredictions = async () => {
-    const { data, error } = await supabase
-      .from("predictions")
-      .select("*")
-      .eq("user_id", user?.id)
-    
-    if (data) setPredictions(data)
-    setIsLoading(false)
+    try {
+      const { data, error } = await supabase
+        .from("predictions")
+        .select("*")
+        .eq("user_id", user?.id)
+      
+      if (error) throw error
+      if (data) setPredictions(data)
+    } catch (error: any) {
+      console.error("Error fetching predictions:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handlePredict = async (fId: string, h: number, a: number) => {
@@ -78,15 +95,22 @@ export default function Dashboard() {
     }
   }
 
-  if (authLoading || isLoading) {
-    return <div className="min-h-screen bg-black flex items-center justify-center text-primary font-black italic animate-pulse uppercase">Predicting...</div>
+  if (authLoading || (isLoading && user)) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-xl">
+          Loading Stadium...
+        </div>
+      </div>
+    )
   }
+
+  if (!user) return null
 
   return (
     <div className="min-h-screen bg-black text-white pb-32">
       <MainNav />
       
-      {/* Header */}
       <header className="px-6 pt-12 pb-6 flex justify-between items-center">
         <h1 className="text-2xl font-bold tracking-tight">League Center</h1>
         <Button size="icon" variant="ghost" className="rounded-full bg-white/5 border border-white/10 h-10 w-10">
@@ -94,7 +118,6 @@ export default function Dashboard() {
         </Button>
       </header>
 
-      {/* Date Selector */}
       <div className="px-6 mb-8">
         <div className="flex justify-between items-center no-scrollbar overflow-x-auto gap-4 py-2">
           {DATES.map((d) => (
@@ -113,7 +136,6 @@ export default function Dashboard() {
       </div>
 
       <main className="px-6 space-y-8">
-        {/* League Filter */}
         <section>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold">Live Games</h2>
@@ -129,7 +151,6 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Fixtures */}
         <div className="space-y-4">
           {FIXTURES.map((fixture) => {
             const pred = predictions.find(p => p.fixture_id === fixture.id)
