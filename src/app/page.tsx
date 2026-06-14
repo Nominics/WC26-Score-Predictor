@@ -89,14 +89,14 @@ export default function LandingPage() {
       
       <div className="relative z-10 w-full max-w-sm space-y-10 text-center">
         <div className="flex flex-col items-center space-y-6">
-          <div className="relative h-32 w-32 grayscale brightness-50 contrast-125">
+          <div className="relative h-40 w-40">
             {logo && (
               <Image 
                 src={logo.imageUrl} 
                 alt="WC26 Official Logo" 
                 fill 
                 priority
-                sizes="(max-width: 768px) 128px, 128px"
+                sizes="(max-width: 768px) 160px, 160px"
                 className="object-contain"
               />
             )}
