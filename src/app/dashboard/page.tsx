@@ -11,10 +11,11 @@ import { Trophy, Zap, Activity, ChevronRight, Loader2 } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
+import { getTeamFlagUrl } from "@/lib/team-flags"
 
 export default function Dashboard() {
   const { user: authUser, loading: authLoading, stats, useLifeline } = useAuth()
@@ -226,32 +227,39 @@ export default function Dashboard() {
                   <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Waiting for the first whistle...</p>
                 </div>
               ) : (
-                activityLogs.map((log) => (
-                  <div key={log.id} className="flex gap-4 p-4 bg-white rounded-2xl border border-gray-50 items-center transition-all hover:bg-gray-50/50 shadow-sm">
-                    <Avatar className="h-9 w-9 border-2 border-white shadow-md">
-                      <AvatarFallback className="bg-primary/5 text-primary font-black text-[11px]">
-                        {getInitials(log.display_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 overflow-hidden">
-                      <div className="flex items-center gap-2">
-                        <span className="font-black text-xs uppercase tracking-tight text-gray-900">{log.display_name}</span>
-                        <span className="text-[9px] text-gray-400 font-bold uppercase px-2 py-0.5 bg-gray-50 rounded-full border border-gray-100">
-                          {log.action === 'prediction_created' ? 'locked in' : 'updated'}
-                        </span>
+                activityLogs.map((log) => {
+                  const flagUrl = getTeamFlagUrl(log.favorite_team)
+                  return (
+                    <div key={log.id} className="flex gap-4 p-4 bg-white rounded-2xl border border-gray-50 items-center transition-all hover:bg-gray-50/50 shadow-sm">
+                      <Avatar className="h-9 w-9 border-2 border-white shadow-md">
+                        {flagUrl ? (
+                          <AvatarImage src={flagUrl} className="object-cover" />
+                        ) : (
+                          <AvatarFallback className="bg-primary/5 text-primary font-black text-[11px]">
+                            {getInitials(log.display_name)}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div className="flex-1 overflow-hidden">
+                        <div className="flex items-center gap-2">
+                          <span className="font-black text-xs uppercase tracking-tight text-gray-900">{log.display_name}</span>
+                          <span className="text-[9px] text-gray-400 font-bold uppercase px-2 py-0.5 bg-gray-50 rounded-full border border-gray-100">
+                            {log.action === 'prediction_created' ? 'locked in' : 'updated'}
+                          </span>
+                        </div>
+                        <p className="font-black text-primary uppercase italic text-[12px] tracking-tight truncate mt-0.5">
+                          {log.home_team} vs {log.away_team}
+                        </p>
                       </div>
-                      <p className="font-black text-primary uppercase italic text-[12px] tracking-tight truncate mt-0.5">
-                        {log.home_team} vs {log.away_team}
-                      </p>
+                      <div className="text-right">
+                         <span className="text-[8px] text-gray-300 font-black uppercase block">
+                          {DateTime.fromISO(log.created_at).toRelative()}
+                        </span>
+                        <ChevronRight className="h-3 w-3 text-gray-100 inline-block mt-1" />
+                      </div>
                     </div>
-                    <div className="text-right">
-                       <span className="text-[8px] text-gray-300 font-black uppercase block">
-                        {DateTime.fromISO(log.created_at).toRelative()}
-                      </span>
-                      <ChevronRight className="h-3 w-3 text-gray-100 inline-block mt-1" />
-                    </div>
-                  </div>
-                ))
+                  )
+                })
               )}
             </div>
           </ScrollArea>

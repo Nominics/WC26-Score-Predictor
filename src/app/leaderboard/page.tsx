@@ -51,7 +51,7 @@ export default function Leaderboard() {
           console.warn("Profile fetch warning (might be missing columns):", profError)
         }
 
-        // Step 3: Merge and calculate simulated movement
+        // Step 3: Merge and calculate simulated movement for visual flair
         const processedEntries = lbData.map((entry: any) => {
           const profile = profData?.find(p => p.id === entry.user_id)
           return {
