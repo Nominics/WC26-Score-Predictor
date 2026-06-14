@@ -7,16 +7,18 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Trophy, Calendar as CalendarIcon, Loader2, Sparkles, Zap } from "lucide-react"
+import { Trophy, Calendar as CalendarIcon, Loader2, Sparkles, Zap, Activity } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 export default function Dashboard() {
   const { user, loading: authLoading, stats, useLifeline } = useAuth()
   const { toast } = useToast()
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
+  const [activityLogs, setActivityLogs] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const supabase = createClient()
@@ -24,6 +26,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (user) {
       fetchData()
+      fetchActivity()
       
       const fixturesChannel = supabase
         .channel('fixtures-realtime')
@@ -32,12 +35,21 @@ export default function Dashboard() {
 
       const predictionsChannel = supabase
         .channel('predictions-realtime')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'predictions', filter: `user_id=eq.${user.id}` }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'predictions' }, () => {
+           fetchData()
+           fetchActivity()
+        })
+        .subscribe()
+
+      const activityChannel = supabase
+        .channel('activity-realtime')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => fetchActivity())
         .subscribe()
 
       return () => {
         supabase.removeChannel(fixturesChannel)
         supabase.removeChannel(predictionsChannel)
+        supabase.removeChannel(activityChannel)
       }
     }
   }, [user])
@@ -67,6 +79,15 @@ export default function Dashboard() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const fetchActivity = async () => {
+    const { data } = await supabase
+      .from("activity_feed")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(5)
+    setActivityLogs(data || [])
   }
 
   const dateTabs = useMemo(() => {
@@ -126,6 +147,11 @@ export default function Dashboard() {
       })
       fetchData()
     }
+  }
+
+  const getInitials = (name?: string) => {
+    if (!name) return "??"
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
   }
 
   if (authLoading && fixtures.length === 0) {
@@ -190,7 +216,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <main className="px-6 py-8 space-y-6 max-w-2xl mx-auto">
+      <main className="px-6 py-8 space-y-8 max-w-2xl mx-auto">
         <div className="flex justify-between items-center">
           <h2 className="text-sm font-black uppercase italic text-gray-400 tracking-tight flex items-center gap-2">
             <CalendarIcon className="h-4 w-4" />
@@ -230,6 +256,39 @@ export default function Dashboard() {
             })}
           </div>
         )}
+
+        {/* Live Activity Section */}
+        <section className="space-y-4 pt-4">
+          <div className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-primary" />
+            <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Arena Feed</h3>
+          </div>
+          <div className="space-y-3">
+            {activityLogs.map((log) => (
+              <div key={log.id} className="flex gap-4 p-4 bg-white rounded-3xl border border-gray-100 items-center shadow-sm">
+                <Avatar className="h-8 w-8 border border-gray-50">
+                  <AvatarFallback className="bg-gray-50 text-primary font-black text-[10px]">
+                    {getInitials(log.display_name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-[10px] truncate">
+                    <span className="font-black text-gray-900 uppercase mr-1">{log.display_name}</span>
+                    <span className="text-gray-400 font-bold lowercase">
+                      {log.action === 'prediction_created' ? 'locked in' : 'updated'} a pick
+                    </span>
+                  </p>
+                  <p className="font-black text-primary uppercase italic text-[11px] tracking-tight truncate">
+                    {log.home_team} vs {log.away_team}
+                  </p>
+                </div>
+                <span className="text-[8px] text-gray-300 font-black uppercase bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap">
+                  {DateTime.fromISO(log.created_at).toRelative()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   )

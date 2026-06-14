@@ -1,13 +1,14 @@
+
 "use client"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Play, Trophy, Settings } from "lucide-react"
+import { Home, Grid2X2, Trophy, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Home" },
-  { href: "/activity", icon: Play, label: "Live" },
+  { href: "/matrix", icon: Grid2X2, label: "Matrix" },
   { href: "/leaderboard", icon: Trophy, label: "Ranking" },
   { href: "/rules", icon: Settings, label: "Settings" },
 ]
