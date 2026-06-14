@@ -1,15 +1,15 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit2, Check } from "lucide-react"
+import { Edit2, Check, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DateTime } from "luxon"
 
 interface FixtureCardProps {
-  fixture: any // Using any for DB compatibility
+  fixture: any
   initialHome?: number
   initialAway?: number
   onSave: (id: string, h: number, a: number) => void
@@ -19,24 +19,38 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
   const [hScore, setHScore] = useState<string>(initialHome?.toString() || "")
   const [aScore, setAScore] = useState<string>(initialAway?.toString() || "")
   const [editing, setEditing] = useState(false)
+  const [isLocked, setIsLocked] = useState(false)
 
-  const handleSave = () => {
-    const h = parseInt(hScore)
-    const a = parseInt(aScore)
-    if (!isNaN(h) && !isNaN(a)) {
-      onSave(fixture.external_id, h, a)
-      setEditing(false)
-    }
-  }
-
-  const isLive = fixture.status === 'live'
-  const isFinished = fixture.status === 'finished'
-  
   // Format kickoff time
   const kickoff = DateTime.fromISO(fixture.kickoff_at)
   const timeStr = kickoff.isValid ? kickoff.toFormat('HH:mm') : 'TBD'
   const dateStr = kickoff.isValid ? kickoff.toFormat('MMM dd') : ''
 
+  useEffect(() => {
+    const checkLock = () => {
+      const now = DateTime.now()
+      const lockTime = kickoff.plus({ minutes: 15 })
+      const locked = now > lockTime || fixture.status === 'finished'
+      setIsLocked(locked)
+    }
+
+    checkLock()
+    const interval = setInterval(checkLock, 30000) // Check every 30s
+    return () => clearInterval(interval)
+  }, [fixture.kickoff_at, fixture.status])
+
+  const handleSave = () => {
+    if (isLocked) return
+    const h = parseInt(hScore)
+    const a = parseInt(aScore)
+    if (!isNaN(h) && !isNaN(a)) {
+      onSave(fixture.id, h, a)
+      setEditing(false)
+    }
+  }
+
+  const isLive = fixture.status === 'live'
+  
   return (
     <Card className="relative overflow-hidden border border-gray-100 bg-white rounded-[2.5rem] shadow-sm hover:shadow-md transition-all duration-300 group">
       <CardContent className="p-8 relative z-10">
@@ -44,7 +58,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
           {/* Home Team */}
           <div className="flex flex-col items-center flex-1 text-center">
             <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-3xl mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
-              {fixture.home_flag || '⚽'}
+              ⚽
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.home_team}</span>
             <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.home_team.substring(0, 3).toUpperCase()}</span>
@@ -56,9 +70,9 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
               <div className="flex items-center gap-1.5 bg-red-50 text-red-600 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-4 animate-pulse">
                 <span className="h-1.5 w-1.5 bg-red-600 rounded-full" /> Live
               </div>
-            ) : isFinished ? (
-              <div className="bg-gray-100 text-gray-400 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-4">
-                Finished
+            ) : isLocked ? (
+              <div className="flex items-center gap-1 bg-gray-100 text-gray-400 px-3 py-1 rounded-full text-[9px] font-black uppercase mb-4">
+                <Lock className="h-2 w-2" /> {fixture.status === 'finished' ? 'Finished' : 'Locked'}
               </div>
             ) : (
               <div className="text-[9px] font-black text-primary uppercase mb-4 tracking-widest">
@@ -94,16 +108,16 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
                     {initialAway ?? '0'}
                   </span>
                 </div>
-                {isFinished && (
+                {fixture.status === 'finished' && (
                   <div className="mt-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                    Result: {fixture.home_score} - {fixture.away_score}
+                    Final Result: {fixture.home_score} - {fixture.away_score}
                   </div>
                 )}
               </div>
             )}
 
             <div className="mt-6">
-               {!isFinished && (
+               {!isLocked && (
                   editing ? (
                     <Button size="sm" onClick={handleSave} className="rounded-full bg-primary hover:bg-primary/90 px-6 h-9 font-black uppercase text-[10px] tracking-wider">
                       <Check className="h-4 w-4 mr-1" /> Save Pick
@@ -120,7 +134,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
           {/* Away Team */}
           <div className="flex flex-col items-center flex-1 text-center">
             <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-3xl mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
-              {fixture.away_flag || '⚽'}
+              ⚽
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.away_team}</span>
             <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.away_team.substring(0, 3).toUpperCase()}</span>
