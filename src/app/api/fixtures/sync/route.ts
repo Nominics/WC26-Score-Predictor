@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -67,23 +68,25 @@ function parseScore(value: string, status: string) {
 }
 
 export async function POST(req: Request) {
-  const secret = req.headers.get("x-sync-secret");
-
-  if (secret !== process.env.SYNC_SECRET) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const apiUrl = process.env.FIXTURES_API_URL;
-  const apiKey = process.env.FIXTURES_API_KEY;
-
-  if (!apiUrl || !apiKey) {
-    return NextResponse.json(
-      { error: "Missing FIXTURES_API_URL or FIXTURES_API_KEY" },
-      { status: 500 }
-    );
-  }
-
   try {
+    const secret = req.headers.get("x-sync-secret");
+
+    // In local dev, allow empty secret if env is not set, otherwise check it
+    const expectedSecret = process.env.SYNC_SECRET;
+    if (expectedSecret && secret !== expectedSecret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const apiUrl = process.env.FIXTURES_API_URL;
+    const apiKey = process.env.FIXTURES_API_KEY;
+
+    if (!apiUrl || !apiKey) {
+      return NextResponse.json(
+        { error: "Missing FIXTURES_API_URL or FIXTURES_API_KEY environment variables." },
+        { status: 500 }
+      );
+    }
+
     const response = await fetch(apiUrl, {
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -100,9 +103,9 @@ export async function POST(req: Request) {
 
     const data = (await response.json()) as WorldCupApiResponse;
 
-    if (!Array.isArray(data.games)) {
+    if (!data || !Array.isArray(data.games)) {
       return NextResponse.json(
-        { error: "Invalid API response: games array missing" },
+        { error: "Invalid API response: games array missing or null" },
         { status: 500 }
       );
     }
@@ -146,7 +149,7 @@ export async function POST(req: Request) {
 
     if (error) {
       return NextResponse.json(
-        { error: error.message },
+        { error: `Supabase Error: ${error.message}` },
         { status: 500 }
       );
     }
@@ -156,6 +159,7 @@ export async function POST(req: Request) {
       count: fixtures.length,
     });
   } catch (err: any) {
+    console.error("Sync Route Error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

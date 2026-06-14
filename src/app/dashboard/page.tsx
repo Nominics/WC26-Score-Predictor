@@ -7,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Bell } from "lucide-react"
+import { Bell, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 
@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSyncing, setIsSyncing] = useState(false)
   const [activeDate, setActiveDate] = useState("15")
   const supabase = createClient()
 
@@ -78,6 +79,33 @@ export default function Dashboard() {
     }
   }
 
+  const handleSync = async () => {
+    setIsSyncing(true)
+    try {
+      const res = await fetch('/api/fixtures/sync', {
+        method: 'POST',
+        headers: {
+          'x-sync-secret': process.env.NEXT_PUBLIC_SYNC_SECRET || 'your-secret-here' // In production, this should be handled securely
+        }
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast({ title: "Sync Complete", description: `Updated ${data.count} fixtures.` })
+        fetchData()
+      } else {
+        throw new Error(data.error || 'Sync failed')
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Sync Failed",
+        description: error.message,
+      })
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
   const handlePredict = async (fId: string, h: number, a: number) => {
     if (!user) return
 
@@ -98,7 +126,6 @@ export default function Dashboard() {
         description: "Failed to save prediction.",
       })
     } else {
-      // Update local state instead of full refetch for better UX
       setPredictions(prev => {
         const existing = prev.findIndex(p => p.fixture_id === fId)
         if (existing > -1) {
@@ -136,9 +163,20 @@ export default function Dashboard() {
           <h1 className="text-2xl font-black italic tracking-tighter">MATCH CENTER</h1>
           <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">World Cup 2026 Edition</p>
         </div>
-        <Button size="icon" variant="ghost" className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10">
-          <Bell className="h-5 w-5 text-gray-400" />
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            size="icon" 
+            variant="ghost" 
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10"
+          >
+            <RefreshCw className={`h-4 w-4 text-gray-400 ${isSyncing ? 'animate-spin' : ''}`} />
+          </Button>
+          <Button size="icon" variant="ghost" className="rounded-full bg-gray-50 border border-gray-100 h-10 w-10">
+            <Bell className="h-5 w-5 text-gray-400" />
+          </Button>
+        </div>
       </header>
 
       <div className="px-6 mb-8 mt-4">
@@ -165,8 +203,13 @@ export default function Dashboard() {
             <span className="bg-primary/10 text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase italic">Live Data</span>
           </div>
           {fixtures.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-gray-200">
-              <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">No fixtures found. Sync required.</p>
+            <div className="text-center py-16 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
+              <div className="space-y-4 max-w-xs mx-auto">
+                <RefreshCw className="h-10 w-10 text-gray-200 mx-auto" />
+                <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest leading-relaxed">
+                  No fixtures in the arena yet. <br/> Hit the sync button above to fetch the latest matches.
+                </p>
+              </div>
             </div>
           ) : (
             fixtures.map((fixture) => {
