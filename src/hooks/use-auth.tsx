@@ -10,7 +10,8 @@ interface AuthContextType {
   user: User | null
   profile: any | null
   loading: boolean
-  login: (email: string) => Promise<void>
+  login: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   updateDisplayName: (name: string) => Promise<void>
 }
@@ -58,15 +59,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(data)
   }
 
-  const login = async (email: string) => {
-    // Using magic link for simple WC26 experience
-    const { error } = await supabase.auth.signInWithOtp({ 
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ 
       email,
+      password,
+    })
+    if (error) throw error
+    router.push("/dashboard")
+  }
+
+  const register = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`
       }
     })
     if (error) throw error
+    // Note: If email confirmation is enabled, user might not be logged in immediately
   }
 
   const logout = async () => {
@@ -86,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, login, logout, updateDisplayName }}>
+    <AuthContext.Provider value={{ user, profile, loading, login, register, logout, updateDisplayName }}>
       {children}
     </AuthContext.Provider>
   )
