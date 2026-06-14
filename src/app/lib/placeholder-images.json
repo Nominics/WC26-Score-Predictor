@@ -1,0 +1,16 @@
+{
+  "placeholderImages": [
+    {
+      "id": "fifa-logo",
+      "description": "Official FIFA World Cup 2026 Logo",
+      "imageUrl": "https://picsum.photos/seed/fifa26/400/400",
+      "imageHint": "world cup logo"
+    },
+    {
+      "id": "stadium-bg",
+      "description": "World Cup Stadium Background",
+      "imageUrl": "https://picsum.photos/seed/stadium/1200/800",
+      "imageHint": "soccer stadium"
+    }
+  ]
+}
