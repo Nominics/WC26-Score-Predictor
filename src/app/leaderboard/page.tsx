@@ -30,9 +30,10 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     try {
       // Step 1: Fetch core ranking data from leaderboard view
+      // Removed 'completed_predictions' as it is not in the DB view
       const { data: lbData, error: lbError } = await supabase
         .from("leaderboard")
-        .select(`user_id, display_name, total_points, total_predictions, completed_predictions`)
+        .select(`user_id, display_name, total_points, total_predictions`)
         .order("total_points", { ascending: false })
         .order("total_predictions", { ascending: false })
       
