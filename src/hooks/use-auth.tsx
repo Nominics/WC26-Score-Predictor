@@ -1,3 +1,4 @@
+
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
@@ -36,9 +37,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!isConfigured) return
 
       try {
+        // Removing 'rank' from select because it's a reserved word causing errors in PostgREST
         const [profileRes, statsRes] = await Promise.all([
           supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-          supabase.from("leaderboard").select("total_points, rank").eq("user_id", userId).maybeSingle()
+          supabase.from("leaderboard").select("total_points").eq("user_id", userId).maybeSingle()
         ])
 
         if (!profileRes.error && profileRes.data) {
@@ -48,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!statsRes.error && statsRes.data) {
           setStats({
             points: statsRes.data.total_points || 0,
-            rank: statsRes.data.rank || 0,
+            rank: 0, // Rank calculation for single user requires a separate efficient logic or a fixed view
             lifelines: profileRes.data?.lifelines_remaining ?? 5
           })
         } else if (profileRes.data) {

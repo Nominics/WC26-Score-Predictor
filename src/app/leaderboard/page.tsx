@@ -29,6 +29,8 @@ export default function Leaderboard() {
 
   const fetchLeaderboard = async () => {
     try {
+      // Removing 'rank' from the select because it's a reserved keyword in Postgres 
+      // and causing an ordered-set aggregate error. We calculate rank locally.
       const { data, error } = await supabase
         .from("leaderboard")
         .select(`
@@ -36,25 +38,19 @@ export default function Leaderboard() {
           display_name,
           total_points,
           total_predictions,
-          rank,
           favorite_team
         `)
         .order("total_points", { ascending: false })
         .order("total_predictions", { ascending: false })
       
       if (error) {
-        console.error("Leaderboard fetch error details:", {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint
-        })
+        console.error("Leaderboard fetch error details:", error)
         throw error
       }
 
+      // We simulate movement for visual variety as per the "nice and attractive" requirement
       const processedEntries = (data || []).map((entry, idx) => ({
         ...entry,
-        // Using total_predictions % 3 to simulate a movement for visual variety
         movement: (entry.total_predictions % 3) - 1 
       }))
       setEntries(processedEntries)
