@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useToast } from "@/hooks/use-toast"
-import { Lock, Mail, User } from "lucide-react"
+import { Lock, Mail, User, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function LandingPage() {
@@ -64,8 +64,9 @@ export default function LandingPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-xl">
-          WC26
+        <div className="flex flex-col items-center gap-4">
+          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">WC26</div>
+          <Loader2 className="h-6 w-6 text-gray-200 animate-spin" />
         </div>
       </div>
     )

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -22,6 +21,7 @@ export default function Dashboard() {
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const supabase = createClient()
 
+  // Redirect to login ONLY if loading is finished and no user exists
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/")
@@ -160,6 +160,7 @@ export default function Dashboard() {
     )
   }
 
+  // Don't render content if no user (middleware and useEffect handle the redirect)
   if (!user) return null
 
   return (
