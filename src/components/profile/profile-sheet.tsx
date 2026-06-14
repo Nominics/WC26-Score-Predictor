@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -14,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag } from "lucide-react"
+import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { getTeamFlagUrl, COUNTRIES } from "@/lib/team-flags"
@@ -85,13 +84,10 @@ export function ProfileSheet() {
       await updateFavoriteTeam(team)
       toast({ title: "Flag Updated", description: "You are now representing " + team })
     } catch (error: any) {
-      // Gracefully handle if column is missing in DB
       toast({ 
         variant: "destructive", 
         title: "Update Failed", 
-        description: error.message?.includes("favorite_team") 
-          ? "National representation feature is currently being synced. Please try again later." 
-          : error.message 
+        description: error.message 
       })
     }
   }
@@ -208,14 +204,51 @@ export function ProfileSheet() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-5 bg-primary/5 border border-primary/10 rounded-3xl text-center space-y-1">
-              <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-60">Arena Rank</p>
-              <span className="text-3xl font-black italic text-primary">#{stats?.rank || "--"}</span>
+          <div className="space-y-4">
+            <div className="p-5 bg-primary text-white rounded-3xl text-center space-y-1 shadow-xl shadow-primary/20">
+               <div className="flex items-center justify-center gap-2 opacity-80">
+                  <Trophy className="h-3 w-3" />
+                  <p className="text-[10px] font-black uppercase tracking-widest">Global Arena Rank</p>
+               </div>
+               <span className="text-4xl font-black italic">#{stats?.rank || "--"}</span>
             </div>
-            <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl text-center space-y-1">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Points</p>
-              <span className="text-3xl font-black italic text-gray-900">{stats?.points || "0"}</span>
+
+            <div className="grid grid-cols-1 gap-3">
+              <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                   <div className="bg-white p-2 rounded-xl border border-gray-100">
+                      <Trophy className="h-4 w-4 text-primary" />
+                   </div>
+                   <div className="text-left">
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Points</p>
+                      <span className="text-xl font-black text-gray-900">{stats?.points || "0"}</span>
+                   </div>
+                </div>
+              </div>
+
+              <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                   <div className="bg-white p-2 rounded-xl border border-gray-100">
+                      <Target className="h-4 w-4 text-green-500" />
+                   </div>
+                   <div className="text-left">
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Prediction Points</p>
+                      <span className="text-xl font-black text-gray-900">{stats?.predictionPoints || "0"}</span>
+                   </div>
+                </div>
+              </div>
+
+              <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                   <div className="bg-white p-2 rounded-xl border border-gray-100">
+                      <Zap className="h-4 w-4 text-blue-500" />
+                   </div>
+                   <div className="text-left">
+                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Late Join Bonus</p>
+                      <span className="text-xl font-black text-gray-900">{stats?.startingPoints || "0"}</span>
+                   </div>
+                </div>
+              </div>
             </div>
           </div>
 

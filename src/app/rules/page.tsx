@@ -1,9 +1,8 @@
-
 "use client"
 
 import { MainNav } from "@/components/layout/main-nav"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Info, Award, Calendar, Zap, ShieldAlert } from "lucide-react"
+import { Info, Award, Calendar, Zap, ShieldAlert, Sparkles } from "lucide-react"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { cn } from "@/lib/utils"
@@ -68,6 +67,26 @@ export default function Rules() {
             </div>
           ))}
         </div>
+
+        <Card className="bg-blue-600 text-white shadow-xl rounded-3xl overflow-hidden border-0">
+          <CardHeader className="flex flex-row items-center gap-3 bg-white/10 p-6">
+            <div className="bg-white/20 p-2 rounded-xl">
+                <Sparkles className="text-white h-5 w-5"/>
+            </div>
+            <CardTitle className="text-white font-black italic uppercase tracking-tight text-lg">Late Join Bonus</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            <p className="text-sm font-medium leading-relaxed text-blue-50">
+              Players who join after the tournament has started may receive a one-time starting bonus.
+            </p>
+            <div className="bg-white/10 rounded-2xl p-4 text-[11px] font-bold uppercase tracking-tight leading-normal">
+              The bonus is calculated automatically during registration based on current leaderboard scores. It helps late players stay competitive without overtaking active players unfairly.
+            </div>
+            <p className="text-[10px] text-blue-200 font-black uppercase tracking-widest">
+              The bonus is awarded once and does not change later.
+            </p>
+          </CardContent>
+        </Card>
 
         <div className="p-5 bg-yellow-500/5 border border-yellow-500/10 rounded-3xl text-center shadow-sm">
             <p className="text-[10px] text-yellow-600 font-black uppercase italic tracking-[0.2em]">Lifelines allow late changes until minute 50</p>

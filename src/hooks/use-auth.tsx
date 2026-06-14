@@ -1,4 +1,3 @@
-
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
@@ -9,7 +8,13 @@ import type { User } from "@supabase/supabase-js"
 interface AuthContextType {
   user: User | null
   profile: any | null
-  stats: { points: number; rank: number; lifelines: number } | null
+  stats: { 
+    points: number; 
+    predictionPoints: number;
+    startingPoints: number;
+    rank: number; 
+    lifelines: number 
+  } | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
@@ -25,7 +30,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<any | null>(null)
-  const [stats, setStats] = useState<{ points: number; rank: number; lifelines: number } | null>(null)
+  const [stats, setStats] = useState<AuthContextType['stats']>(null)
   const [loading, setLoading] = useState(true)
   const [isConfigured] = useState(isSupabaseConfigured())
 
@@ -37,29 +42,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!isConfigured) return
 
       try {
-        // Removing 'rank' from select because it's a reserved word causing errors in PostgREST
-        const [profileRes, statsRes] = await Promise.all([
-          supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-          supabase.from("leaderboard").select("total_points").eq("user_id", userId).maybeSingle()
+        // Fetch profile data first
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .maybeSingle()
+
+        if (profileError) throw profileError
+        if (profileData) {
+          setProfile(profileData)
+        }
+
+        // Fetch user stats and rank from the updated leaderboard view
+        const [userStatsRes, rankRes] = await Promise.all([
+          supabase
+            .from("leaderboard")
+            .select("total_points, prediction_points, starting_points")
+            .eq("user_id", userId)
+            .maybeSingle(),
+          supabase
+            .from("leaderboard")
+            .select("user_id", { count: "exact", head: true })
+            .gt("total_points", profileData?.total_points || 0)
         ])
 
-        if (!profileRes.error && profileRes.data) {
-          setProfile(profileRes.data)
-        }
-        
-        if (!statsRes.error && statsRes.data) {
-          setStats({
-            points: statsRes.data.total_points || 0,
-            rank: 0, // Rank calculation for single user requires a separate efficient logic or a fixed view
-            lifelines: profileRes.data?.lifelines_remaining ?? 5
-          })
-        } else if (profileRes.data) {
-          setStats({
-            points: 0,
-            rank: 0,
-            lifelines: profileRes.data.lifelines_remaining ?? 5
-          })
-        }
+        const totalPoints = userStatsRes.data?.total_points || 0
+        const predPoints = userStatsRes.data?.prediction_points || 0
+        const startPoints = userStatsRes.data?.starting_points || 0
+        const rank = (rankRes.count || 0) + 1
+
+        setStats({
+          points: totalPoints,
+          predictionPoints: predPoints,
+          startingPoints: startPoints,
+          rank: rank,
+          lifelines: profileData?.lifelines_remaining ?? 5
+        })
       } catch (err) {
         console.error("Error fetching user data:", err)
       }
@@ -82,9 +101,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(currentUser)
 
       if (currentUser) {
-        fetchUserData(currentUser.id).finally(() => {
-          if (mounted) setLoading(false)
-        })
+        await fetchUserData(currentUser.id)
+        if (mounted) setLoading(false)
       } else {
         setProfile(null)
         setStats(null)
@@ -127,13 +145,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw error
     }
 
+    // Note: Profiles are handled by a Supabase trigger, but we fetch to ensure sync
     if (data.user) {
-      await supabase.from("profiles").upsert({
-        id: data.user.id,
-        display_name: name,
-        lifelines_remaining: 5,
-        updated_at: new Date().toISOString(),
-      })
       await fetchUserData(data.user.id)
     }
     router.replace("/dashboard")
