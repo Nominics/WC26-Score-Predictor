@@ -1,4 +1,3 @@
-
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
@@ -15,6 +14,7 @@ interface AuthContextType {
   register: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
   updateDisplayName: (name: string) => Promise<void>
+  updateFavoriteTeam: (team: string) => Promise<void>
   useLifeline: () => Promise<void>
   isConfigured: boolean
 }
@@ -126,7 +126,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (data.user) {
-      // For initial registration, upsert is fine to ensure profile exists
       await supabase.from("profiles").upsert({
         id: data.user.id,
         display_name: name,
@@ -148,7 +147,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateDisplayName = async (name: string) => {
     if (!user || !isConfigured) return
-    
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -156,12 +154,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updated_at: new Date().toISOString()
       })
       .eq("id", user.id)
-      .select()
-      .single()
-
     if (error) throw error
-    
-    // Refresh local profile data after successful update
+    await fetchUserData(user.id)
+  }
+
+  const updateFavoriteTeam = async (team: string) => {
+    if (!user || !isConfigured) return
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        favorite_team: team,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", user.id)
+    if (error) throw error
     await fetchUserData(user.id)
   }
 
@@ -185,6 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         register,
         logout,
         updateDisplayName,
+        updateFavoriteTeam,
         useLifeline,
         isConfigured,
       }}

@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Trophy, Medal, Loader2 } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Medal, Loader2, Trophy, ArrowUp, ArrowDown, Minus } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
+import { getTeamFlagUrl } from "@/lib/team-flags"
+import { cn } from "@/lib/utils"
 
 export default function Leaderboard() {
   const [entries, setEntries] = useState<any[]>([])
@@ -28,12 +30,25 @@ export default function Leaderboard() {
     try {
       const { data, error } = await supabase
         .from("leaderboard")
-        .select("*")
+        .select(`
+          user_id,
+          display_name,
+          total_points,
+          total_predictions,
+          rank,
+          favorite_team
+        `)
         .order("total_points", { ascending: false })
         .order("total_predictions", { ascending: false })
       
       if (error) throw error
-      setEntries(data || [])
+      // Mock rank movement for visual effect if not in DB
+      const processedEntries = (data || []).map((entry, idx) => ({
+        ...entry,
+        // Using total_predictions % 3 to simulate a movement for visual variety
+        movement: (entry.total_predictions % 3) - 1 
+      }))
+      setEntries(processedEntries)
     } catch (err) {
       console.error("Leaderboard fetch error:", err)
     } finally {
@@ -54,11 +69,11 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen bg-gray-50 text-foreground pb-24">
       <MainNav />
-      <header className="px-6 py-4 bg-primary text-white shadow-lg sticky top-0 z-40">
+      <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div>
-            <h1 className="text-2xl font-black italic tracking-tighter">LEADERBOARD</h1>
-            <p className="text-[10px] uppercase font-bold opacity-80 mt-0.5">Season 2026 · LIVE</p>
+            <h1 className="text-xl font-black italic tracking-tighter uppercase">LEADERBOARD</h1>
+            <p className="text-[10px] uppercase font-black text-gray-400 mt-0.5 tracking-widest">Season 2026 • LIVE</p>
           </div>
           <div className="flex items-center gap-2">
             <PwaInstallButton />
@@ -67,51 +82,78 @@ export default function Leaderboard() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto mt-6 px-4">
-        <div className="bg-white shadow-2xl rounded-[2.5rem] overflow-hidden border border-gray-100">
-          {loading ? (
-             <div className="p-20 flex flex-col items-center gap-3">
-                <Loader2 className="h-6 w-6 text-primary animate-spin" />
-                <p className="text-[10px] font-black uppercase text-gray-400">Syncing Rankings...</p>
-             </div>
-          ) : entries.length === 0 ? (
-            <div className="p-20 text-center text-gray-400 font-bold uppercase text-[10px]">
-                Arena is currently empty.
-            </div>
-          ) : (
-            entries.map((entry, i) => (
+      <main className="max-w-2xl mx-auto mt-6 px-4 space-y-3">
+        {loading ? (
+          <div className="p-20 flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <p className="text-[10px] font-black uppercase text-gray-300 tracking-[0.2em]">Syncing Rankings...</p>
+          </div>
+        ) : entries.length === 0 ? (
+          <div className="p-20 text-center text-gray-300 font-bold uppercase text-[10px]">
+            No activity detected in the arena.
+          </div>
+        ) : (
+          entries.map((entry, i) => {
+            const rank = i + 1;
+            const flagUrl = getTeamFlagUrl(entry.favorite_team);
+            const movement = entry.movement; // Mocked -1, 0, or 1
+
+            return (
               <div 
                 key={entry.user_id} 
-                className={`flex items-center justify-between p-6 border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-all ${i < 3 ? 'bg-primary/5' : ''}`}
+                className={cn(
+                  "flex items-center gap-5 p-5 bg-white rounded-[2.5rem] border border-gray-100 shadow-xl transition-all hover:scale-[1.01]",
+                  rank <= 3 && "ring-2 ring-primary/5"
+                )}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-8 text-center">
-                    {i === 0 ? <Medal className="h-6 w-6 text-yellow-500 mx-auto" /> : 
-                     i === 1 ? <Medal className="h-6 w-6 text-gray-400 mx-auto" /> :
-                     i === 2 ? <Medal className="h-6 w-6 text-orange-400 mx-auto" /> :
-                     <span className="text-sm font-black text-gray-300">#{i + 1}</span>}
-                  </div>
-                  
-                  <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                    <AvatarFallback className="bg-primary/10 text-primary font-black text-xs">
-                      {getInitials(entry.display_name)}
-                    </AvatarFallback>
-                  </Avatar>
-
-                  <div className="flex flex-col">
-                    <span className="font-black text-sm uppercase tracking-tight text-gray-900">{entry.display_name}</span>
-                    <span className="text-[8px] text-gray-400 font-bold uppercase">{entry.total_predictions} Predictions</span>
-                  </div>
+                {/* Rank Number / Medal */}
+                <div className="w-10 flex flex-col items-center justify-center">
+                  {rank === 1 ? <Medal className="h-7 w-7 text-yellow-500 drop-shadow-md" /> : 
+                   rank === 2 ? <Medal className="h-7 w-7 text-gray-400 drop-shadow-md" /> :
+                   rank === 3 ? <Medal className="h-7 w-7 text-orange-400 drop-shadow-md" /> :
+                   <span className="text-lg font-black text-gray-900">#{rank}</span>}
                 </div>
                 
-                <div className="text-right">
-                  <span className="text-2xl font-black italic text-primary leading-none">{entry.total_points}</span>
-                  <p className="text-[8px] uppercase font-black text-gray-300">PTS</p>
+                {/* Profile Pic */}
+                <Avatar className="h-14 w-14 border-4 border-white shadow-xl">
+                  {flagUrl ? (
+                    <AvatarImage src={flagUrl} className="object-cover" />
+                  ) : (
+                    <AvatarFallback className="bg-primary/5 text-primary font-black text-sm">
+                      {getInitials(entry.display_name)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+
+                {/* Name & Points */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col">
+                    <span className="font-black text-sm uppercase tracking-tight text-gray-900 truncate">
+                      {entry.display_name}
+                    </span>
+                    <div className="mt-1 flex items-center gap-2">
+                       <div className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 rounded-full border border-primary/5 shadow-inner">
+                          <Trophy className="h-3 w-3 text-primary fill-primary" />
+                          <span className="text-[11px] font-black italic text-primary">{entry.total_points}</span>
+                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rank Movement */}
+                <div className="flex items-center justify-center w-8">
+                  {movement > 0 ? (
+                    <ArrowUp className="h-5 w-5 text-green-500 fill-green-500 drop-shadow-sm" />
+                  ) : movement < 0 ? (
+                    <ArrowDown className="h-5 w-5 text-red-500 fill-red-500 drop-shadow-sm" />
+                  ) : (
+                    <Minus className="h-4 w-4 text-gray-200 stroke-[3px]" />
+                  )}
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            )
+          })
+        )}
       </main>
     </div>
   )

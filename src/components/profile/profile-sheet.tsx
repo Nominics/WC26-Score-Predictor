@@ -9,23 +9,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { LogOut, Mail, Trophy, Star, Share2, ShieldCheck, Edit2, Check, X } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
+import { getTeamFlagUrl, COUNTRIES } from "@/lib/team-flags"
 import Link from "next/link"
+import Image from "next/image"
 
 export function ProfileSheet() {
-  const { user, profile, stats, logout, updateDisplayName } = useAuth()
+  const { user, profile, stats, logout, updateDisplayName, updateFavoriteTeam } = useAuth()
   const { toast } = useToast()
   
   const [isEditing, setIsEditing] = useState(false)
   const [newName, setNewName] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
-  // Update internal name state when profile loads or changes
   useEffect(() => {
     if (profile?.display_name) {
       setNewName(profile.display_name)
@@ -45,21 +47,16 @@ export function ProfileSheet() {
   }
 
   const initials = getInitials(profile?.display_name)
+  const flagUrl = getTeamFlagUrl(profile?.favorite_team)
   const isSuperadmin = profile?.role === 'superadmin'
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}?ref=${user.id}`
+    const shareUrl = `${window.location.origin}`
     const success = await copyToClipboard(shareUrl)
     if (success) {
       toast({
         title: "Link Copied",
-        description: "Your invite link is ready to share!",
-      })
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Copy Failed",
-        description: "Please copy the URL manually from your browser.",
+        description: "Join the predictor now!",
       })
     }
   }
@@ -67,41 +64,42 @@ export function ProfileSheet() {
   const handleUpdateName = async () => {
     const trimmedName = newName.trim()
     if (trimmedName.length < 3) {
-      toast({
-        variant: "destructive",
-        title: "Invalid Name",
-        description: "Display name must be at least 3 characters.",
-      })
+      toast({ variant: "destructive", title: "Invalid Name", description: "At least 3 characters required." })
       return
     }
-
     setIsSaving(true)
     try {
       await updateDisplayName(trimmedName)
       setIsEditing(false)
-      toast({
-        title: "Profile Updated",
-        description: "Your display name has been changed.",
-      })
+      toast({ title: "Updated", description: "Display name changed." })
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: error.message || "Could not update display name.",
-      })
+      toast({ variant: "destructive", title: "Update Failed", description: error.message })
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleUpdateTeam = async (team: string) => {
+    try {
+      await updateFavoriteTeam(team)
+      toast({ title: "Flag Updated", description: "You are now representing " + team })
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Update Failed", description: error.message })
     }
   }
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors shadow-sm">
+        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 bg-white border shadow-sm hover:scale-105 transition-all">
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-primary/10 text-primary font-black text-[10px]">
-              {initials}
-            </AvatarFallback>
+            {flagUrl ? (
+              <AvatarImage src={flagUrl} className="object-cover" />
+            ) : (
+              <AvatarFallback className="bg-primary/10 text-primary font-black text-[10px]">
+                {initials}
+              </AvatarFallback>
+            )}
           </Avatar>
         </Button>
       </SheetTrigger>
@@ -114,11 +112,17 @@ export function ProfileSheet() {
         
         <div className="p-6 space-y-8">
           <div className="flex flex-col items-center text-center space-y-4">
-            <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
-              <AvatarFallback className="bg-gray-50 text-primary font-black text-2xl">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-24 w-24 border-4 border-white shadow-2xl">
+                {flagUrl ? (
+                  <AvatarImage src={flagUrl} className="object-cover" />
+                ) : (
+                  <AvatarFallback className="bg-gray-50 text-primary font-black text-2xl">
+                    {initials}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+            </div>
             
             <div className="space-y-1 w-full flex flex-col items-center">
               {isEditing ? (
@@ -127,14 +131,13 @@ export function ProfileSheet() {
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     className="h-10 text-center font-bold"
-                    placeholder="Enter new name"
                     disabled={isSaving}
                     autoFocus
                   />
                   <Button size="icon" variant="ghost" className="h-10 w-10 text-green-600" onClick={handleUpdateName} disabled={isSaving}>
                     <Check className="h-4 w-4" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-10 w-10 text-gray-400" onClick={() => { setIsEditing(false); setNewName(profile?.display_name || ""); }} disabled={isSaving}>
+                  <Button size="icon" variant="ghost" className="h-10 w-10 text-gray-400" onClick={() => setIsEditing(false)} disabled={isSaving}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
@@ -143,12 +146,7 @@ export function ProfileSheet() {
                   <h3 className="text-xl font-black uppercase italic text-gray-900 leading-tight">
                     {profile?.display_name}
                   </h3>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 bg-orange-500 hover:bg-orange-600 text-white rounded-full transition-all border border-orange-600 shadow-sm"
-                    onClick={() => { setIsEditing(true); setNewName(profile?.display_name || ""); }}
-                  >
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400" onClick={() => setIsEditing(true)}>
                     <Edit2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -157,8 +155,32 @@ export function ProfileSheet() {
                 <Mail className="h-3 w-3" /> {user.email}
               </p>
             </div>
+
+            <div className="w-full space-y-3 pt-4 border-t border-gray-100">
+               <div className="flex items-center gap-2 justify-center">
+                  <Flag className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Represent Your Nation</span>
+               </div>
+               <Select value={profile?.favorite_team || ""} onValueChange={handleUpdateTeam}>
+                  <SelectTrigger className="w-full h-12 rounded-2xl border-gray-100 bg-gray-50/50">
+                    <SelectValue placeholder="Select National Team" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {COUNTRIES.map((country) => (
+                      <SelectItem key={country} value={country}>
+                        <div className="flex items-center gap-3">
+                          <div className="relative h-4 w-6 rounded-sm overflow-hidden border">
+                            <Image src={getTeamFlagUrl(country)!} alt="" fill className="object-cover" />
+                          </div>
+                          <span className="font-bold text-xs uppercase">{country}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+               </Select>
+            </div>
             
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2 pt-4">
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -170,11 +192,7 @@ export function ProfileSheet() {
               
               {isSuperadmin && (
                 <Link href="/admin">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="rounded-full h-9 px-6 font-black uppercase text-[10px] tracking-widest gap-2 border-primary text-primary hover:bg-primary hover:text-white"
-                  >
+                  <Button variant="outline" size="sm" className="rounded-full h-9 px-6 font-black uppercase text-[10px] tracking-widest gap-2">
                     <ShieldCheck className="h-3 w-3" /> Admin Panel
                   </Button>
                 </Link>
@@ -185,25 +203,17 @@ export function ProfileSheet() {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-5 bg-primary/5 border border-primary/10 rounded-3xl text-center space-y-1">
               <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-60">Your Rank</p>
-              <div className="flex items-baseline justify-center gap-0.5">
-                <span className="text-3xl font-black italic text-primary">#{stats?.rank || "--"}</span>
-              </div>
+              <span className="text-3xl font-black italic text-primary">#{stats?.rank || "--"}</span>
             </div>
             <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl text-center space-y-1">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Points</p>
-              <div className="flex items-baseline justify-center gap-0.5">
-                <span className="text-3xl font-black italic text-gray-900">{stats?.points || "0"}</span>
-              </div>
+              <span className="text-3xl font-black italic text-gray-900">{stats?.points || "0"}</span>
             </div>
           </div>
 
           <div className="pt-6 border-t border-gray-100">
-            <Button 
-              variant="destructive" 
-              onClick={() => logout()}
-              className="w-full rounded-2xl h-14 font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-lg"
-            >
-              <LogOut className="h-4 w-4" /> Sign Out of Arena
+            <Button variant="destructive" onClick={() => logout()} className="w-full rounded-2xl h-14 font-black uppercase tracking-widest text-xs gap-2">
+              <LogOut className="h-4 w-4" /> Sign Out
             </Button>
           </div>
         </div>

@@ -49,6 +49,8 @@ const TEAM_COUNTRY_CODES: Record<string, string> = {
   "Colombia": "co",
 }
 
+export const COUNTRIES = Object.keys(TEAM_COUNTRY_CODES).sort();
+
 export function getTeamFlagUrl(teamName?: string | null) {
   if (!teamName) return null
 
