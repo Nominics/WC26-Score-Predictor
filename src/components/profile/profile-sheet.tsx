@@ -89,7 +89,7 @@ export function ProfileSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors">
+        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors shadow-sm">
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-primary/10 text-primary font-black text-[10px]">
               {initials}
@@ -131,17 +131,17 @@ export function ProfileSheet() {
                   </Button>
                 </div>
               ) : (
-                <div className="group flex items-center gap-2">
+                <div className="flex items-center gap-2">
                   <h3 className="text-xl font-black uppercase italic text-gray-900 leading-tight">
                     {profile?.display_name}
                   </h3>
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-8 w-8 bg-orange-50 hover:bg-orange-100 text-orange-500 rounded-full transition-all border border-orange-200"
                     onClick={() => { setIsEditing(true); setNewName(profile?.display_name || ""); }}
                   >
-                    <Edit2 className="h-3 w-3 text-gray-400" />
+                    <Edit2 className="h-4 w-4" />
                   </Button>
                 </div>
               )}
@@ -190,14 +190,14 @@ export function ProfileSheet() {
           </div>
 
           <div className="space-y-3">
-             <div className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl">
+             <div className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
                 <Trophy className="h-5 w-5 text-yellow-500" />
                 <div className="flex-1">
                   <p className="text-xs font-black uppercase text-gray-900">Career Best</p>
                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Rank #1 in WC22</p>
                 </div>
              </div>
-             <div className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl">
+             <div className="flex items-center gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
                 <Star className="h-5 w-5 text-primary" />
                 <div className="flex-1">
                   <p className="text-xs font-black uppercase text-gray-900">Elite Member</p>
