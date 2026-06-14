@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getTeamFlagUrl } from "@/lib/team-flags";
 
 type WorldCupApiGame = {
   id: string;
@@ -109,6 +110,8 @@ export async function GET() {
   const updates = apiGamesDue.map((game) => {
     const status = mapStatus(game);
     const kickoffUtc = parseKickoffToUtc(game.local_date);
+    const homeTeam = game.home_team_name_en || game.home_team_label || "TBD";
+    const awayTeam = game.away_team_name_en || game.away_team_label || "TBD";
 
     return {
       external_id: game.id,
@@ -116,8 +119,10 @@ export async function GET() {
       stage: game.type,
       group_name: game.group,
       venue: game.stadium_id ? `Stadium ${game.stadium_id}` : null,
-      home_team: game.home_team_name_en || game.home_team_label || "TBD",
-      away_team: game.away_team_name_en || game.away_team_label || "TBD",
+      home_team: homeTeam,
+      away_team: awayTeam,
+      home_flag: getTeamFlagUrl(homeTeam),
+      away_flag: getTeamFlagUrl(awayTeam),
       kickoff_at: kickoffUtc,
       status,
       home_score: parseScore(game.home_score, status),

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Edit2, Check, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DateTime } from "luxon"
+import Image from "next/image"
 
 interface FixtureCardProps {
   fixture: any
@@ -57,8 +57,18 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
         <div className="flex items-center justify-between gap-4">
           {/* Home Team */}
           <div className="flex flex-col items-center flex-1 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-3xl mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
-              ⚽
+            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center overflow-hidden mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
+              {fixture.home_flag ? (
+                <Image 
+                  src={fixture.home_flag} 
+                  alt={fixture.home_team} 
+                  width={64} 
+                  height={64} 
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <span className="text-3xl">⚽</span>
+              )}
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.home_team}</span>
             <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.home_team.substring(0, 3).toUpperCase()}</span>
@@ -133,8 +143,18 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave }: Fixtu
 
           {/* Away Team */}
           <div className="flex flex-col items-center flex-1 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center text-3xl mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
-              ⚽
+            <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center overflow-hidden mb-3 border border-gray-100 shadow-sm transition-transform group-hover:scale-105">
+              {fixture.away_flag ? (
+                <Image 
+                  src={fixture.away_flag} 
+                  alt={fixture.away_team} 
+                  width={64} 
+                  height={64} 
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <span className="text-3xl">⚽</span>
+              )}
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 leading-tight mb-1">{fixture.away_team}</span>
             <span className="text-[9px] font-bold text-gray-400 uppercase">{fixture.away_team.substring(0, 3).toUpperCase()}</span>
