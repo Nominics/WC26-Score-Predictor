@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sheet"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { User, LogOut, Mail, Trophy, Star, Copy, Share2 } from "lucide-react"
+import { User, LogOut, Mail, Trophy, Star, Share2 } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 
