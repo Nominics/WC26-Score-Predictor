@@ -18,16 +18,13 @@ type BeforeInstallPromptEvent = Event & {
 
 function isIos() {
   if (typeof window === "undefined") return false
-
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent)
 }
 
 function isStandalone() {
   if (typeof window === "undefined") return false
-
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    // iOS Safari standalone check
     // @ts-expect-error iOS specific property
     window.navigator.standalone === true
   )
