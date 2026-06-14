@@ -21,12 +21,14 @@ export default function Dashboard() {
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const supabase = createClient()
 
+  // Protect route
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push("/")
+      router.replace("/")
     }
   }, [user, authLoading, router])
 
+  // Fetch data only after user is confirmed
   useEffect(() => {
     if (user) {
       fetchData()
@@ -142,7 +144,8 @@ export default function Dashboard() {
     }
   }
 
-  if (authLoading || (isLoading && user)) {
+  // Strictly block rendering while auth is unknown
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -153,6 +156,8 @@ export default function Dashboard() {
     )
   }
 
+  // If check is done and no user, the useEffect will redirect. 
+  // We return null to prevent content flash.
   if (!user) return null
 
   return (
@@ -171,73 +176,82 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {dateTabs.length > 0 && (
-        <div className="px-6 mb-8 mt-4 sticky top-[92px] bg-gray-50/80 backdrop-blur-md z-30 py-4 border-b border-gray-100/50">
-          <div className="flex items-center no-scrollbar overflow-x-auto gap-3 max-w-2xl mx-auto">
-            {dateTabs.map((d) => (
-              <button
-                key={d.iso}
-                onClick={() => setActiveDate(d.iso)}
-                className={cn(
-                  "flex flex-col items-center min-w-[4rem] py-3 rounded-2xl transition-all duration-300 border",
-                  activeDate === d.iso 
-                    ? "active-pill border-primary bg-primary" 
-                    : "text-gray-400 bg-white border-gray-100 hover:border-gray-200"
-                )}
-              >
-                <span className="text-[9px] font-bold uppercase tracking-wider mb-0.5">{d.day}</span>
-                <span className="text-lg font-black leading-none">{d.date}</span>
-                <span className="text-[8px] font-black uppercase mt-0.5">{d.month}</span>
-              </button>
-            ))}
-          </div>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+          <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">Loading Arena...</p>
         </div>
-      )}
-
-      <main className="px-6 space-y-8 max-w-2xl mx-auto mt-6">
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-black uppercase italic tracking-tight flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4 text-gray-400" />
-              {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Upcoming Matches'}
-            </h2>
-            <span className="bg-primary/10 text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase italic">
-              {displayFixtures.length} Matches
-            </span>
-          </div>
-          
-          {fixtures.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
-              <div className="space-y-4 max-w-xs mx-auto">
-                <div className="bg-gray-50 h-16 w-16 rounded-full flex items-center justify-center mx-auto">
-                  <Trophy className="h-8 w-8 text-gray-200" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-gray-900 font-black uppercase text-sm tracking-tight">Arena is Empty</p>
-                  <p className="text-gray-400 font-bold uppercase text-[9px] tracking-widest leading-relaxed">
-                    We're preparing the matches. Check back soon for the latest schedule.
-                  </p>
-                </div>
+      ) : (
+        <>
+          {dateTabs.length > 0 && (
+            <div className="px-6 mb-8 mt-4 sticky top-[92px] bg-gray-50/80 backdrop-blur-md z-30 py-4 border-b border-gray-100/50">
+              <div className="flex items-center no-scrollbar overflow-x-auto gap-3 max-w-2xl mx-auto">
+                {dateTabs.map((d) => (
+                  <button
+                    key={d.iso}
+                    onClick={() => setActiveDate(d.iso)}
+                    className={cn(
+                      "flex flex-col items-center min-w-[4rem] py-3 rounded-2xl transition-all duration-300 border",
+                      activeDate === d.iso 
+                        ? "active-pill border-primary bg-primary" 
+                        : "text-gray-400 bg-white border-gray-100 hover:border-gray-200"
+                    )}
+                  >
+                    <span className="text-[9px] font-bold uppercase tracking-wider mb-0.5">{d.day}</span>
+                    <span className="text-lg font-black leading-none">{d.date}</span>
+                    <span className="text-[8px] font-black uppercase mt-0.5">{d.month}</span>
+                  </button>
+                ))}
               </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {displayFixtures.map((fixture) => {
-                const pred = predictions.find(p => p.fixture_id === fixture.external_id)
-                return (
-                  <FixtureCard 
-                    key={fixture.external_id} 
-                    fixture={fixture} 
-                    initialHome={pred?.home_score}
-                    initialAway={pred?.away_score}
-                    onSave={handlePredict}
-                  />
-                )
-              })}
-            </div>
           )}
-        </div>
-      </main>
+
+          <main className="px-6 space-y-8 max-w-2xl mx-auto mt-6">
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-lg font-black uppercase italic tracking-tight flex items-center gap-2">
+                  <CalendarIcon className="h-4 w-4 text-gray-400" />
+                  {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Upcoming Matches'}
+                </h2>
+                <span className="bg-primary/10 text-primary text-[9px] font-black px-3 py-1 rounded-full uppercase italic">
+                  {displayFixtures.length} Matches
+                </span>
+              </div>
+              
+              {fixtures.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-[2.5rem] border border-dashed border-gray-200">
+                  <div className="space-y-4 max-w-xs mx-auto">
+                    <div className="bg-gray-50 h-16 w-16 rounded-full flex items-center justify-center mx-auto">
+                      <Trophy className="h-8 w-8 text-gray-200" />
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-gray-900 font-black uppercase text-sm tracking-tight">Arena is Empty</p>
+                      <p className="text-gray-400 font-bold uppercase text-[9px] tracking-widest leading-relaxed">
+                        We're preparing the matches. Check back soon for the latest schedule.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {displayFixtures.map((fixture) => {
+                    const pred = predictions.find(p => p.fixture_id === fixture.external_id)
+                    return (
+                      <FixtureCard 
+                        key={fixture.external_id} 
+                        fixture={fixture} 
+                        initialHome={pred?.home_score}
+                        initialAway={pred?.away_score}
+                        onSave={handlePredict}
+                      />
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </main>
+        </>
+      )}
     </div>
   )
 }

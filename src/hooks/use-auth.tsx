@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { User } from "@supabase/supabase-js"
@@ -24,7 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const supabase = createClient()
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     try {
       const { data } = await supabase
         .from("profiles")
@@ -35,14 +35,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error("Error fetching profile:", err)
     }
-  }
+  }, [supabase])
 
   useEffect(() => {
     let mounted = true
+    let isInitialCheckDone = false
 
     async function initializeAuth() {
       try {
-        // Initial session check from storage/cookies
+        // 1. Check current session immediately
         const { data: { session } } = await supabase.auth.getSession()
         
         if (mounted) {
@@ -53,7 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser(null)
             setProfile(null)
           }
-          // Only stop loading after we've confirmed the initial session state
+          // We don't set loading false yet, we wait for INITIAL_SESSION event or this to finish
+          isInitialCheckDone = true
           setLoading(false)
         }
       } catch (err) {
@@ -64,23 +66,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth()
 
-    // Listen for auth changes (SIGN_IN, SIGN_OUT, INITIAL_SESSION, etc.)
+    // 2. Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth Event:", event)
+      console.log("Auth Event:", event, !!session)
       
       if (mounted) {
         if (session?.user) {
           setUser(session.user)
           await fetchProfile(session.user.id)
         } else {
-          // Only treat as logged out if the event is actually a sign out or there's no session
-          if (event === 'SIGNED_OUT' || !session) {
+          // Explicitly handle sign out or missing sessions
+          if (event === 'SIGNED_OUT' || (!session && isInitialCheckDone)) {
             setUser(null)
             setProfile(null)
           }
         }
         
-        // Ensure loading is false after the first event, especially INITIAL_SESSION
+        // Ensure loading is false after the first meaningful check
         setLoading(false)
       }
     })
@@ -89,12 +91,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       mounted = false
       subscription.unsubscribe()
     }
-  }, [])
+  }, [supabase, fetchProfile])
 
   const login = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    router.push("/dashboard")
+    router.replace("/dashboard")
   }
 
   const register = async (email: string, password: string, name: string) => {
@@ -117,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (profileError) console.error("Error creating profile:", profileError)
       await fetchProfile(data.user.id)
-      router.push("/dashboard")
+      router.replace("/dashboard")
     }
   }
 
@@ -125,7 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut()
     setUser(null)
     setProfile(null)
-    router.push("/")
+    router.replace("/")
   }
 
   const updateDisplayName = async (name: string) => {

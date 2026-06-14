@@ -23,9 +23,10 @@ export default function LandingPage() {
   const router = useRouter()
   const logo = PlaceHolderImages.find(img => img.id === 'fifa-logo')
 
+  // Auto-redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
-      router.push("/dashboard")
+      router.replace("/dashboard")
     }
   }, [user, loading, router])
 
@@ -60,6 +61,7 @@ export default function LandingPage() {
     }
   }
 
+  // Strictly block rendering while auth state is being determined OR if user exists (to prevent form flash)
   if (loading || user) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
