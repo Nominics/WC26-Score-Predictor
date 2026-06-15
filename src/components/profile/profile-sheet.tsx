@@ -13,10 +13,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target, Star } from "lucide-react"
+import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target, Star, Bell } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { getTeamFlagUrl, COUNTRIES } from "@/lib/team-flags"
+import { NotificationToggle } from "./notification-toggle"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -114,7 +115,7 @@ export function ProfileSheet() {
           </SheetTitle>
         </SheetHeader>
         
-        <div className="p-6 space-y-8">
+        <div className="p-6 space-y-8 pb-12">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="relative">
               <Avatar className="h-24 w-24 border-4 border-white shadow-2xl">
@@ -202,6 +203,14 @@ export function ProfileSheet() {
                 </Link>
               )}
             </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+               <Bell className="h-3 w-3 text-primary" />
+               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Arena Alerts</span>
+            </div>
+            <NotificationToggle />
           </div>
 
           <div className="space-y-4">
