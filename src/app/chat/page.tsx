@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { MainNav } from "@/components/layout/main-nav"
 import { createClient } from "@/lib/supabase/client"
-import { Send, Loader2, MessageSquare, Zap, Clock } from "lucide-react"
+import { Send, Loader2, MessageSquare, Zap } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 import { DateTime } from "luxon"
@@ -17,7 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 
 export default function ChatPage() {
-  const { user, profile, stats } = useAuth()
+  const { user, stats } = useAuth()
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState("")
   const [loading, setLoading] = useState(true)
@@ -59,7 +59,7 @@ export default function ChatPage() {
           content, 
           created_at, 
           user_id,
-          profiles (
+          profiles(
             display_name,
             favorite_team
           )
@@ -67,10 +67,19 @@ export default function ChatPage() {
         .order("created_at", { ascending: true })
         .limit(100)
       
-      if (error) throw error
+      if (error) {
+        // Detailed logging for debugging
+        console.error("Supabase Chat Fetch Error Details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        })
+        throw new Error(error.message)
+      }
       setMessages(data || [])
-    } catch (err) {
-      console.error("Chat fetch error:", err)
+    } catch (err: any) {
+      console.error("Chat fetch error:", err.message || err)
     } finally {
       setLoading(false)
     }
@@ -92,9 +101,9 @@ export default function ChatPage() {
           content: messageContent
         })
       
-      if (error) throw error
+      if (error) throw new Error(error.message)
     } catch (err: any) {
-      console.error("Message send error:", err)
+      console.error("Message send error:", err.message || err)
     } finally {
       setSending(false)
     }
@@ -180,7 +189,7 @@ export default function ChatPage() {
                       )}>
                         <div className="flex items-center gap-2 px-1">
                           <span className="text-[9px] font-black uppercase text-gray-400 tracking-tight">
-                            {msg.profiles?.display_name}
+                            {msg.profiles?.display_name || "Unknown Fan"}
                           </span>
                           <span className="text-[8px] font-bold text-gray-300">
                             {DateTime.fromISO(msg.created_at).toFormat('HH:mm')}
