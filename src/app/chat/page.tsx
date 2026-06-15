@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -35,7 +34,18 @@ export default function ChatPage() {
         event: 'INSERT', 
         schema: 'public', 
         table: 'arena_messages' 
-      }, () => {
+      }, (payload) => {
+        // Handle local notification logic if window is hidden
+        if (typeof window !== 'undefined' && document.visibilityState === 'hidden') {
+          if (Notification.permission === 'granted') {
+             // We can't get the full profile here easily without another fetch or view lookup
+             // but we can trigger a re-fetch and rely on that or show a generic alert.
+             new Notification('New Arena Message', {
+               body: 'Someone just posted in the Arena Chat!',
+               icon: '/logo.png'
+             });
+          }
+        }
         // Re-fetch the feed view when a new message is inserted
         fetchMessages()
       })
@@ -132,7 +142,7 @@ export default function ChatPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col h-[calc(100vh-140px)] overflow-hidden mb-24 md:mb-0">
+      <main className="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col h-[calc(100vh-160px)] overflow-hidden mb-32 md:mb-0">
         <div className="flex-1 bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
           <ScrollArea className="flex-1 p-6">
             {loading ? (

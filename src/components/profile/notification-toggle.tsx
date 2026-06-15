@@ -54,7 +54,7 @@ export function NotificationToggle() {
         toast({
           variant: "destructive",
           title: "Not Supported",
-          description: "This browser does not support push notifications.",
+          description: "This browser does not support notifications.",
         })
         return
       }
@@ -64,7 +64,7 @@ export function NotificationToggle() {
         setEnabled(true)
         toast({
           title: "Notifications Enabled!",
-          description: "You will now receive live match alerts in the Arena.",
+          description: "You will now receive live Arena & Chat alerts.",
         })
       } else {
         setEnabled(false)
@@ -78,7 +78,7 @@ export function NotificationToggle() {
       setEnabled(false)
       toast({
         title: "Notifications Disabled",
-        description: "You will no longer receive match updates.",
+        description: "You will no longer receive Arena alerts.",
       })
     }
   }
@@ -95,8 +95,8 @@ export function NotificationToggle() {
             )}
           </div>
           <div className="text-left">
-            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Push Alerts</p>
-            <span className="text-sm font-black text-gray-900">Live Match Updates</span>
+            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">System Alerts</p>
+            <span className="text-sm font-black text-gray-900">Push Notifications</span>
           </div>
         </div>
         <Switch 
@@ -114,7 +114,7 @@ export function NotificationToggle() {
               Installation Required
             </DialogTitle>
             <DialogDescription className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-1">
-              Live Push Notifications require the Arena app to be installed.
+              Push Notifications require the Arena app to be installed.
             </DialogDescription>
           </DialogHeader>
 
@@ -122,7 +122,7 @@ export function NotificationToggle() {
             <div className="rounded-2xl bg-primary/5 p-4 flex gap-3 items-start border border-primary/10">
               <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <p className="text-[11px] font-medium text-gray-600 leading-relaxed">
-                To enable real-time goal alerts and match locks on your {isIos() ? 'iPhone' : 'device'}, you must first add this app to your Home Screen.
+                To enable real-time goal alerts and chat messages on your {isIos() ? 'iPhone' : 'device'}, you must first add this app to your Home Screen.
               </p>
             </div>
 
