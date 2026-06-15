@@ -10,6 +10,7 @@ import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { useAuth } from "@/hooks/use-auth"
 import { getTeamFlagUrl } from "@/lib/team-flags"
+import { cn } from "@/lib/utils"
 
 export default function Activity() {
   const { stats } = useAuth()
