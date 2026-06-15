@@ -101,7 +101,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-foreground flex flex-col pb-24 md:pb-0">
+    <div className="min-h-screen bg-gray-50 text-foreground flex flex-col">
       <MainNav />
       <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
@@ -132,7 +132,7 @@ export default function ChatPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col h-[calc(100vh-140px)] overflow-hidden">
+      <main className="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col h-[calc(100vh-140px)] overflow-hidden mb-24 md:mb-0">
         <div className="flex-1 bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden flex flex-col">
           <ScrollArea className="flex-1 p-6">
             {loading ? (
