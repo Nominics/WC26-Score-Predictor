@@ -6,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, ShieldCheck, Loader2, Zap, Star, UserSearch } from "lucide-react"
+import { RefreshCcw, ShieldCheck, Loader2, Zap, Star, UserSearch, UserPlus } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -28,11 +28,14 @@ export default function AdminPage() {
   const { toast } = useToast()
   const [isSyncing, setIsSyncing] = useState(false)
   const [isAwarding, setIsAwarding] = useState(false)
+  const [isPromoting, setIsPromoting] = useState(false)
   const [allProfiles, setAllProfiles] = useState<any[]>([])
   const [selectedUser, setSelectedUser] = useState("")
+  const [selectedUserForRole, setSelectedUserForRole] = useState("")
   const [points, setPoints] = useState("")
   const [reason, setReason] = useState("")
-  const [showConfirm, setShowConfirm] = useState(false)
+  const [showConfirmPoints, setShowConfirmPoints] = useState(false)
+  const [showConfirmPromote, setShowConfirmPromote] = useState(false)
   
   const router = useRouter()
   const supabase = createClient()
@@ -47,7 +50,7 @@ export default function AdminPage() {
   }, [user, profile, authLoading, router])
 
   const fetchProfiles = async () => {
-    const { data } = await supabase.from("profiles").select("id, display_name").order("display_name")
+    const { data } = await supabase.from("profiles").select("id, display_name, role").order("display_name")
     setAllProfiles(data || [])
   }
 
@@ -105,7 +108,38 @@ export default function AdminPage() {
       toast({ variant: "destructive", title: "Award Failed", description: error.message })
     } finally {
       setIsAwarding(false)
-      setShowConfirm(false)
+      setShowConfirmPoints(false)
+    }
+  }
+
+  const handlePromoteUser = async () => {
+    setIsPromoting(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error("Session expired.")
+
+      const response = await fetch("/api/admin/promote-user", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          targetUserId: selectedUserForRole
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Promotion failed")
+
+      toast({ title: "User Promoted!", description: "Superadmin access granted." })
+      setSelectedUserForRole("")
+      fetchProfiles() // Refresh to show new roles
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Promotion Failed", description: error.message })
+    } finally {
+      setIsPromoting(false)
+      setShowConfirmPromote(false)
     }
   }
 
@@ -149,6 +183,7 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-2xl mx-auto p-6 space-y-6">
+        {/* Manual Points Section */}
         <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden">
           <CardHeader className="bg-white border-b border-gray-100 p-8">
             <CardTitle className="text-xl font-black uppercase italic text-gray-900">Manual Points</CardTitle>
@@ -199,7 +234,7 @@ export default function AdminPage() {
             </div>
 
             <Button 
-              onClick={() => setShowConfirm(true)}
+              onClick={() => setShowConfirmPoints(true)}
               disabled={!selectedUser || !points || points === "0" || !reason || isAwarding}
               className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase text-lg tracking-tight shadow-lg"
             >
@@ -209,6 +244,46 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
+        {/* Access Management Section */}
+        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-100 p-8">
+            <CardTitle className="text-xl font-black uppercase italic text-gray-900">Access Management</CardTitle>
+            <CardDescription className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-1">
+              Grant Administrative Privileges
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-8 space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 flex items-center gap-2">
+                <UserSearch className="h-3 w-3" /> Select User
+              </label>
+              <Select value={selectedUserForRole} onValueChange={setSelectedUserForRole}>
+                <SelectTrigger className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 font-bold">
+                  <SelectValue placeholder="Select user to promote..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {allProfiles
+                    .filter(p => p.role !== "superadmin")
+                    .map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.display_name}</SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+            </div>
+
+            <Button 
+              onClick={() => setShowConfirmPromote(true)}
+              disabled={!selectedUserForRole || isPromoting}
+              className="w-full h-16 rounded-2xl bg-gray-900 hover:bg-black text-white font-black uppercase text-lg tracking-tight shadow-lg"
+            >
+              {isPromoting ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <UserPlus className="h-6 w-6 mr-2" />}
+              Promote to Superadmin
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Sync Section */}
         <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden">
           <CardHeader className="bg-white border-b border-gray-100 p-8">
             <CardTitle className="text-xl font-black uppercase italic text-gray-900">Data Synchronization</CardTitle>
@@ -228,7 +303,8 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
-        <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        {/* Confirmation Dialogs */}
+        <AlertDialog open={showConfirmPoints} onOpenChange={setShowConfirmPoints}>
           <AlertDialogContent className="rounded-[2.5rem]">
             <AlertDialogHeader>
               <AlertDialogTitle className="font-black uppercase italic">Confirm Adjustment</AlertDialogTitle>
@@ -239,6 +315,21 @@ export default function AdminPage() {
             <AlertDialogFooter>
               <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleAwardPoints} className="rounded-2xl bg-primary">Confirm Award</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={showConfirmPromote} onOpenChange={setShowConfirmPromote}>
+          <AlertDialogContent className="rounded-[2.5rem]">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="font-black uppercase italic">Grant Admin Access?</AlertDialogTitle>
+              <AlertDialogDescription className="font-medium text-gray-500">
+                Are you sure you want to grant <span className="text-gray-900 font-black">{allProfiles.find(p => p.id === selectedUserForRole)?.display_name}</span> Superadmin privileges? They will have full control over the Arena.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handlePromoteUser} className="rounded-2xl bg-primary">Confirm Promotion</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
