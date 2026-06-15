@@ -6,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Trophy, Zap, Activity, ChevronRight, Loader2 } from "lucide-react"
+import { Trophy, Zap, Activity, ChevronRight, Loader2, Star, TrendingUp, TrendingDown } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
@@ -47,6 +47,7 @@ export default function Dashboard() {
       const activityChannel = supabase
         .channel('activity-realtime')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => fetchActivity())
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'manual_point_awards' }, () => fetchActivity())
         .subscribe()
 
       return () => {
@@ -89,7 +90,7 @@ export default function Dashboard() {
       .from("activity_feed")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(7)
+      .limit(10)
     setActivityLogs(data || [])
   }
 
@@ -219,7 +220,7 @@ export default function Dashboard() {
                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Match Pulse</span>
             </div>
           </div>
-          <ScrollArea className="h-[180px]">
+          <ScrollArea className="h-[220px]">
             <div className="p-3 space-y-2">
               {activityLogs.length === 0 ? (
                 <div className="py-12 text-center">
@@ -228,6 +229,8 @@ export default function Dashboard() {
               ) : (
                 activityLogs.map((log) => {
                   const flagUrl = getTeamFlagUrl(log.favorite_team)
+                  const isManual = log.action === 'manual_points_awarded'
+                  
                   return (
                     <div key={log.id} className="flex gap-4 p-4 bg-white rounded-2xl border border-gray-50 items-center transition-all hover:bg-gray-50/50 shadow-sm">
                       <Avatar className="h-9 w-9 border-2 border-white shadow-md">
@@ -242,19 +245,33 @@ export default function Dashboard() {
                       <div className="flex-1 overflow-hidden">
                         <div className="flex items-center gap-2">
                           <span className="font-black text-xs uppercase tracking-tight text-gray-900">{log.display_name}</span>
-                          <span className="text-[9px] text-gray-400 font-bold uppercase px-2 py-0.5 bg-gray-50 rounded-full border border-gray-100">
-                            {log.action === 'prediction_created' ? 'locked in' : 'updated'}
+                          <span className={cn(
+                            "text-[8px] font-black uppercase px-2 py-0.5 rounded-full border whitespace-nowrap",
+                            isManual 
+                              ? (log.points_awarded > 0 ? "bg-green-50 text-green-600 border-green-100" : "bg-red-50 text-red-600 border-red-100")
+                              : "bg-gray-50 text-gray-400 border-gray-100"
+                          )}>
+                            {isManual 
+                              ? `${log.points_awarded > 0 ? '+' : ''}${log.points_awarded} Bonus`
+                              : (log.action === 'prediction_created' ? 'locked in' : 'updated')
+                            }
                           </span>
                         </div>
-                        <p className="font-black text-primary uppercase italic text-[12px] tracking-tight truncate mt-0.5">
-                          {log.home_team} vs {log.away_team}
-                        </p>
+                        {isManual ? (
+                          <p className="text-[10px] font-bold text-gray-500 italic truncate mt-0.5">
+                            "{log.reason}"
+                          </p>
+                        ) : (
+                          <p className="font-black text-primary uppercase italic text-[12px] tracking-tight truncate mt-0.5">
+                            {log.home_team} vs {log.away_team}
+                          </p>
+                        )}
                       </div>
-                      <div className="text-right">
+                      <div className="text-right flex flex-col items-end">
                          <span className="text-[8px] text-gray-300 font-black uppercase block">
                           {DateTime.fromISO(log.created_at).toRelative()}
                         </span>
-                        <ChevronRight className="h-3 w-3 text-gray-100 inline-block mt-1" />
+                        {isManual ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mt-1" /> : <ChevronRight className="h-3 w-3 text-gray-100 mt-1" />}
                       </div>
                     </div>
                   )

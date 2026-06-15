@@ -24,6 +24,7 @@ export default function Activity() {
     const channel = supabase
       .channel('activity-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => fetchLogs())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'manual_point_awards' }, () => fetchLogs())
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
