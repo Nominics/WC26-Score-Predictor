@@ -1,4 +1,3 @@
-
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react"
@@ -13,6 +12,7 @@ interface AuthContextType {
     points: number; 
     predictionPoints: number;
     startingPoints: number;
+    manualPoints: number;
     rank: number; 
     lifelines: number 
   } | null
@@ -43,7 +43,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!isConfigured) return
 
       try {
-        // 1. Fetch Profile with all necessary fields including lifeline_balance
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
           .select("id, display_name, favorite_team, role, starting_points, lifeline_balance")
@@ -51,28 +50,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           .maybeSingle()
 
         if (profileError) {
-          console.warn("Profile fetch error (might be missing lifeline_balance):", profileError.message)
-          // Fallback fetch if lifeline_balance is causing a hard failure (schema not ready)
-          const { data: fallbackData } = await supabase
-            .from("profiles")
-            .select("id, display_name, favorite_team, role, starting_points")
-            .eq("id", userId)
-            .maybeSingle()
-          if (fallbackData) setProfile(fallbackData)
+          console.warn("Profile fetch error:", profileError.message)
         } else if (profileData) {
           setProfile(profileData)
         }
 
-        // 2. Fetch Leaderboard Stats for this user
         const { data: userStats, error: statsError } = await supabase
           .from("leaderboard")
-          .select("total_points, prediction_points, starting_points")
+          .select("total_points, prediction_points, starting_points, manual_points")
           .eq("user_id", userId)
           .maybeSingle()
 
         if (statsError) throw statsError
 
-        // 3. Fetch Rank based on total_points
         const totalPoints = userStats?.total_points || 0
         const { count: rankCount, error: rankError } = await supabase
           .from("leaderboard")
@@ -85,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           points: totalPoints,
           predictionPoints: userStats?.prediction_points || 0,
           startingPoints: userStats?.starting_points || 0,
+          manualPoints: userStats?.manual_points || 0,
           rank: (rankCount || 0) + 1,
           lifelines: profileData?.lifeline_balance ?? 5
         })
@@ -103,7 +94,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    // Fix: Using correct supabase.auth.onAuthStateChange syntax
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -130,10 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [supabase, fetchProfile, isConfigured])
 
   const login = async (email: string, password: string) => {
-    if (!isConfigured) {
-      throw new Error("Supabase is not configured.")
-    }
-    
+    if (!isConfigured) throw new Error("Supabase is not configured.")
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
@@ -145,19 +132,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (email: string, password: string, name: string) => {
     if (!isConfigured) throw new Error("Supabase is not configured.")
-
     setLoading(true)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { display_name: name } },
     })
-
     if (error) {
       setLoading(false)
       throw error
     }
-
     if (data.user) {
       await fetchProfile(data.user.id)
     }
@@ -174,7 +158,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateDisplayName = async (name: string) => {
     if (!user || !isConfigured) return
-    // Using update to target only specific fields
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -188,7 +171,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const updateFavoriteTeam = async (team: string) => {
     if (!user || !isConfigured) return
-    // Using update to target only specific fields
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -202,11 +184,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const useLifeline = async () => {
     if (!user || !profile || !isConfigured) return
-    
     const currentBalance = profile.lifeline_balance ?? 5
     if (currentBalance <= 0) throw new Error("No lifelines remaining!")
-
-    // Update lifeline_balance in database
     const { error } = await supabase
       .from("profiles")
       .update({
@@ -214,11 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updated_at: new Date().toISOString()
       })
       .eq("id", user.id)
-
-    if (error) {
-      console.warn("Lifeline update failed (likely missing column):", error.message)
-    }
-    
+    if (error) console.warn("Lifeline update failed:", error.message)
     await fetchProfile(user.id)
   }
 

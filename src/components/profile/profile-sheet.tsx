@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target } from "lucide-react"
+import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target, Star } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { getTeamFlagUrl, COUNTRIES } from "@/lib/team-flags"
@@ -249,6 +249,22 @@ export function ProfileSheet() {
                    </div>
                 </div>
               </div>
+
+              {stats?.manualPoints !== 0 && (
+                <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white p-2 rounded-xl border border-gray-100">
+                        <Star className="h-4 w-4 text-yellow-500" />
+                    </div>
+                    <div className="text-left">
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Manual Adjustment</p>
+                        <span className="text-xl font-black text-gray-900">
+                          {stats?.manualPoints! > 0 ? '+' : ''}{stats?.manualPoints}
+                        </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

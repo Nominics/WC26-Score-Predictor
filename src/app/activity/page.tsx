@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Zap, MessageSquare, Loader2 } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Zap, MessageSquare, Loader2, Star, TrendingUp, TrendingDown } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { useAuth } from "@/hooks/use-auth"
+import { getTeamFlagUrl } from "@/lib/team-flags"
 
 export default function Activity() {
   const { stats } = useAuth()
@@ -60,8 +61,7 @@ export default function Activity() {
       <header className="px-6 py-4 border-b border-gray-100 bg-white shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 uppercase text-gray-900">
-              <Zap className="h-5 w-5 text-primary fill-primary" />
+            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 uppercase text-gray-900 leading-none">
               LIVE <span className="text-primary">FEED</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
@@ -97,34 +97,59 @@ export default function Activity() {
             <p className="text-[10px] font-black uppercase text-gray-400">No activity yet</p>
           </div>
         ) : (
-          logs.map((log) => (
-            <div key={log.id} className="flex gap-4 p-5 bg-white rounded-3xl border border-gray-100 items-center shadow-xl transition-all hover:scale-[1.01]">
-              <Avatar className="h-12 w-12 border-2 border-white shadow-md">
-                <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">
-                  {getInitials(log.display_name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-0.5">
-                    <p className="text-[11px]">
-                      <span className="font-black text-gray-900 uppercase mr-1">{log.display_name}</span>
-                      <span className="text-gray-400 font-bold lowercase">
-                        {log.action === 'prediction_created' ? 'locked in' : 'updated'} a pick
-                      </span>
-                    </p>
-                    <p className="font-black text-primary uppercase italic text-[14px] tracking-tight">
-                      {log.home_team} vs {log.away_team}
-                    </p>
+          logs.map((log) => {
+            const flagUrl = getTeamFlagUrl(log.favorite_team)
+            const isManualAdjustment = log.action === 'manual_points_awarded'
+            
+            return (
+              <div key={log.id} className="flex gap-4 p-5 bg-white rounded-3xl border border-gray-100 items-center shadow-xl transition-all hover:scale-[1.01]">
+                <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+                  {flagUrl ? (
+                    <AvatarImage src={flagUrl} className="object-cover" />
+                  ) : (
+                    <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">
+                      {getInitials(log.display_name)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-0.5">
+                      <p className="text-[11px] truncate">
+                        <span className="font-black text-gray-900 uppercase mr-1">{log.display_name}</span>
+                        <span className="text-gray-400 font-bold lowercase">
+                          {isManualAdjustment 
+                            ? (log.points_awarded > 0 ? 'received a bonus' : 'received an adjustment')
+                            : (log.action === 'prediction_created' ? 'locked in' : 'updated') + ' a pick'
+                          }
+                        </span>
+                      </p>
+                      {isManualAdjustment ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className={cn(
+                            "flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black italic uppercase",
+                            log.points_awarded > 0 ? "bg-green-50 text-green-600 border border-green-100" : "bg-red-50 text-red-600 border border-red-100"
+                          )}>
+                             {log.points_awarded > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                             {log.points_awarded > 0 ? '+' : ''}{log.points_awarded} Points
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-500 italic truncate italic">"{log.reason}"</span>
+                        </div>
+                      ) : (
+                        <p className="font-black text-primary uppercase italic text-[14px] tracking-tight">
+                          {log.home_team} vs {log.away_team}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-[9px] text-gray-300 font-black uppercase bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap shadow-inner">
+                      {DateTime.fromISO(log.created_at).toRelative()}
+                    </span>
                   </div>
-                  <span className="text-[9px] text-gray-300 font-black uppercase bg-gray-50 px-2 py-1 rounded-full whitespace-nowrap shadow-inner">
-                    {DateTime.fromISO(log.created_at).toRelative()}
-                  </span>
                 </div>
+                {isManualAdjustment ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" /> : <MessageSquare className="h-3 w-3 text-gray-100" />}
               </div>
-              <MessageSquare className="h-3 w-3 text-gray-100" />
-            </div>
-          ))
+            )
+          })
         )}
       </main>
     </div>

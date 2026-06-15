@@ -1,10 +1,9 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Medal, Loader2, Trophy, ArrowUp, ArrowDown, Minus, Hash, Zap } from "lucide-react"
+import { Medal, Loader2, Trophy, ArrowUp, ArrowDown, Minus, Hash, Zap, Star } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -36,8 +35,10 @@ export default function Leaderboard() {
         .select(`
           user_id, 
           display_name, 
+          favorite_team,
           starting_points, 
           prediction_points, 
+          manual_points,
           total_points, 
           total_predictions, 
           last_prediction_at
@@ -46,33 +47,9 @@ export default function Leaderboard() {
         .order("total_predictions", { ascending: false })
       
       if (lbError) throw lbError
-
-      if (lbData && lbData.length > 0) {
-        const userIds = lbData.map(d => d.user_id)
-        
-        const { data: profData, error: profError } = await supabase
-          .from("profiles")
-          .select("id, favorite_team")
-          .in("id", userIds)
-
-        if (profError) {
-          console.warn("Profile fetch warning:", profError)
-        }
-
-        const processedEntries = lbData.map((entry: any) => {
-          const profile = profData?.find(p => p.id === entry.user_id)
-          return {
-            ...entry,
-            favorite_team: profile?.favorite_team,
-            movement: (entry.total_predictions % 3) - 1 
-          }
-        })
-        setEntries(processedEntries)
-      } else {
-        setEntries([])
-      }
+      setEntries(lbData || [])
     } catch (err: any) {
-      console.error("Leaderboard fetch error caught:", err.message || err)
+      console.error("Leaderboard fetch error:", err.message)
     } finally {
       setLoading(false)
     }
@@ -129,7 +106,6 @@ export default function Leaderboard() {
           <div className="space-y-3">
             {entries.map((entry, i) => {
               const rank = i + 1
-              const movement = entry.movement
               const flagUrl = getTeamFlagUrl(entry.favorite_team)
               const isTopThree = rank <= 3
 
@@ -184,26 +160,16 @@ export default function Leaderboard() {
                              <span className="text-[8px] font-black text-blue-600 uppercase">Late Join Bonus (+{entry.starting_points})</span>
                           </div>
                         )}
+                        {entry.manual_points !== 0 && (
+                          <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-100">
+                             <Star className="h-2 w-2 text-yellow-500 fill-yellow-500" />
+                             <span className="text-[8px] font-black text-yellow-600 uppercase">Adjusted ({entry.manual_points > 0 ? '+' : ''}{entry.manual_points})</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-center min-w-[32px]">
-                          {movement > 0 ? (
-                            <div className="flex flex-col items-center">
-                              <ArrowUp className="h-4 w-4 text-green-500 fill-green-500" />
-                              <span className="text-[8px] font-black text-green-500">+{movement}</span>
-                            </div>
-                          ) : movement < 0 ? (
-                            <div className="flex flex-col items-center">
-                              <ArrowDown className="h-4 w-4 text-red-500 fill-red-500" />
-                              <span className="text-[8px] font-black text-red-500">{movement}</span>
-                            </div>
-                          ) : (
-                            <Minus className="h-3 w-3 text-gray-200 stroke-[3px]" />
-                          )}
-                      </div>
-                      
                       <div className="flex flex-col items-end min-w-[60px]">
                          <div className="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded-2xl shadow-lg shadow-primary/20">
                             <Trophy className="h-3 w-3 fill-white/20" />
@@ -223,6 +189,12 @@ export default function Leaderboard() {
                        <div className="flex items-center gap-1">
                           <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Bonus:</span>
                           <span className="text-[9px] font-black text-gray-700">+{entry.starting_points}</span>
+                       </div>
+                     )}
+                     {entry.manual_points !== 0 && (
+                       <div className="flex items-center gap-1">
+                          <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Adjust:</span>
+                          <span className="text-[9px] font-black text-gray-700">{entry.manual_points > 0 ? '+' : ''}{entry.manual_points}</span>
                        </div>
                      )}
                   </div>
