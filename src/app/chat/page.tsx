@@ -28,13 +28,15 @@ export default function ChatPage() {
   useEffect(() => {
     fetchMessages()
     
+    // Subscribe to INSERT events on the base table arena_messages
     const channel = supabase
-      .channel('universal-chat')
+      .channel('arena-chat')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
-        table: 'chat_messages' 
+        table: 'arena_messages' 
       }, () => {
+        // Re-fetch the feed view when a new message is inserted
         fetchMessages()
       })
       .subscribe()
@@ -52,34 +54,17 @@ export default function ChatPage() {
 
   const fetchMessages = async () => {
     try {
+      // Use the arena_chat_feed view which includes profile data
       const { data, error } = await supabase
-        .from("chat_messages")
-        .select(`
-          id, 
-          content, 
-          created_at, 
-          user_id,
-          profiles(
-            display_name,
-            favorite_team
-          )
-        `)
+        .from("arena_chat_feed")
+        .select("*")
         .order("created_at", { ascending: true })
         .limit(100)
       
-      if (error) {
-        // Detailed logging for debugging
-        console.error("Supabase Chat Fetch Error Details:", {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        })
-        throw new Error(error.message)
-      }
+      if (error) throw error
       setMessages(data || [])
     } catch (err: any) {
-      console.error("Chat fetch error:", err.message || err)
+      console.error("Chat fetch error:", err.message)
     } finally {
       setLoading(false)
     }
@@ -88,22 +73,23 @@ export default function ChatPage() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || !user || sending) return
-
-    const messageContent = newMessage.trim()
+    
+    const messageText = newMessage.trim().substring(0, 300)
     setNewMessage("")
     setSending(true)
 
     try {
+      // Insert into the base table arena_messages
       const { error } = await supabase
-        .from("chat_messages")
+        .from("arena_messages")
         .insert({
           user_id: user.id,
-          content: messageContent
+          message: messageText
         })
       
-      if (error) throw new Error(error.message)
+      if (error) throw error
     } catch (err: any) {
-      console.error("Message send error:", err.message || err)
+      console.error("Message send error:", err.message)
     } finally {
       setSending(false)
     }
@@ -121,10 +107,10 @@ export default function ChatPage() {
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
             <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900 leading-none uppercase">
-              GLOBAL <span className="text-primary">CHAT</span>
+              ARENA <span className="text-primary">CHAT</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
-               <p className="text-[8px] text-gray-400 font-black uppercase tracking-widest">Universal Arena</p>
+               <p className="text-[8px] text-gray-400 font-black uppercase tracking-widest">Global Discussion</p>
                {stats && (
                  <div className="flex items-center gap-1.5">
                    <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
@@ -163,7 +149,7 @@ export default function ChatPage() {
               <div className="space-y-6">
                 {messages.map((msg) => {
                   const isOwnMessage = msg.user_id === user?.id
-                  const flagUrl = getTeamFlagUrl(msg.profiles?.favorite_team)
+                  const flagUrl = getTeamFlagUrl(msg.favorite_team)
                   
                   return (
                     <div 
@@ -178,7 +164,7 @@ export default function ChatPage() {
                           <AvatarImage src={flagUrl} className="object-cover" />
                         ) : (
                           <AvatarFallback className="bg-primary/5 text-primary font-black text-[10px]">
-                            {getInitials(msg.profiles?.display_name)}
+                            {getInitials(msg.display_name)}
                           </AvatarFallback>
                         )}
                       </Avatar>
@@ -189,7 +175,7 @@ export default function ChatPage() {
                       )}>
                         <div className="flex items-center gap-2 px-1">
                           <span className="text-[9px] font-black uppercase text-gray-400 tracking-tight">
-                            {msg.profiles?.display_name || "Unknown Fan"}
+                            {msg.display_name || "Unknown Fan"}
                           </span>
                           <span className="text-[8px] font-bold text-gray-300">
                             {DateTime.fromISO(msg.created_at).toFormat('HH:mm')}
@@ -202,7 +188,7 @@ export default function ChatPage() {
                             ? "bg-primary text-black rounded-tr-none" 
                             : "bg-gray-100 text-gray-900 rounded-tl-none"
                         )}>
-                          {msg.content}
+                          {msg.message}
                         </div>
                       </div>
                     </div>
@@ -220,6 +206,7 @@ export default function ChatPage() {
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 disabled={sending}
+                maxLength={300}
                 className="h-14 rounded-2xl border-gray-100 bg-white font-bold px-6 shadow-inner"
               />
               <Button 
