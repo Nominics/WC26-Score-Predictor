@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -10,12 +11,20 @@ import { PwaInstallButton } from "@/components/pwa-install-button"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation"
 
 export default function Leaderboard() {
-  const { stats } = useAuth()
+  const { user, profile, stats, loading: authLoading } = useAuth()
   const [entries, setEntries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!authLoading && user && profile && !profile.display_name) {
+      router.replace("/onboarding")
+    }
+  }, [user, profile, authLoading, router])
 
   useEffect(() => {
     fetchLeaderboard()

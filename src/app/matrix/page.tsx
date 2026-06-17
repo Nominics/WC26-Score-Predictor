@@ -12,15 +12,23 @@ import { PwaInstallButton } from "@/components/pwa-install-button"
 import Image from "next/image"
 import { DateTime } from "luxon"
 import { useAuth } from "@/hooks/use-auth"
+import { useRouter } from "next/navigation"
 
 export default function Matrix() {
-  const { stats } = useAuth()
+  const { user, profile, stats, loading: authLoading } = useAuth()
   const [profiles, setProfiles] = useState<any[]>([])
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
   const [leaderboard, setLeaderboard] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!authLoading && user && profile && !profile.display_name) {
+      router.replace("/onboarding")
+    }
+  }, [user, profile, authLoading, router])
 
   useEffect(() => {
     fetchData()

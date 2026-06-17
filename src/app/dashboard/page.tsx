@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { getTeamFlagUrl } from "@/lib/team-flags"
+import { useRouter } from "next/navigation"
 
 export default function Dashboard() {
   const { user: authUser, profile, loading: authLoading, stats, useLifeline } = useAuth()
@@ -26,6 +27,13 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const supabase = createClient()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!authLoading && authUser && profile && !profile.display_name) {
+      router.replace("/onboarding")
+    }
+  }, [authUser, profile, authLoading, router])
 
   useEffect(() => {
     if (authUser) {

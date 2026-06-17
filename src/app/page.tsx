@@ -19,7 +19,7 @@ export default function LandingPage() {
   const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin")
-  const { login, register, resetPasswordEmail, user, loading } = useAuth()
+  const { login, register, resetPasswordEmail, user, profile, loading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   
@@ -27,10 +27,14 @@ export default function LandingPage() {
   const bg = PlaceHolderImages.find(img => img.id === 'stadium-bg')
 
   useEffect(() => {
-    if (!loading && user && mode !== "forgot") {
-      router.replace("/dashboard")
+    if (!loading && user) {
+      if (profile && !profile.display_name) {
+        router.replace("/onboarding")
+      } else if (profile && profile.display_name) {
+        router.replace("/dashboard")
+      }
     }
-  }, [user, loading, router, mode])
+  }, [user, loading, profile, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -71,7 +75,7 @@ export default function LandingPage() {
     }
   }
 
-  if (loading || (user && mode !== "forgot")) {
+  if (loading || (user && profile?.display_name)) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
