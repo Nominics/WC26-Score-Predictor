@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -27,7 +28,6 @@ export default function ChatPage() {
   useEffect(() => {
     fetchMessages()
     
-    // Subscribe to INSERT events on the base table arena_messages
     const channel = supabase
       .channel('arena-chat')
       .on('postgres_changes', { 
@@ -35,18 +35,14 @@ export default function ChatPage() {
         schema: 'public', 
         table: 'arena_messages' 
       }, (payload) => {
-        // Handle local notification logic if window is hidden
         if (typeof window !== 'undefined' && document.visibilityState === 'hidden') {
           if (Notification.permission === 'granted') {
-             // We can't get the full profile here easily without another fetch or view lookup
-             // but we can trigger a re-fetch and rely on that or show a generic alert.
              new Notification('New Arena Message', {
                body: 'Someone just posted in the Arena Chat!',
                icon: '/logo.png'
              });
           }
         }
-        // Re-fetch the feed view when a new message is inserted
         fetchMessages()
       })
       .subscribe()
@@ -64,7 +60,6 @@ export default function ChatPage() {
 
   const fetchMessages = async () => {
     try {
-      // Use the arena_chat_feed view which includes profile data
       const { data, error } = await supabase
         .from("arena_chat_feed")
         .select("*")
@@ -74,7 +69,7 @@ export default function ChatPage() {
       if (error) throw error
       setMessages(data || [])
     } catch (err: any) {
-      console.error("Chat fetch error:", err.message)
+      console.error("Chat fetch error:", err?.message || err)
     } finally {
       setLoading(false)
     }
@@ -89,7 +84,6 @@ export default function ChatPage() {
     setSending(true)
 
     try {
-      // Insert into the base table arena_messages
       const { error } = await supabase
         .from("arena_messages")
         .insert({
@@ -99,7 +93,7 @@ export default function ChatPage() {
       
       if (error) throw error
     } catch (err: any) {
-      console.error("Message send error:", err.message)
+      console.error("Message send error:", err?.message || err)
     } finally {
       setSending(false)
     }

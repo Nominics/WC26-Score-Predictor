@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -26,7 +27,6 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
 
   const kickoff = DateTime.fromISO(fixture.kickoff_at)
   const timeStr = kickoff.isValid ? kickoff.toFormat('HH:mm') : 'TBD'
-  const dateStr = kickoff.isValid ? kickoff.toFormat('MMM dd') : ''
 
   useEffect(() => {
     const checkLock = () => {
@@ -85,7 +85,6 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
         </div>
 
         <div className="p-8 flex items-center justify-between gap-4">
-          {/* Home Team */}
           <div className="flex flex-col items-center flex-1 text-center min-w-0">
             <div className="mb-3 relative group/flag">
               {fixture.home_flag ? (
@@ -107,7 +106,6 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
             <span className="text-[13px] font-black uppercase tracking-tight text-gray-900 truncate w-full px-1 leading-tight">{fixture.home_team}</span>
           </div>
 
-          {/* Center Area (Score/Status) */}
           <div className="flex flex-col items-center justify-center min-w-[150px]">
             {editing ? (
               <div className="flex flex-col items-center gap-4 py-2">
@@ -195,7 +193,6 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
             </div>
           </div>
 
-          {/* Away Team */}
           <div className="flex flex-col items-center flex-1 text-center min-w-0">
             <div className="mb-3 relative group/flag">
               {fixture.away_flag ? (

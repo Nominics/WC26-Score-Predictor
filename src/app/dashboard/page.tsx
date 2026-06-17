@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -6,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Trophy, Zap, Activity, ChevronRight, Loader2, Star, TrendingUp, TrendingDown } from "lucide-react"
+import { Trophy, Zap, Activity, ChevronRight, Loader2, Star } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"

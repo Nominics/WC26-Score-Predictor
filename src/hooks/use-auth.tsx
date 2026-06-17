@@ -95,9 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth Event:", event, !!session)
 
       if (!mounted) return
@@ -114,9 +112,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
+    const subscription = data?.subscription
+
     return () => {
       mounted = false
-      subscription.unsubscribe()
+      subscription?.unsubscribe()
     }
   }, [supabase, fetchProfile, isConfigured])
 
