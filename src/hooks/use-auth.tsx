@@ -21,6 +21,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
+  resetPasswordEmail: (email: string) => Promise<void>
+  updatePassword: (password: string) => Promise<void>
   updateDisplayName: (name: string) => Promise<void>
   updateFavoriteTeam: (team: string) => Promise<void>
   useLifeline: () => Promise<void>
@@ -96,8 +98,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth Event:", event, !!session)
-
       if (!mounted) return
 
       if (session?.user) {
@@ -157,6 +157,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.replace("/")
   }
 
+  const resetPasswordEmail = async (email: string) => {
+    if (!isConfigured) throw new Error("Supabase is not configured.")
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    })
+    if (error) throw error
+  }
+
+  const updatePassword = async (password: string) => {
+    if (!isConfigured) throw new Error("Supabase is not configured.")
+    const { error } = await supabase.auth.updateUser({ password })
+    if (error) throw error
+  }
+
   const updateDisplayName = async (name: string) => {
     if (!user || !isConfigured) return
     const { error } = await supabase
@@ -208,6 +222,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        resetPasswordEmail,
+        updatePassword,
         updateDisplayName,
         updateFavoriteTeam,
         useLifeline,

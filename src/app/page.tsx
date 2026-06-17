@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useToast } from "@/hooks/use-toast"
-import { Lock, Mail, User, Loader2, Sparkles, TrendingUp } from "lucide-react"
+import { Lock, Mail, User, Loader2, Sparkles, TrendingUp, ChevronLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export default function LandingPage() {
@@ -17,8 +18,8 @@ export default function LandingPage() {
   const [password, setPassword] = useState("")
   const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [mode, setMode] = useState<"signin" | "signup">("signin")
-  const { login, register, user, loading } = useAuth()
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin")
+  const { login, register, resetPasswordEmail, user, loading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
   
@@ -26,35 +27,43 @@ export default function LandingPage() {
   const bg = PlaceHolderImages.find(img => img.id === 'stadium-bg')
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && mode !== "forgot") {
       router.replace("/dashboard")
     }
-  }, [user, loading, router])
+  }, [user, loading, router, mode])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!email || !password) return
-    if (mode === "signup" && !name) return
     
     setIsSubmitting(true)
     try {
       if (mode === "signin") {
+        if (!email || !password) throw new Error("Please enter email and password.")
         await login(email, password)
         toast({
           title: "Welcome back!",
           description: "Successfully signed in.",
         })
-      } else {
+      } else if (mode === "signup") {
+        if (!email || !password || !name) throw new Error("Please fill all fields.")
         await register(email, password, name)
         toast({
           title: "Account created!",
           description: "Welcome to the arena.",
         })
+      } else if (mode === "forgot") {
+        if (!email) throw new Error("Please enter your email.")
+        await resetPasswordEmail(email)
+        toast({
+          title: "Email Sent",
+          description: "If an account exists, you will receive a reset link.",
+        })
+        setMode("signin")
       }
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: mode === "signin" ? "Login Failed" : "Registration Failed",
+        title: "Action Failed",
         description: error.message || "Something went wrong.",
       })
     } finally {
@@ -62,7 +71,7 @@ export default function LandingPage() {
     }
   }
 
-  if (loading || user) {
+  if (loading || (user && mode !== "forgot")) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -87,7 +96,6 @@ export default function LandingPage() {
         />
       </div>
       
-      {/* Dynamic Background Accents */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
 
@@ -121,12 +129,26 @@ export default function LandingPage() {
 
         <Card className="border-0 bg-white shadow-[0_32px_80px_-12px_rgba(0,0,0,0.5)] rounded-[2.5rem] overflow-hidden">
           <CardHeader className="pb-4 pt-8 px-8">
-            <Tabs defaultValue="signin" onValueChange={(v) => setMode(v as any)} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-full p-1.5 h-14">
-                <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-black data-[state=active]:text-primary data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Sign In</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-black data-[state=active]:text-primary data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Register</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {mode === "forgot" ? (
+              <div className="flex items-center gap-2 mb-2">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => setMode("signin")}
+                  className="rounded-full h-8 w-8 hover:bg-gray-100"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <h3 className="text-sm font-black uppercase italic text-gray-900">Reset Password</h3>
+              </div>
+            ) : (
+              <Tabs value={mode} onValueChange={(v) => setMode(v as any)} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-full p-1.5 h-14">
+                  <TabsTrigger value="signin" className="rounded-full data-[state=active]:bg-black data-[state=active]:text-primary data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Sign In</TabsTrigger>
+                  <TabsTrigger value="signup" className="rounded-full data-[state=active]:bg-black data-[state=active]:text-primary data-[state=active]:shadow-xl font-black text-[11px] uppercase tracking-widest transition-all">Register</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
           </CardHeader>
           <CardContent className="px-8 pb-10">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -157,18 +179,33 @@ export default function LandingPage() {
                     className="bg-gray-50 border-gray-100 h-16 pl-14 rounded-2xl text-gray-900 font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all text-sm"
                   />
                 </div>
-                <div className="relative group">
-                  <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  <Input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={isSubmitting}
-                    className="bg-gray-50 border-gray-100 h-16 pl-14 rounded-2xl text-gray-900 font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all text-sm"
-                  />
-                </div>
+                {mode !== "forgot" && (
+                  <>
+                    <div className="relative group">
+                      <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary transition-colors" />
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        disabled={isSubmitting}
+                        className="bg-gray-50 border-gray-100 h-16 pl-14 rounded-2xl text-gray-900 font-bold focus:ring-4 focus:ring-primary/10 focus:border-primary/30 transition-all text-sm"
+                      />
+                    </div>
+                    {mode === "signin" && (
+                      <div className="text-right">
+                        <button 
+                          type="button" 
+                          onClick={() => setMode("forgot")}
+                          className="text-[10px] font-black text-gray-400 hover:text-primary uppercase tracking-widest transition-colors"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
               {mode === "signup" && (
@@ -191,7 +228,7 @@ export default function LandingPage() {
                         <Loader2 className="h-5 w-5 animate-spin" />
                         <span>Verifying...</span>
                     </div>
-                ) : mode === "signin" ? "Enter Arena" : "Create Account"}
+                ) : mode === "signin" ? "Enter Arena" : mode === "signup" ? "Create Account" : "Send Reset Link"}
               </Button>
             </form>
           </CardContent>
