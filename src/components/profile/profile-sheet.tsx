@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -13,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target, Star, Bell } from "lucide-react"
+import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target, Star, Bell, Lock, Loader2 } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { getTeamFlagUrl, COUNTRIES } from "@/lib/team-flags"
@@ -22,12 +23,18 @@ import Link from "next/link"
 import Image from "next/image"
 
 export function ProfileSheet() {
-  const { user, profile, stats, logout, updateDisplayName, updateFavoriteTeam } = useAuth()
+  const { user, profile, stats, logout, updateDisplayName, updateFavoriteTeam, updatePassword } = useAuth()
   const { toast } = useToast()
   
   const [isEditing, setIsEditing] = useState(false)
   const [newName, setNewName] = useState("")
   const [isSaving, setIsSaving] = useState(false)
+
+  // Password change state
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmNewPassword, setConfirmNewPassword] = useState("")
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
 
   useEffect(() => {
     if (profile?.display_name) {
@@ -90,6 +97,34 @@ export function ProfileSheet() {
         title: "Update Failed", 
         description: error.message 
       })
+    }
+  }
+
+  const handlePasswordUpdate = async () => {
+    if (!newPassword || !confirmNewPassword) {
+      toast({ variant: "destructive", title: "Required", description: "Please fill in both fields." })
+      return
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast({ variant: "destructive", title: "Mismatch", description: "Passwords do not match." })
+      return
+    }
+    if (newPassword.length < 6) {
+      toast({ variant: "destructive", title: "Too Short", description: "Password must be at least 6 characters." })
+      return
+    }
+    
+    setIsUpdatingPassword(true)
+    try {
+      await updatePassword(newPassword)
+      toast({ title: "Success", description: "Password updated successfully." })
+      setIsChangingPassword(false)
+      setNewPassword("")
+      setConfirmNewPassword("")
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: error.message })
+    } finally {
+      setIsUpdatingPassword(false)
     }
   }
 
@@ -211,6 +246,59 @@ export function ProfileSheet() {
                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Arena Alerts</span>
             </div>
             <NotificationToggle />
+          </div>
+
+          <div className="space-y-4 pt-4 border-t border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <Lock className="h-3 w-3 text-primary" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Security</span>
+            </div>
+            {!isChangingPassword ? (
+              <Button 
+                variant="outline" 
+                onClick={() => setIsChangingPassword(true)}
+                className="w-full rounded-2xl h-12 font-black uppercase text-[10px] tracking-widest gap-2 border-gray-100"
+              >
+                <Lock className="h-3 w-3" /> Change Password
+              </Button>
+            ) : (
+              <div className="space-y-3 p-4 bg-gray-50 rounded-3xl border border-gray-100">
+                <Input 
+                  type="password" 
+                  placeholder="New Password" 
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="rounded-xl h-12 text-sm bg-white"
+                />
+                <Input 
+                  type="password" 
+                  placeholder="Confirm New Password" 
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="rounded-xl h-12 text-sm bg-white"
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    className="flex-1 rounded-xl h-11 bg-primary text-black font-black text-[10px] uppercase tracking-widest"
+                    onClick={handlePasswordUpdate}
+                    disabled={isUpdatingPassword}
+                  >
+                    {isUpdatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Password"}
+                  </Button>
+                  <Button 
+                    variant="ghost"
+                    className="rounded-xl h-11 text-[10px] uppercase font-black text-gray-400 tracking-widest"
+                    onClick={() => {
+                      setIsChangingPassword(false)
+                      setNewPassword("")
+                      setConfirmNewPassword("")
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
