@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const supabase = createClient()
   const router = useRouter()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!authLoading && authUser && profile && !profile.display_name) {
@@ -66,6 +67,16 @@ export default function Dashboard() {
       }
     }
   }, [authUser])
+
+  // Auto-scroll the active date tab into view
+  useEffect(() => {
+    if (activeDate && scrollContainerRef.current) {
+      const activeTab = document.getElementById(`date-tab-${activeDate}`)
+      if (activeTab) {
+        activeTab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+      }
+    }
+  }, [activeDate])
 
   const fetchData = async () => {
     if (!authUser) return
@@ -293,9 +304,10 @@ export default function Dashboard() {
 
       {dateTabs.length > 0 && (
         <div className="px-6 py-4 sticky top-[56px] bg-white/95 backdrop-blur-xl z-30 border-b border-gray-100 shadow-sm">
-          <div className="flex items-center no-scrollbar overflow-x-auto gap-4 max-w-2xl mx-auto">
+          <div ref={scrollContainerRef} className="flex items-center no-scrollbar overflow-x-auto gap-4 max-w-2xl mx-auto">
             {dateTabs.map((d) => (
               <button
+                id={`date-tab-${d.iso}`}
                 key={d.iso}
                 onClick={() => setActiveDate(d.iso)}
                 className={cn(
