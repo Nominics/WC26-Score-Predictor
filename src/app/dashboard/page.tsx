@@ -184,7 +184,10 @@ export default function Dashboard() {
   if (authLoading && fixtures.length === 0) {
     return (
       <div className="min-h-screen bg-[var(--app-bg)] flex items-center justify-center">
-        <Loader2 className="h-6 w-6 text-primary animate-spin" />
+        <div className="flex flex-col items-center gap-4">
+          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">WC26</div>
+          <Loader2 className="h-8 w-8 text-primary animate-spin" />
+        </div>
       </div>
     )
   }
@@ -225,7 +228,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 pt-8 mb-10">
+      <div className="max-w-2xl mx-auto px-4 pt-8 mb-4">
         <Card className="app-glass-card border-primary/5 overflow-hidden">
           <div className="px-5 py-3 bg-muted/20 backdrop-blur-md flex items-center justify-between border-b border-border/40">
             <div className="flex items-center gap-2.5">
@@ -241,15 +244,14 @@ export default function Dashboard() {
             </Link>
           </div>
           
-          <ScrollArea className="h-[200px] bg-black/[0.02] dark:bg-white/[0.01]">
+          <ScrollArea className="h-[180px] bg-black/[0.02] dark:bg-white/[0.01]">
             <div className="p-3 py-1">
               {activityLogs.length === 0 ? (
-                <div className="py-20 text-center opacity-40">
+                <div className="py-16 text-center opacity-40">
                   <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Waiting for match data...</p>
                 </div>
               ) : (
                 activityLogs.map((log) => {
-                  // Filter redundant logs
                   if (log.event_type === 'prediction_updated' && log.metadata?.old_score === log.metadata?.new_score) return null;
                   
                   let displayTitle = log.title;
@@ -287,30 +289,56 @@ export default function Dashboard() {
       </div>
 
       {dateTabs.length > 0 && (
-        <div className="px-6 py-4 sticky top-[72px] bg-background/80 backdrop-blur-2xl z-30 border-b border-border/50 shadow-lg">
-          <div ref={scrollContainerRef} className="flex items-center no-scrollbar overflow-x-auto gap-4 max-w-2xl mx-auto">
-            {dateTabs.map((d) => (
-              <button
-                id={`date-tab-${d.iso}`}
-                key={d.iso}
-                onClick={() => setActiveDate(d.iso)}
-                className={cn(
-                  "flex flex-col items-center min-w-[4.8rem] py-4 rounded-[2.2rem] transition-all duration-300 border-2",
-                  activeDate === d.iso 
-                    ? "bg-primary border-primary text-primary-foreground shadow-[0_8px_20px_rgba(234,179,8,0.3)] scale-105" 
-                    : "bg-card/50 border-border/50 text-muted-foreground hover:border-primary/30 hover:bg-muted/80 shadow-sm"
-                )}
-              >
-                <span className={cn("text-[8px] font-black uppercase mb-0.5 tracking-[0.2em]", activeDate === d.iso ? "text-primary-foreground/80" : "text-muted-foreground")}>{d.day}</span>
-                <span className="text-2xl font-black leading-none tracking-tighter">{d.date}</span>
-                <span className={cn("text-[9px] font-black uppercase mt-0.5 tracking-tighter", activeDate === d.iso ? "text-primary-foreground/80" : "text-muted-foreground")}>{d.month}</span>
-              </button>
-            ))}
+        <div className="py-6 sticky top-[72px] bg-white/80 dark:bg-slate-950/60 backdrop-blur-2xl z-30 border-b border-border/40 shadow-xl overflow-hidden">
+          {/* Subtle Fading Edges */}
+          <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none opacity-40" />
+          <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none opacity-40" />
+          
+          <div ref={scrollContainerRef} className="flex items-center no-scrollbar overflow-x-auto gap-3 px-6 max-w-2xl mx-auto scroll-smooth">
+            {dateTabs.map((d) => {
+              const isActive = activeDate === d.iso
+              return (
+                <button
+                  id={`date-tab-${d.iso}`}
+                  key={d.iso}
+                  onClick={() => setActiveDate(d.iso)}
+                  className={cn(
+                    "flex flex-col items-center min-w-[4.6rem] py-3.5 rounded-[2rem] transition-all duration-500 border-2 relative isolate",
+                    isActive 
+                      ? "bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 border-yellow-300 text-black shadow-2xl scale-105 z-20 ring-4 ring-yellow-400/20" 
+                      : "bg-white/80 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 shadow-sm"
+                  )}
+                >
+                  <span className={cn(
+                    "text-[8px] font-black uppercase mb-0.5 tracking-[0.2em] transition-colors", 
+                    isActive ? "text-black/60" : "text-muted-foreground/60"
+                  )}>
+                    {d.day}
+                  </span>
+                  <span className={cn(
+                    "text-2xl font-black leading-none tracking-tighter transition-transform duration-500",
+                    isActive && "scale-110 drop-shadow-sm"
+                  )}>
+                    {d.date}
+                  </span>
+                  <span className={cn(
+                    "text-[9px] font-black uppercase mt-0.5 tracking-tighter transition-colors", 
+                    isActive ? "text-black/60" : "text-muted-foreground/60"
+                  )}>
+                    {d.month}
+                  </span>
+                  
+                  {isActive && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-black rounded-full" />
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}
 
-      <main className="px-4 py-10 space-y-10 max-w-2xl mx-auto">
+      <main className="px-4 py-8 space-y-10 max-w-2xl mx-auto">
         <div className="flex justify-between items-center px-4">
           <div className="flex items-center gap-3">
             <div className="h-6 w-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
@@ -328,7 +356,7 @@ export default function Dashboard() {
         {isLoading && fixtures.length === 0 ? (
           <div className="space-y-8 px-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-64 app-glass-card animate-pulse border-border/10" />
+              <div key={i} className="h-64 app-glass-card animate-pulse border-border/10 rounded-[2.5rem]" />
             ))}
           </div>
         ) : displayFixtures.length === 0 ? (
