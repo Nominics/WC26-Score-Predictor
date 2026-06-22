@@ -1,5 +1,7 @@
+
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sendNotification } from "@/lib/notifications/send-notification";
 
 export async function POST(req: Request) {
   try {
@@ -27,22 +29,33 @@ export async function POST(req: Request) {
 
     const { targetUserId, points, reason } = await req.json();
 
-    if (!targetUserId || !points || points === 0 || !reason) {
+    if (!targetUserId || points === undefined || !reason) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+
+    const pointsInt = parseInt(points, 10);
 
     const { error: insertError } = await supabaseAdmin
       .from("manual_point_awards")
       .insert({
         user_id: targetUserId,
         awarded_by: user.id,
-        points: parseInt(points, 10),
+        points: pointsInt,
         reason
       });
 
     if (insertError) {
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
+
+    // Trigger Notification for the player
+    await sendNotification({
+      userId: targetUserId,
+      type: 'bonus_points',
+      title: "Bonus Points Awarded!",
+      body: `You received ${pointsInt > 0 ? '+' : ''}${pointsInt} points: "${reason}"`,
+      data: { url: "/dashboard", points: pointsInt }
+    });
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

@@ -7,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play, Send, Bell } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ModeToggle } from "@/components/mode-toggle"
 import { DateTime } from "luxon"
+import { NotificationBell } from "@/components/layout/notification-bell"
 import Image from "next/image"
 import {
   AlertDialog,
@@ -34,14 +35,25 @@ export default function AdminPage() {
   const [isAwarding, setIsAwarding] = useState(false)
   const [isPromoting, setIsPromoting] = useState(false)
   const [isUpdatingTime, setIsUpdatingTime] = useState(false)
+  const [isSendingNotif, setIsSendingNotif] = useState(false)
+  
   const [allProfiles, setAllProfiles] = useState<any[]>([])
   const [fixtures, setFixtures] = useState<any[]>([])
+  
   const [selectedUser, setSelectedUser] = useState("")
   const [selectedUserForRole, setSelectedUserForRole] = useState("")
   const [selectedFixture, setSelectedFixture] = useState("")
   const [newTime, setNewTime] = useState("")
   const [points, setPoints] = useState("")
   const [reason, setReason] = useState("")
+  
+  // Notification States
+  const [notifTarget, setNotifTarget] = useState("all")
+  const [notifSelectedUser, setNotifSelectedUser] = useState("")
+  const [notifTitle, setNotifTitle] = useState("")
+  const [notifMessage, setNotifMessage] = useState("")
+  const [notifType, setNotifType] = useState("manual_admin")
+
   const [showConfirmPoints, setShowConfirmPoints] = useState(false)
   const [showConfirmPromote, setShowConfirmPromote] = useState(false)
   
@@ -93,6 +105,40 @@ export default function AdminPage() {
       toast({ variant: "destructive", title: "Cron Failed", description: error.message })
     } finally {
       setIsRunningCron(false)
+    }
+  }
+
+  const handleSendNotification = async () => {
+    setIsSendingNotif(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error("Session expired.")
+
+      const response = await fetch("/api/admin/send-notification", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          allUsers: notifTarget === "all",
+          targetUserIds: notifTarget === "single" ? [notifSelectedUser] : [],
+          title: notifTitle,
+          message: notifMessage,
+          type: notifType
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Failed to send")
+
+      toast({ title: "Sent!", description: `Notification broadcast to ${data.sentCount} users.` })
+      setNotifTitle("")
+      setNotifMessage("")
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Failed", description: error.message })
+    } finally {
+      setIsSendingNotif(false)
     }
   }
 
@@ -205,7 +251,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-32">
       <MainNav />
       <header className="px-6 py-4 bg-gray-900 text-white shadow-lg sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
@@ -217,25 +263,12 @@ export default function AdminPage() {
               <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
                 CONTROL <span className="text-primary">TOWER</span>
               </h1>
-              <div className="flex items-center gap-2 mt-1">
-                 <p className="text-[8px] uppercase font-bold text-gray-400 tracking-widest">Superadmin Terminal</p>
-                 {stats && (
-                   <div className="flex items-center gap-1.5">
-                     <span className="h-0.5 w-0.5 rounded-full bg-gray-700" />
-                     <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
-                     <span className="text-[9px] font-black text-white uppercase">({stats.points} pts)</span>
-                     <span className="h-0.5 w-0.5 rounded-full bg-gray-700" />
-                     <div className="flex items-center gap-1 bg-yellow-400/10 px-1.5 py-0.5 rounded-full border border-yellow-400/20">
-                        <Zap className="h-2 w-2 text-yellow-400 fill-yellow-400" />
-                        <span className="text-[8px] font-black text-yellow-400">{stats.lifelines}</span>
-                     </div>
-                   </div>
-                 )}
-              </div>
+              <p className="text-[8px] uppercase font-bold text-gray-400 tracking-widest mt-1">Superadmin Terminal</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle />
+            <NotificationBell />
           </div>
         </div>
       </header>
@@ -257,6 +290,89 @@ export default function AdminPage() {
             >
               {isRunningCron ? <Loader2 className="h-6 w-6 mr-2 animate-spin" /> : <Play className="h-6 w-6 mr-2" />}
               Force Cron Sync (Sync & Reminders)
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Manual Broadcast Section */}
+        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden bg-card">
+          <CardHeader className="bg-muted/50 border-b border-border p-8">
+            <CardTitle className="text-xl font-black uppercase italic text-foreground">Broadcast Center</CardTitle>
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">
+              Push Notification & App Alerts
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-8 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-muted-foreground">Target</label>
+                <Select value={notifTarget} onValueChange={setNotifTarget}>
+                  <SelectTrigger className="h-12 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Broadcast to All</SelectItem>
+                    <SelectItem value="single">Single User</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-muted-foreground">Category</label>
+                <Select value={notifType} onValueChange={setNotifType}>
+                  <SelectTrigger className="h-12 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual_admin">General Alert</SelectItem>
+                    <SelectItem value="app_update">App Update</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {notifTarget === "single" && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-muted-foreground">Select Recipient</label>
+                <Select value={notifSelectedUser} onValueChange={setNotifSelectedUser}>
+                  <SelectTrigger className="h-12 rounded-xl">
+                    <SelectValue placeholder="Select user..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allProfiles.map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.display_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground">Alert Title</label>
+              <Input 
+                placeholder="Match Update, Maintenance, etc."
+                value={notifTitle}
+                onChange={(e) => setNotifTitle(e.target.value)}
+                className="h-12 rounded-xl font-bold"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground">Message Body</label>
+              <Textarea 
+                placeholder="Enter the broadcast message..."
+                value={notifMessage}
+                onChange={(e) => setNotifMessage(e.target.value)}
+                className="rounded-xl min-h-[100px]"
+              />
+            </div>
+
+            <Button 
+              onClick={handleSendNotification}
+              disabled={!notifTitle || !notifMessage || (notifTarget === "single" && !notifSelectedUser) || isSendingNotif}
+              className="w-full h-14 rounded-2xl bg-foreground text-background font-black uppercase text-sm tracking-widest shadow-lg"
+            >
+              {isSendingNotif ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Send className="h-5 w-5 mr-2" />}
+              Dispatch Broadcast
             </Button>
           </CardContent>
         </Card>

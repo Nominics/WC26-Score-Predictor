@@ -1,8 +1,9 @@
+
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getTeamFlagUrl } from "@/lib/team-flags";
-import webpush from "web-push";
+import { sendNotification } from "@/lib/notifications/send-notification";
 
 type WorldCupApiGame = {
   id: string;
@@ -29,15 +30,6 @@ type WorldCupApiResponse = {
   games: WorldCupApiGame[];
 };
 
-// Configure Web Push
-if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || "mailto:admin@zikura.com",
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
-  );
-}
-
 function parseKickoffToUtc(localDate: string) {
   const dt = DateTime.fromFormat(localDate, "MM/dd/yyyy HH:mm", { zone: "America/New_York" });
   return dt.isValid ? dt.toUTC().toISO() : null;
@@ -52,9 +44,8 @@ export async function POST(req: Request) {
 
     let syncedFixtures = 0;
     let remindersSent = 0;
-    let disabledSubscriptions = 0;
 
-    // 1. MATCH SYNC
+    // 1. MATCH SYNC & DIFF DETECTION
     const apiUrl = process.env.FIXTURES_API_URL;
     const apiKey = process.env.FIXTURES_API_KEY;
 
@@ -66,13 +57,46 @@ export async function POST(req: Request) {
 
       if (response.ok) {
         const data = (await response.json()) as WorldCupApiResponse;
-        const fixtures = data.games.map((game) => {
+        
+        // Fetch existing fixtures to compare scores/scorers
+        const { data: existingFixtures } = await supabaseAdmin.from("fixtures").select("*");
+        const fixtureMap = new Map(existingFixtures?.map(f => [f.external_id, f]) || []);
+
+        const fixturesToUpsert = data.games.map((game) => {
           const status = (game.finished === "TRUE" || game.time_elapsed === "finished") ? "finished" : (game.time_elapsed === "live" ? "live" : "scheduled");
           const homeTeam = game.home_team_name_en || game.home_team_label || "TBD";
           const awayTeam = game.away_team_name_en || game.away_team_label || "TBD";
           const kickoff = parseKickoffToUtc(game.local_date);
-
+          const homeScore = status !== "scheduled" ? parseInt(game.home_score) : null;
+          const awayScore = status !== "scheduled" ? parseInt(game.away_score) : null;
+          
           const cleanScorers = (val?: string | null) => (val === "null" || !val ? null : val);
+          const homeScorers = cleanScorers(game.home_scorers);
+          const awayScorers = cleanScorers(game.away_scorers);
+
+          const existing = fixtureMap.get(game.id);
+
+          // Notify if score changed
+          if (existing && (existing.home_score !== homeScore || existing.away_score !== awayScore) && status !== 'scheduled') {
+            const eventKey = `score:${game.id}:${homeScore}-${awayScore}`;
+            broadcastNotification({
+              type: 'team_scored',
+              title: "GOAL! Score Updated",
+              body: `${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
+              eventKey
+            });
+          }
+
+          // Notify if scorers updated
+          if (existing && (existing.home_scorers !== homeScorers || existing.away_scorers !== awayScorers) && (homeScorers || awayScorers)) {
+            const eventKey = `scorers:${game.id}:${homeScorers || ''}:${awayScorers || ''}`;
+            broadcastNotification({
+              type: 'scorer_updated',
+              title: "Scorer Information Updated",
+              body: `Match event details updated for ${homeTeam} vs ${awayTeam}.`,
+              eventKey
+            });
+          }
 
           return {
             external_id: game.id,
@@ -85,13 +109,11 @@ export async function POST(req: Request) {
             away_flag: getTeamFlagUrl(awayTeam),
             kickoff_at: kickoff,
             status,
-            home_score: status !== "scheduled" ? parseInt(game.home_score) : null,
-            away_score: status !== "scheduled" ? parseInt(game.away_score) : null,
+            home_score: homeScore,
+            away_score: awayScore,
             updated_at: new Date().toISOString(),
-            // Goal Scorers mapping
-            home_scorers: cleanScorers(game.home_scorers),
-            away_scorers: cleanScorers(game.away_scorers),
-            // Extended mapping
+            home_scorers: homeScorers,
+            away_scorers: awayScorers,
             home_team_name_fa: game.home_team_name_fa ?? null,
             away_team_name_fa: game.away_team_name_fa ?? null,
             api_time_elapsed: game.time_elapsed,
@@ -103,13 +125,52 @@ export async function POST(req: Request) {
 
         const { error: upsertError } = await supabaseAdmin
           .from("fixtures")
-          .upsert(fixtures, { onConflict: "external_id" });
+          .upsert(fixturesToUpsert, { onConflict: "external_id" });
         
-        if (!upsertError) syncedFixtures = fixtures.length;
+        if (!upsertError) syncedFixtures = fixturesToUpsert.length;
       }
     }
 
-    // 2. PREDICTION REMINDERS
+    // 2. LEADERBOARD RANK CHANGE DETECTION
+    const { data: leaderboard } = await supabaseAdmin.from("leaderboard").select("user_id, total_points");
+    if (leaderboard) {
+      // Calculate current ranks
+      const rankedData = leaderboard
+        .sort((a, b) => b.total_points - a.total_points)
+        .map((u, i) => ({ ...u, rank: i + 1 }));
+
+      for (const entry of rankedData) {
+        const { data: snapshot } = await supabaseAdmin
+          .from("leaderboard_rank_snapshots")
+          .select("*")
+          .eq("user_id", entry.user_id)
+          .maybeSingle();
+
+        if (snapshot && snapshot.rank !== entry.rank) {
+          const improved = entry.rank < snapshot.rank;
+          await sendNotification({
+            userId: entry.user_id,
+            type: 'rank_changed',
+            title: improved ? "Rank Up!" : "Rank Changed",
+            body: improved 
+              ? `You've moved up to Rank #${entry.rank}! Keep it up.` 
+              : `Your global rank is now #${entry.rank}. Check the leaderboard!`,
+            data: { url: "/leaderboard", rank: entry.rank },
+            eventKey: `rank:${entry.user_id}:${entry.rank}:${entry.total_points}`
+          });
+        }
+
+        // Update snapshot
+        await supabaseAdmin.from("leaderboard_rank_snapshots").upsert({
+          user_id: entry.user_id,
+          rank: entry.rank,
+          total_points: entry.total_points,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+      }
+    }
+
+    // 3. PREDICTION REMINDERS
     const now = DateTime.now().toUTC();
     const intervals = [
       { label: '8h', minutes: 8 * 60 },
@@ -132,56 +193,32 @@ export async function POST(req: Request) {
       if (!upcomingFixtures?.length) continue;
 
       for (const fixture of upcomingFixtures) {
-        const { data: usersToRemind, error: rpcError } = await supabaseAdmin
+        const { data: usersToRemind } = await supabaseAdmin
           .rpc('get_users_needing_reminders', { 
             f_id: fixture.id, 
             r_type: interval.label 
           });
 
-        if (rpcError) {
-          console.error("RPC Error fetching reminder targets:", rpcError.message);
-          continue;
-        }
-
         if (!usersToRemind?.length) continue;
 
         for (const user of usersToRemind) {
-          const { data: subs } = await supabaseAdmin
-            .from('push_subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('enabled', true);
-
-          if (!subs?.length) continue;
-
-          const payload = JSON.stringify({
+          const eventKey = `reminder:${user.id}:${fixture.id}:${interval.label}`;
+          await sendNotification({
+            userId: user.id,
+            type: 'prediction_reminder',
             title: "Prediction Reminder",
             body: `${fixture.home_team} vs ${fixture.away_team} starts soon. Lock your score pick now!`,
-            url: "/dashboard"
+            data: { url: "/dashboard", fixtureId: fixture.id },
+            eventKey
           });
-
-          let successfullySentToAny = false;
-
-          for (const sub of subs) {
-            try {
-              await webpush.sendNotification(sub.subscription, payload);
-              remindersSent++;
-              successfullySentToAny = true;
-            } catch (err: any) {
-              if (err.statusCode === 404 || err.statusCode === 410) {
-                await supabaseAdmin.from('push_subscriptions').update({ enabled: false }).eq('id', sub.id);
-                disabledSubscriptions++;
-              }
-            }
-          }
-
-          if (successfullySentToAny) {
-            await supabaseAdmin.from('prediction_reminder_logs').insert({
-              user_id: user.id,
-              fixture_id: fixture.id,
-              reminder_type: interval.label
-            });
-          }
+          
+          await supabaseAdmin.from('prediction_reminder_logs').insert({
+            user_id: user.id,
+            fixture_id: fixture.id,
+            reminder_type: interval.label
+          }).catch(() => {}); // Avoid failing if duplicate log exists
+          
+          remindersSent++;
         }
       }
     }
@@ -189,11 +226,27 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       syncedFixtures,
-      remindersSent,
-      disabledSubscriptions
+      remindersSent
     });
 
   } catch (err: any) {
+    console.error("Cron execution error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+async function broadcastNotification({ type, title, body, eventKey }: { type: any, title: string, body: string, eventKey: string }) {
+  const { data: profiles } = await supabaseAdmin.from("profiles").select("id");
+  if (!profiles) return;
+  
+  // Use a batch to prevent excessive processing
+  for (const profile of profiles) {
+    await sendNotification({
+      userId: profile.id,
+      type,
+      title,
+      body,
+      eventKey
+    });
   }
 }

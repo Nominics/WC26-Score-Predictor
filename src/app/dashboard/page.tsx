@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
+import { NotificationBell } from "@/components/layout/notification-bell"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -61,16 +62,9 @@ export default function Dashboard() {
         })
         .subscribe()
 
-      const activityChannel = supabase
-        .channel('activity-realtime')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => fetchActivity())
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'manual_point_awards' }, () => fetchActivity())
-        .subscribe()
-
       return () => {
         supabase.removeChannel(fixturesChannel)
         supabase.removeChannel(predictionsChannel)
-        supabase.removeChannel(activityChannel)
       }
     }
   }, [authUser])
@@ -165,10 +159,7 @@ export default function Dashboard() {
           predicted_away_score: Number(a),
         }, { onConflict: 'user_id,fixture_id' })
 
-      if (error) {
-        console.error("Prediction save error:", error)
-        throw error
-      }
+      if (error) throw error
 
       toast({ 
         title: isLifeline ? "Lifeline Used!" : "Success", 
@@ -176,12 +167,7 @@ export default function Dashboard() {
       })
       fetchData()
     } catch (error: any) {
-      console.error("HandlePredict outer error:", error)
-      toast({ 
-        variant: "destructive", 
-        title: "Save Failed", 
-        description: error.message || "Failed to save pick." 
-      })
+      toast({ variant: "destructive", title: "Save Failed", description: error.message || "Failed to save pick." })
     }
   }
 
@@ -193,10 +179,7 @@ export default function Dashboard() {
   if (authLoading && fixtures.length === 0) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">WC26</div>
-          <Loader2 className="h-6 w-6 text-muted animate-spin" />
-        </div>
+        <Loader2 className="h-6 w-6 text-primary animate-spin" />
       </div>
     )
   }
@@ -231,6 +214,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle />
+            <NotificationBell />
             <PwaInstallButton />
             <ProfileSheet />
           </div>
