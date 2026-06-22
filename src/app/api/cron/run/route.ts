@@ -78,10 +78,12 @@ export async function POST(req: Request) {
           if (existing) {
             // 1. Match Started Pulse
             if (existing.status !== 'live' && status === 'live') {
-              broadcastNotification({
-                type: 'fixture_time_updated',
-                title: "🟢 MATCH STARTED",
-                body: `${homeTeam} vs ${awayTeam} is underway`,
+              createPulseEvent({
+                fixtureId: existing.id,
+                type: 'match_started',
+                emoji: '🟢',
+                title: "MATCH STARTED",
+                message: `${homeTeam} vs ${awayTeam} is underway`,
                 eventKey: `start:${game.id}`
               });
             }
@@ -91,18 +93,24 @@ export async function POST(req: Request) {
               const whoScored = (homeScore ?? 0) > (existing.home_score ?? 0) ? homeTeam : (awayScore ?? 0) > (existing.away_score ?? 0) ? awayTeam : null;
               
               if (whoScored) {
-                broadcastNotification({
-                  type: 'team_scored',
-                  title: "⚽ GOAL",
-                  body: `${whoScored} scored! ${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
-                  eventKey: `goal:${game.id}:${homeScore}-${awayScore}`
+                createPulseEvent({
+                  fixtureId: existing.id,
+                  type: 'goal',
+                  emoji: '⚽',
+                  title: "GOAL",
+                  message: `${whoScored} scored! ${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
+                  eventKey: `goal:${game.id}:${homeScore}-${awayScore}`,
+                  metadata: { homeScore, awayScore, scorerTeam: whoScored }
                 });
               } else {
-                broadcastNotification({
-                  type: 'team_scored',
-                  title: "📊 SCORE UPDATE",
-                  body: `${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
-                  eventKey: `score:${game.id}:${homeScore}-${awayScore}`
+                createPulseEvent({
+                  fixtureId: existing.id,
+                  type: 'score_update',
+                  emoji: '📊',
+                  title: "SCORE UPDATE",
+                  message: `${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
+                  eventKey: `score:${game.id}:${homeScore}-${awayScore}`,
+                  metadata: { homeScore, awayScore }
                 });
               }
             }
@@ -110,21 +118,27 @@ export async function POST(req: Request) {
             // 3. Scorer Update Pulse
             if ((existing.home_scorers !== homeScorers || existing.away_scorers !== awayScorers) && (homeScorers || awayScorers)) {
               const newScorers = [homeScorers, awayScorers].filter(Boolean).join(' • ');
-              broadcastNotification({
-                type: 'scorer_updated',
-                title: "🥅 SCORER UPDATE",
-                body: `${homeTeam} vs ${awayTeam}: ${newScorers}`,
-                eventKey: `scorer:${game.id}:${homeScorers || ''}:${awayScorers || ''}`
+              createPulseEvent({
+                fixtureId: existing.id,
+                type: 'scorer_update',
+                emoji: '🥅',
+                title: "SCORER UPDATE",
+                message: `${homeTeam} vs ${awayTeam}: ${newScorers}`,
+                eventKey: `scorer:${game.id}:${homeScorers || ''}:${awayScorers || ''}`,
+                metadata: { homeScorers, awayScorers }
               });
             }
 
             // 4. Match Finished Pulse
             if (existing.status !== 'finished' && status === 'finished') {
-              broadcastNotification({
-                type: 'team_scored',
-                title: "🏁 FULL TIME",
-                body: `${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
-                eventKey: `final:${game.id}`
+              createPulseEvent({
+                fixtureId: existing.id,
+                type: 'match_finished',
+                emoji: '🏁',
+                title: "FULL TIME",
+                message: `${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
+                eventKey: `final:${game.id}`,
+                metadata: { homeScore, awayScore }
               });
             }
           }
@@ -264,21 +278,59 @@ export async function POST(req: Request) {
   }
 }
 
-async function broadcastNotification({ type, title, body, eventKey }: { type: NotificationType, title: string, body: string, eventKey: string }) {
-  const { data: profiles } = await supabaseAdmin.from("profiles").select("id");
-  if (!profiles) return;
-  
-  const batchSize = 50;
-  for (let i = 0; i < profiles.length; i += batchSize) {
-    const batch = profiles.slice(i, i + batchSize);
-    await Promise.all(batch.map(profile => 
-      sendNotification({
-        userId: profile.id,
-        type,
-        title,
-        body,
-        eventKey
-      })
-    ));
+/**
+ * Creates a Match Pulse Event and broadcasts it to all users
+ */
+async function createPulseEvent({ 
+  fixtureId, type, emoji, title, message, eventKey, metadata = {} 
+}: { 
+  fixtureId: string, 
+  type: string, 
+  emoji: string, 
+  title: string, 
+  message: string, 
+  eventKey: string,
+  metadata?: any 
+}) {
+  try {
+    // 1. Check for duplicate Pulse Event
+    const { data: existing } = await supabaseAdmin
+      .from("match_pulse_events")
+      .select("id")
+      .eq("event_key", eventKey)
+      .maybeSingle();
+    
+    if (existing) return;
+
+    // 2. Insert into match_pulse_events table
+    await supabaseAdmin.from("match_pulse_events").insert({
+      fixture_id: fixtureId,
+      event_type: type,
+      emoji,
+      title,
+      message,
+      event_key: eventKey,
+      metadata
+    });
+
+    // 3. Broadcast as a notification to all users
+    const { data: profiles } = await supabaseAdmin.from("profiles").select("id");
+    if (!profiles) return;
+    
+    const batchSize = 50;
+    for (let i = 0; i < profiles.length; i += batchSize) {
+      const batch = profiles.slice(i, i + batchSize);
+      await Promise.all(batch.map(profile => 
+        sendNotification({
+          userId: profile.id,
+          type: 'fixture_time_updated' as NotificationType,
+          title: `${emoji} ${title}`,
+          body: message,
+          eventKey
+        })
+      ));
+    }
+  } catch (err) {
+    console.error("Pulse Event Error:", err);
   }
 }
