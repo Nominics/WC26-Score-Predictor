@@ -7,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play, Send, Bell } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play, Send, Bell, UserCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -16,7 +16,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { ModeToggle } from "@/components/mode-toggle"
 import { DateTime } from "luxon"
 import { NotificationBell } from "@/components/layout/notification-bell"
+import { PROFILE_ICON_PRESETS } from "@/lib/profile-icons"
 import Image from "next/image"
+import { cn } from "@/lib/utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +38,7 @@ export default function AdminPage() {
   const [isPromoting, setIsPromoting] = useState(false)
   const [isUpdatingTime, setIsUpdatingTime] = useState(false)
   const [isSendingNotif, setIsSendingNotif] = useState(false)
+  const [isAssigningIcon, setIsAssigningIcon] = useState(false)
   
   const [allProfiles, setAllProfiles] = useState<any[]>([])
   const [fixtures, setFixtures] = useState<any[]>([])
@@ -47,6 +50,10 @@ export default function AdminPage() {
   const [points, setPoints] = useState("")
   const [reason, setReason] = useState("")
   
+  // Icon Assignment states
+  const [selectedUserForIcon, setSelectedUserForIcon] = useState("")
+  const [selectedIconKey, setSelectedIconKey] = useState("")
+
   // Notification States
   const [notifTarget, setNotifTarget] = useState("all")
   const [notifSelectedUser, setNotifSelectedUser] = useState("")
@@ -71,7 +78,7 @@ export default function AdminPage() {
   }, [user, profile, authLoading, router])
 
   const fetchProfiles = async () => {
-    const { data } = await supabase.from("profiles").select("id, display_name, role").order("display_name")
+    const { data } = await supabase.from("profiles").select("id, display_name, role, profile_icon_key, favorite_team").order("display_name")
     setAllProfiles(data || [])
   }
 
@@ -242,6 +249,39 @@ export default function AdminPage() {
     }
   }
 
+  const handleSetProfileIcon = async () => {
+    if (!selectedUserForIcon || !selectedIconKey) return
+    setIsAssigningIcon(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error("Session expired.")
+
+      const response = await fetch("/api/admin/set-profile-icon", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          targetUserId: selectedUserForIcon,
+          profileIconKey: selectedIconKey
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Assignment failed")
+
+      toast({ title: "Icon Assigned!", description: "User profile icon has been set." })
+      setSelectedUserForIcon("")
+      setSelectedIconKey("")
+      fetchProfiles()
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Assignment Failed", description: error.message })
+    } finally {
+      setIsAssigningIcon(false)
+    }
+  }
+
   if (authLoading || profile?.role !== "superadmin") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -373,6 +413,65 @@ export default function AdminPage() {
             >
               {isSendingNotif ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Send className="h-5 w-5 mr-2" />}
               Dispatch Broadcast
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Profile Icon Assignment */}
+        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden bg-card">
+          <CardHeader className="bg-muted/50 border-b border-border p-8">
+            <CardTitle className="text-xl font-black uppercase italic text-foreground">Assign Profile Icon</CardTitle>
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">
+              Give users without icons a soccer avatar
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-8 space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
+                <UserCircle className="h-3 w-3" /> Select Target User
+              </label>
+              <Select value={selectedUserForIcon} onValueChange={setSelectedUserForIcon}>
+                <SelectTrigger className="h-14 rounded-2xl border-border bg-muted/50 font-bold">
+                  <SelectValue placeholder="Users without icon keys..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {allProfiles
+                    .filter(p => !p.profile_icon_key)
+                    .map(p => (
+                      <SelectItem key={p.id} value={p.id}>{p.display_name}</SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
+                <Star className="h-3 w-3" /> Select Icon
+              </label>
+              <div className="grid grid-cols-5 gap-2 bg-muted/30 p-4 rounded-2xl">
+                {PROFILE_ICON_PRESETS.map((icon) => (
+                  <button
+                    key={icon.key}
+                    onClick={() => setSelectedIconKey(icon.key)}
+                    className={cn(
+                      "relative aspect-square rounded-xl overflow-hidden border-2 transition-all",
+                      selectedIconKey === icon.key ? "border-primary shadow-lg scale-110 z-10" : "border-transparent opacity-50 grayscale hover:grayscale-0"
+                    )}
+                  >
+                    <Image src={icon.imagePath} alt={icon.label} fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Button 
+              onClick={handleSetProfileIcon}
+              disabled={!selectedUserForIcon || !selectedIconKey || isAssigningIcon}
+              className="w-full h-16 rounded-2xl bg-foreground hover:bg-foreground/90 text-background font-black uppercase text-lg tracking-tight shadow-lg"
+            >
+              {isAssigningIcon ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <UserPlus className="h-6 w-6 mr-2" />}
+              Assign Profile Icon
             </Button>
           </CardContent>
         </Card>

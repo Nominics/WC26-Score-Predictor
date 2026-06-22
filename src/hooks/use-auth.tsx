@@ -25,6 +25,7 @@ interface AuthContextType {
   updatePassword: (password: string) => Promise<void>
   updateDisplayName: (name: string) => Promise<void>
   updateFavoriteTeam: (team: string) => Promise<void>
+  updateProfileIcon: (iconKey: string | null) => Promise<void>
   useLifeline: () => Promise<void>
   isConfigured: boolean
 }
@@ -48,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("id, display_name, favorite_team, role, starting_points, lifeline_balance")
+          .select("id, display_name, favorite_team, profile_icon_key, role, starting_points, lifeline_balance")
           .eq("id", userId)
           .maybeSingle()
 
@@ -197,6 +198,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await fetchProfile(user.id)
   }
 
+  const updateProfileIcon = async (iconKey: string | null) => {
+    if (!user || !isConfigured) return
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        profile_icon_key: iconKey,
+        profile_icon_updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", user.id)
+    if (error) throw error
+    await fetchProfile(user.id)
+  }
+
   const useLifeline = async () => {
     if (!user || !profile || !isConfigured) return
     const currentBalance = profile.lifeline_balance ?? 5
@@ -226,6 +241,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updatePassword,
         updateDisplayName,
         updateFavoriteTeam,
+        updateProfileIcon,
         useLifeline,
         isConfigured,
       }}

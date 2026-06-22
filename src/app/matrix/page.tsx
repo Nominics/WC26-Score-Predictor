@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
+import { UserAvatar } from "@/components/user-avatar"
 import Image from "next/image"
 import { DateTime } from "luxon"
 import { useAuth } from "@/hooks/use-auth"
@@ -38,7 +39,7 @@ export default function Matrix() {
   const fetchData = async () => {
     try {
       const [pRes, fRes, prRes, lRes] = await Promise.all([
-        supabase.from("profiles").select("id, display_name").order("display_name"),
+        supabase.from("profiles").select("id, display_name, favorite_team, profile_icon_key").order("display_name"),
         supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true }),
         supabase.from("predictions").select("*"),
         supabase.from("leaderboard").select("user_id, total_points")
@@ -180,18 +181,21 @@ export default function Matrix() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {profiles.map(profile => (
-                    <TableRow key={profile.id} className="border-border hover:bg-muted/30 transition-colors">
+                  {profiles.map(p => (
+                    <TableRow key={p.id} className="border-border hover:bg-muted/30 transition-colors">
                       <TableCell className="px-8 py-6 sticky left-0 bg-card z-10 border-r border-border">
-                        <div className="flex flex-col">
-                          <span className="font-black text-sm uppercase tracking-tight text-foreground">{profile.display_name}</span>
-                          <span className="text-[10px] font-black text-primary uppercase mt-0.5 italic">
-                            {getPlayerPoints(profile.id)} <span className="text-muted-foreground not-italic">PTS</span>
-                          </span>
+                        <div className="flex items-center gap-3">
+                          <UserAvatar profile={p} className="h-8 w-8" />
+                          <div className="flex flex-col">
+                            <span className="font-black text-sm uppercase tracking-tight text-foreground">{p.display_name}</span>
+                            <span className="text-[10px] font-black text-primary uppercase mt-0.5 italic">
+                              {getPlayerPoints(p.id)} <span className="text-muted-foreground not-italic">PTS</span>
+                            </span>
+                          </div>
                         </div>
                       </TableCell>
                       {fixtures.map(f => {
-                        const { text, color, points } = getCellData(profile.id, f)
+                        const { text, color, points } = getCellData(p.id, f)
                         return (
                           <TableCell key={f.id} className="text-center p-4">
                             <div className="relative inline-block">

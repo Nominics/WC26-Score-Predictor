@@ -11,7 +11,7 @@ import { Zap, Activity, ChevronRight, Loader2, Star } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/user-avatar"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -171,11 +171,6 @@ export default function Dashboard() {
     }
   }
 
-  const getInitials = (name?: string) => {
-    if (!name) return "??"
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-  }
-
   if (authLoading && fixtures.length === 0) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -241,20 +236,11 @@ export default function Dashboard() {
                 </div>
               ) : (
                 activityLogs.map((log) => {
-                  const flagUrl = getTeamFlagUrl(log.favorite_team)
                   const isManual = log.action === 'manual_points_awarded'
                   
                   return (
                     <div key={log.id} className="flex gap-4 p-4 bg-card rounded-2xl border border-border items-center transition-all hover:bg-muted/50 shadow-sm">
-                      <Avatar className="h-9 w-9 border-2 border-background shadow-md">
-                        {flagUrl ? (
-                          <AvatarImage src={flagUrl} className="object-cover" />
-                        ) : (
-                          <AvatarFallback className="bg-primary/5 text-primary font-black text-[11px]">
-                            {getInitials(log.display_name)}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
+                      <UserAvatar profile={log} className="h-9 w-9" />
                       <div className="flex-1 overflow-hidden">
                         <div className="flex items-center gap-2">
                           <span className="font-black text-xs uppercase tracking-tight text-foreground">{log.display_name}</span>

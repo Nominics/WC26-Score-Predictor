@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { MainNav } from "@/components/layout/main-nav"
 import { createClient } from "@/lib/supabase/client"
 import { Send, Loader2, MessageSquare, Zap } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/user-avatar"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
@@ -101,11 +101,6 @@ export default function ChatPage() {
     }
   }
 
-  const getInitials = (name?: string) => {
-    if (!name) return "??"
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
-  }
-
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <MainNav />
@@ -159,7 +154,6 @@ export default function ChatPage() {
               <div className="space-y-6">
                 {messages.map((msg) => {
                   const isOwnMessage = msg.user_id === user?.id
-                  const flagUrl = getTeamFlagUrl(msg.favorite_team)
                   
                   return (
                     <div 
@@ -169,15 +163,7 @@ export default function ChatPage() {
                         isOwnMessage ? "flex-row-reverse" : "flex-row"
                       )}
                     >
-                      <Avatar className="h-10 w-10 border-2 border-background shadow-md shrink-0">
-                        {flagUrl ? (
-                          <AvatarImage src={flagUrl} className="object-cover" />
-                        ) : (
-                          <AvatarFallback className="bg-primary/5 text-primary font-black text-[10px]">
-                            {getInitials(msg.display_name)}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
+                      <UserAvatar profile={msg} className="h-10 w-10 shrink-0" />
                       
                       <div className={cn(
                         "flex flex-col space-y-1 max-w-[75%]",

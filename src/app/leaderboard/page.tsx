@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
 import { Medal, Loader2, Trophy, Zap, Star, Hash } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/user-avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -47,6 +47,7 @@ export default function Leaderboard() {
           user_id, 
           display_name, 
           favorite_team,
+          profile_icon_key,
           starting_points, 
           prediction_points, 
           manual_points,
@@ -64,11 +65,6 @@ export default function Leaderboard() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const getInitials = (name?: string) => {
-    if (!name) return "??"
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
   }
 
   return (
@@ -121,7 +117,6 @@ export default function Leaderboard() {
           <div className="space-y-3">
             {entries.map((entry, i) => {
               const rank = i + 1
-              const flagUrl = getTeamFlagUrl(entry.favorite_team)
               const isTopThree = rank <= 3
 
               return (
@@ -145,18 +140,10 @@ export default function Leaderboard() {
                       )}
                     </div>
                     
-                    <Avatar className={cn(
-                      "h-12 w-12 border-2 shadow-md",
-                      isTopThree ? "border-primary/20" : "border-background"
-                    )}>
-                      {flagUrl ? (
-                        <AvatarImage src={flagUrl} className="object-cover" />
-                      ) : (
-                        <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">
-                          {getInitials(entry.display_name)}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
+                    <UserAvatar 
+                      profile={entry} 
+                      className={cn("h-12 w-12", isTopThree && "border-primary/20")} 
+                    />
 
                     <div className="flex-1 min-w-0">
                       <span className="font-black text-[13px] uppercase tracking-tight text-foreground truncate block">

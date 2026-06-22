@@ -14,16 +14,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target, Star, Bell, Lock, Loader2 } from "lucide-react"
+import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target, Star, Bell, Lock, Loader2, UserCircle } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { getTeamFlagUrl, COUNTRIES } from "@/lib/team-flags"
+import { PROFILE_ICON_PRESETS } from "@/lib/profile-icons"
 import { NotificationToggle } from "./notification-toggle"
+import { UserAvatar } from "@/components/user-avatar"
 import Link from "next/link"
 import Image from "next/image"
+import { cn } from "@/lib/utils"
 
 export function ProfileSheet() {
-  const { user, profile, stats, logout, updateDisplayName, updateFavoriteTeam, updatePassword } = useAuth()
+  const { user, profile, stats, logout, updateDisplayName, updateFavoriteTeam, updateProfileIcon, updatePassword } = useAuth()
   const { toast } = useToast()
   
   const [isEditing, setIsEditing] = useState(false)
@@ -44,18 +47,6 @@ export function ProfileSheet() {
 
   if (!user) return null
 
-  const getInitials = (name?: string) => {
-    if (!name) return "??"
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase()
-  }
-
-  const initials = getInitials(profile?.display_name)
-  const flagUrl = getTeamFlagUrl(profile?.favorite_team)
   const isSuperadmin = profile?.role === 'superadmin'
 
   const handleShare = async () => {
@@ -100,6 +91,15 @@ export function ProfileSheet() {
     }
   }
 
+  const handleUpdateIcon = async (key: string | null) => {
+    try {
+      await updateProfileIcon(key)
+      toast({ title: "Icon Updated", description: key ? "Avatar changed!" : "Switched to team flag." })
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Update Failed", description: error.message })
+    }
+  }
+
   const handlePasswordUpdate = async () => {
     if (!newPassword || !confirmNewPassword) {
       toast({ variant: "destructive", title: "Required", description: "Please fill in both fields." })
@@ -132,18 +132,10 @@ export function ProfileSheet() {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 bg-white border shadow-sm hover:scale-105 transition-all">
-          <Avatar className="h-8 w-8">
-            {flagUrl ? (
-              <AvatarImage src={flagUrl} className="object-cover" />
-            ) : (
-              <AvatarFallback className="bg-primary/10 text-primary font-black text-[10px]">
-                {initials}
-              </AvatarFallback>
-            )}
-          </Avatar>
+          <UserAvatar profile={profile} className="h-8 w-8" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[320px] sm:w-[400px] p-0 border-l-0 overflow-y-auto">
+      <SheetContent side="right" className="w-[320px] sm:w-[400px] p-0 border-l-0 overflow-y-auto no-scrollbar">
         <SheetHeader className="p-8 bg-primary text-white">
           <SheetTitle className="text-white font-black italic uppercase tracking-tighter text-2xl">
             My Profile
@@ -153,15 +145,7 @@ export function ProfileSheet() {
         <div className="p-6 space-y-8 pb-12">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="relative">
-              <Avatar className="h-24 w-24 border-4 border-white shadow-2xl">
-                {flagUrl ? (
-                  <AvatarImage src={flagUrl} className="object-cover" />
-                ) : (
-                  <AvatarFallback className="bg-gray-50 text-primary font-black text-2xl">
-                    {initials}
-                  </AvatarFallback>
-                )}
-              </Avatar>
+              <UserAvatar profile={profile} className="h-24 w-24 border-4 border-white shadow-2xl" fallbackClassName="text-2xl" />
             </div>
             
             <div className="space-y-1 w-full flex flex-col items-center">
@@ -183,7 +167,7 @@ export function ProfileSheet() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-black uppercase italic text-gray-900 leading-tight">
+                  <h3 className="text-xl font-black uppercase italic text-gray-900 dark:text-white leading-tight">
                     {profile?.display_name}
                   </h3>
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400" onClick={() => setIsEditing(true)}>
@@ -196,7 +180,40 @@ export function ProfileSheet() {
               </p>
             </div>
 
-            <div className="w-full space-y-3 pt-4 border-t border-gray-100 text-left">
+            {/* Profile Icon Selection Grid */}
+            <div className="w-full space-y-4 pt-6 border-t border-gray-100">
+               <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Profile Icons</span>
+                  </div>
+                  {profile?.profile_icon_key && (
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => handleUpdateIcon(null)}
+                      className="h-6 px-2 text-[8px] font-black uppercase text-primary border border-primary/20 rounded-lg"
+                    >
+                      Use Team Flag
+                    </Button>
+                  )}
+               </div>
+               <div className="grid grid-cols-5 gap-2">
+                  {PROFILE_ICON_PRESETS.map((icon) => (
+                    <button
+                      key={icon.key}
+                      onClick={() => handleUpdateIcon(icon.key)}
+                      className={cn(
+                        "relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-105",
+                        profile?.profile_icon_key === icon.key ? "border-primary shadow-lg scale-105" : "border-transparent opacity-60 grayscale hover:grayscale-0"
+                      )}
+                    >
+                      <Image src={icon.imagePath} alt={icon.label} fill className="object-cover" />
+                    </button>
+                  ))}
+               </div>
+            </div>
+
+            <div className="w-full space-y-3 pt-6 border-t border-gray-100 text-left">
                <div className="flex items-center gap-2">
                   <Flag className="h-3.5 w-3.5 text-primary" />
                   <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">National Representation</span>
@@ -311,51 +328,51 @@ export function ProfileSheet() {
             </div>
 
             <div className="grid grid-cols-1 gap-3">
-              <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
+              <div className="p-5 bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border rounded-3xl flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                   <div className="bg-white p-2 rounded-xl border border-gray-100">
+                   <div className="bg-white dark:bg-background p-2 rounded-xl border border-gray-100 dark:border-border">
                       <Trophy className="h-4 w-4 text-primary" />
                    </div>
                    <div className="text-left">
                       <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Points</p>
-                      <span className="text-xl font-black text-gray-900">{stats?.points || "0"}</span>
+                      <span className="text-xl font-black text-gray-900 dark:text-white">{stats?.points || "0"}</span>
                    </div>
                 </div>
               </div>
 
-              <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
+              <div className="p-5 bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border rounded-3xl flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                   <div className="bg-white p-2 rounded-xl border border-gray-100">
+                   <div className="bg-white dark:bg-background p-2 rounded-xl border border-gray-100 dark:border-border">
                       <Target className="h-4 w-4 text-green-500" />
                    </div>
                    <div className="text-left">
                       <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Prediction Points</p>
-                      <span className="text-xl font-black text-gray-900">{stats?.predictionPoints || "0"}</span>
+                      <span className="text-xl font-black text-gray-900 dark:text-white">{stats?.predictionPoints || "0"}</span>
                    </div>
                 </div>
               </div>
 
-              <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
+              <div className="p-5 bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border rounded-3xl flex justify-between items-center">
                 <div className="flex items-center gap-3">
-                   <div className="bg-white p-2 rounded-xl border border-gray-100">
+                   <div className="bg-white dark:bg-background p-2 rounded-xl border border-gray-100 dark:border-border">
                       <Zap className="h-4 w-4 text-blue-500" />
                    </div>
                    <div className="text-left">
                       <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Late Join Bonus</p>
-                      <span className="text-xl font-black text-gray-900">{stats?.startingPoints || "0"}</span>
+                      <span className="text-xl font-black text-gray-900 dark:text-white">{stats?.startingPoints || "0"}</span>
                    </div>
                 </div>
               </div>
 
               {stats?.manualPoints !== 0 && (
-                <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
+                <div className="p-5 bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border rounded-3xl flex justify-between items-center">
                   <div className="flex items-center gap-3">
-                    <div className="bg-white p-2 rounded-xl border border-gray-100">
+                    <div className="bg-white dark:bg-background p-2 rounded-xl border border-gray-100 dark:border-border">
                         <Star className="h-4 w-4 text-yellow-500" />
                     </div>
                     <div className="text-left">
                         <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Manual Adjustment</p>
-                        <span className="text-xl font-black text-gray-900">
+                        <span className="text-xl font-black text-gray-900 dark:text-white">
                           {stats?.manualPoints! > 0 ? '+' : ''}{stats?.manualPoints}
                         </span>
                     </div>

@@ -5,8 +5,8 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
 import { Zap, MessageSquare, Loader2, Star, TrendingUp, TrendingDown, Clock, ShieldCheck } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { DateTime } from "luxon"
+import { UserAvatar } from "@/components/user-avatar"
+import { DateTime } from "lucon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -50,16 +50,6 @@ export default function Activity() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const getInitials = (name?: string) => {
-    if (!name) return "??"
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase()
   }
 
   return (
@@ -109,25 +99,12 @@ export default function Activity() {
           </div>
         ) : (
           logs.map((log) => {
-            const flagUrl = getTeamFlagUrl(log.favorite_team)
             const isManualAdjustment = log.action === 'manual_points_awarded'
             const isFixtureUpdate = log.action === 'fixture_time_updated'
             
             return (
               <div key={log.id} className="flex gap-4 p-5 bg-card rounded-3xl border border-border items-center shadow-xl transition-all hover:scale-[1.01]">
-                <Avatar className="h-12 w-12 border-2 border-background shadow-md">
-                  {flagUrl ? (
-                    <AvatarImage src={flagUrl} className="object-cover" />
-                  ) : isFixtureUpdate ? (
-                    <AvatarFallback className="bg-gray-900 text-primary font-black text-xs">
-                      <ShieldCheck className="h-5 w-5" />
-                    </AvatarFallback>
-                  ) : (
-                    <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">
-                      {getInitials(log.display_name)}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
+                <UserAvatar profile={log} className="h-12 w-12" />
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
                     <div className="space-y-0.5">
@@ -172,7 +149,7 @@ export default function Activity() {
                     </span>
                   </div>
                 </div>
-                {isManualAdjustment ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" /> : isFixtureUpdate ? <Clock className="h-3 w-3 text-primary" /> : <MessageSquare className="h-3 w-3 text-muted" />}
+                {isManualAdjustment ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" /> : isFixtureUpdate ? <ShieldCheck className="h-3 w-3 text-primary" /> : <MessageSquare className="h-3 w-3 text-muted" />}
               </div>
             )
           })
