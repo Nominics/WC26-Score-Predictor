@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     let syncedFixtures = 0;
     let remindersSent = 0;
 
-    // 1. MATCH SYNC & DIFF DETECTION
+    // 1. MATCH SYNC & PULSE DETECTION
     const apiUrl = process.env.FIXTURES_API_URL;
     const apiKey = process.env.FIXTURES_API_KEY;
 
@@ -58,7 +58,6 @@ export async function POST(req: Request) {
       if (response.ok) {
         const data = (await response.json()) as WorldCupApiResponse;
         
-        // Fetch existing fixtures to compare scores/scorers BEFORE upserting
         const { data: existingFixtures } = await supabaseAdmin.from("fixtures").select("*");
         const fixtureMap = new Map(existingFixtures?.map(f => [f.external_id, f]) || []);
 
@@ -76,26 +75,58 @@ export async function POST(req: Request) {
 
           const existing = fixtureMap.get(game.id);
 
-          // Notify if score changed (Goal Alert)
-          if (existing && (existing.home_score !== homeScore || existing.away_score !== awayScore) && status !== 'scheduled') {
-            const eventKey = `score:${game.id}:${homeScore}-${awayScore}`;
-            broadcastNotification({
-              type: 'team_scored',
-              title: "GOAL! Score Updated",
-              body: `${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
-              eventKey
-            });
-          }
+          if (existing) {
+            // 1. Match Started Pulse
+            if (existing.status !== 'live' && status === 'live') {
+              broadcastNotification({
+                type: 'fixture_time_updated',
+                title: "🟢 MATCH STARTED",
+                body: `${homeTeam} vs ${awayTeam} is underway`,
+                eventKey: `start:${game.id}`
+              });
+            }
 
-          // Notify if scorers updated
-          if (existing && (existing.home_scorers !== homeScorers || existing.away_scorers !== awayScorers) && (homeScorers || awayScorers)) {
-            const eventKey = `scorers:${game.id}:${homeScorers || ''}:${awayScorers || ''}`;
-            broadcastNotification({
-              type: 'scorer_updated',
-              title: "Scorer Information Updated",
-              body: `Match event details updated for ${homeTeam} vs ${awayTeam}.`,
-              eventKey
-            });
+            // 2. Score & Goal Pulse
+            if ((existing.home_score !== homeScore || existing.away_score !== awayScore) && status !== 'scheduled') {
+              const whoScored = (homeScore ?? 0) > (existing.home_score ?? 0) ? homeTeam : (awayScore ?? 0) > (existing.away_score ?? 0) ? awayTeam : null;
+              
+              if (whoScored) {
+                broadcastNotification({
+                  type: 'team_scored',
+                  title: "⚽ GOAL",
+                  body: `${whoScored} scored! ${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
+                  eventKey: `goal:${game.id}:${homeScore}-${awayScore}`
+                });
+              } else {
+                broadcastNotification({
+                  type: 'team_scored',
+                  title: "📊 SCORE UPDATE",
+                  body: `${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
+                  eventKey: `score:${game.id}:${homeScore}-${awayScore}`
+                });
+              }
+            }
+
+            // 3. Scorer Update Pulse
+            if ((existing.home_scorers !== homeScorers || existing.away_scorers !== awayScorers) && (homeScorers || awayScorers)) {
+              const newScorers = [homeScorers, awayScorers].filter(Boolean).join(' • ');
+              broadcastNotification({
+                type: 'scorer_updated',
+                title: "🥅 SCORER UPDATE",
+                body: `${homeTeam} vs ${awayTeam}: ${newScorers}`,
+                eventKey: `scorer:${game.id}:${homeScorers || ''}:${awayScorers || ''}`
+              });
+            }
+
+            // 4. Match Finished Pulse
+            if (existing.status !== 'finished' && status === 'finished') {
+              broadcastNotification({
+                type: 'team_scored',
+                title: "🏁 FULL TIME",
+                body: `${homeTeam} ${homeScore ?? 0} - ${awayScore ?? 0} ${awayTeam}`,
+                eventKey: `final:${game.id}`
+              });
+            }
           }
 
           return {
@@ -191,7 +222,6 @@ export async function POST(req: Request) {
       if (!upcomingFixtures?.length) continue;
 
       for (const fixture of upcomingFixtures) {
-        // RPC get_users_needing_reminders handles: user has no prediction AND user has enabled push AND user hasn't received this log yet
         const { data: usersToRemind } = await supabaseAdmin
           .rpc('get_users_needing_reminders', { 
             f_id: fixture.id, 
@@ -238,7 +268,6 @@ async function broadcastNotification({ type, title, body, eventKey }: { type: No
   const { data: profiles } = await supabaseAdmin.from("profiles").select("id");
   if (!profiles) return;
   
-  // Send notifications in parallel batches to optimize delivery
   const batchSize = 50;
   for (let i = 0; i < profiles.length; i += batchSize) {
     const batch = profiles.slice(i, i + batchSize);
