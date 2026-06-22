@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
 import { Medal, Trophy, Zap, Hash } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
-import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { cn } from "@/lib/utils"
@@ -94,7 +93,6 @@ export default function Leaderboard() {
             <ModeToggle />
             <NotificationBell />
             <PwaInstallButton />
-            <ProfileSheet />
           </div>
         </div>
       </header>

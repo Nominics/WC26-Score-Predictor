@@ -3,8 +3,6 @@
 import { MainNav } from "@/components/layout/main-nav"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Info, Award, Calendar, Zap, ShieldAlert, Sparkles, Flag, Share2 } from "lucide-react"
-import { ProfileSheet } from "@/components/profile/profile-sheet"
-import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { cn, copyToClipboard } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -64,8 +62,6 @@ export default function Rules() {
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle />
-            <PwaInstallButton />
-            <ProfileSheet />
           </div>
         </div>
       </header>

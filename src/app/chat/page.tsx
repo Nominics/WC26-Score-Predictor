@@ -7,8 +7,6 @@ import { createClient } from "@/lib/supabase/client"
 import { Send, Loader2, MessageSquare, Zap } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
 import { DateTime } from "luxon"
-import { ProfileSheet } from "@/components/profile/profile-sheet"
-import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -123,8 +121,6 @@ export default function ChatPage() {
           <div className="flex items-center gap-2">
             <ModeToggle />
             <NotificationBell />
-            <PwaInstallButton />
-            <ProfileSheet />
           </div>
         </div>
       </header>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -10,7 +9,6 @@ import { createClient } from "@/lib/supabase/client"
 import { Zap, ChevronRight, Radio } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
-import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -39,7 +37,6 @@ export default function Dashboard() {
     setHasMounted(true)
   }, [])
 
-  // Navigation Logic: Wait for auth to finish loading
   useEffect(() => {
     if (!authLoading) {
       if (!authUser) {
@@ -50,7 +47,6 @@ export default function Dashboard() {
     }
   }, [authUser, profile, authLoading, router])
 
-  // Data Loading Logic: Only run when auth is ready and user exists
   useEffect(() => {
     if (!authLoading && authUser) {
       fetchData()
@@ -75,7 +71,6 @@ export default function Dashboard() {
     }
   }, [authUser?.id, authLoading])
 
-  // Scroll logic for date tabs
   useEffect(() => {
     if (activeDate && scrollContainerRef.current) {
       const activeTab = document.getElementById(`date-tab-${activeDate}`)
@@ -188,7 +183,6 @@ export default function Dashboard() {
     }
   }
 
-  // Show branded loading screen if auth is pending or initial user-specific data is loading
   if (authLoading || (authUser && isLoadingData && fixtures.length === 0)) {
     return <AppLoadingScreen />
   }
@@ -224,7 +218,6 @@ export default function Dashboard() {
             <ModeToggle />
             <NotificationBell />
             <PwaInstallButton />
-            <ProfileSheet />
           </div>
         </div>
       </header>

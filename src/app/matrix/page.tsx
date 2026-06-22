@@ -6,7 +6,6 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { UserAvatar } from "@/components/user-avatar"
@@ -125,7 +124,6 @@ export default function Matrix() {
           <div className="flex items-center gap-2">
             <ModeToggle />
             <PwaInstallButton />
-            <ProfileSheet />
           </div>
         </div>
       </header>

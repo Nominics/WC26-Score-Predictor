@@ -4,9 +4,6 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
 import { Radio, Loader2 } from "lucide-react"
-import { DateTime } from "lucide-react"
-import { ProfileSheet } from "@/components/profile/profile-sheet"
-import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { NotificationBell } from "@/components/layout/notification-bell"
@@ -78,8 +75,6 @@ export default function ActivityFeed() {
           <div className="flex items-center gap-2">
             <ModeToggle />
             <NotificationBell />
-            <PwaInstallButton />
-            <ProfileSheet />
           </div>
         </div>
       </header>
@@ -112,7 +107,6 @@ export default function ActivityFeed() {
             ) : (
               <div className="p-4 sm:p-6 space-y-0.5 overflow-visible">
                 {logs.map((log) => {
-                  // Filter out redundant prediction updates
                   if (log.event_type === 'prediction_updated' && log.metadata?.old_score === log.metadata?.new_score) return null;
 
                   let displayTitle = log.title;

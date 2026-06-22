@@ -6,13 +6,12 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Bell, Loader2, Trophy, Zap, MessageSquare, Calendar, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
-import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { NotificationBell } from "@/components/layout/notification-bell"
 import { ModeToggle } from "@/components/mode-toggle"
 import Image from "next/image"
+import { DateTime } from "luxon"
 
 type FilterType = "all" | "unread" | "match" | "points" | "admin"
 
@@ -100,7 +99,6 @@ export default function NotificationsPage() {
           <div className="flex items-center gap-2">
             <ModeToggle />
             <NotificationBell />
-            <ProfileSheet />
           </div>
         </div>
       </header>
