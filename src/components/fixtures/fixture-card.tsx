@@ -114,12 +114,12 @@ export function FixtureCard({
 
   return (
     <Card className={cn(
-      "relative overflow-hidden border-border/50 bg-card text-foreground shadow-2xl transition-all duration-500 rounded-[2.5rem]",
+      "relative isolate overflow-hidden border-border/50 bg-card text-foreground shadow-2xl transition-all duration-500 rounded-[2.5rem]",
       isLive ? "ring-2 ring-emerald-500/50" : ""
     )}>
       {/* Dynamic Background Gradients */}
       <div className={cn(
-        "absolute inset-0 transition-opacity duration-1000 opacity-20 dark:opacity-40",
+        "absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-1000 opacity-20 dark:opacity-40",
         isLive 
           ? "bg-gradient-to-br from-emerald-500 via-transparent to-teal-500" 
           : isFinished
@@ -129,17 +129,17 @@ export function FixtureCard({
       
       {/* Decorative Glows */}
       <div className={cn(
-        "absolute -left-16 -top-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000 opacity-20",
+        "absolute -left-16 -top-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000 opacity-20 pointer-events-none",
         isLive ? "bg-emerald-500" : isFinished ? "bg-orange-500" : "bg-purple-500"
       )} />
       <div className={cn(
-        "absolute -right-16 -bottom-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000 opacity-20",
+        "absolute -right-16 -bottom-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000 opacity-20 pointer-events-none",
         isLive ? "bg-teal-500" : isFinished ? "bg-zinc-500" : "bg-cyan-500"
       )} />
 
       <CardContent className="p-0 relative z-10">
         {/* Top Header Pill */}
-        <div className="px-6 py-4 flex justify-between items-center border-b border-border/50 bg-background/40 backdrop-blur-md">
+        <div className="px-6 py-4 flex justify-between items-center border-b border-border/50 bg-background/40 backdrop-blur-md rounded-t-[inherit] overflow-hidden">
           <div className="flex flex-col">
             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground">
               {fixture.stage} • {dateStr}
