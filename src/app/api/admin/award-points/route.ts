@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNotification } from "@/lib/notifications/send-notification";
@@ -59,19 +58,24 @@ export async function POST(req: Request) {
     }
 
     // 3. Create a Match Pulse Event (Public Feed)
-    const pulseMessage = `${displayName} received ${pointsInt > 0 ? '+' : ''}${pointsInt} points — ${reason}`;
-    await supabaseAdmin.from("match_pulse_events").insert({
-      event_type: "bonus_points",
-      emoji: "🎁",
-      title: "BONUS POINTS",
-      message: pulseMessage,
-      user_id: targetUserId,
-      metadata: {
-        points: pointsInt,
-        reason,
-        awarded_by: user.id
-      }
-    }).catch(err => console.error("Pulse event insertion failed:", err));
+    try {
+      const pulseMessage = `${displayName} received ${pointsInt > 0 ? '+' : ''}${pointsInt} points — ${reason}`;
+      const { error: pulseError } = await supabaseAdmin.from("match_pulse_events").insert({
+        event_type: "bonus_points",
+        emoji: "🎁",
+        title: "BONUS POINTS",
+        message: pulseMessage,
+        user_id: targetUserId,
+        metadata: {
+          points: pointsInt,
+          reason,
+          awarded_by: user.id
+        }
+      });
+      if (pulseError) console.error("Pulse event insertion failed:", pulseError);
+    } catch (pulseErr) {
+      console.error("Pulse event exception:", pulseErr);
+    }
 
     // 4. Send Private Notification to the recipient
     await sendNotification({
@@ -93,7 +97,7 @@ export async function POST(req: Request) {
             userId: p.id,
             type: 'bonus_points',
             title: "🎁 BONUS POINTS",
-            body: pulseMessage,
+            body: `${displayName} received ${pointsInt > 0 ? '+' : ''}${pointsInt} points — ${reason}`,
             eventKey: `bonus:${targetUserId}:${Date.now()}`
           })
         ));

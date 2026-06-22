@@ -43,20 +43,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    // 2. Log the activity (assuming activity_logs table exists and is mapped to the view)
-    // If the view combines multiple tables, we'll use a manual point adjustment or a similar structure if a generic log table isn't clear
-    // For now, we'll try to insert into activity_logs if it exists, otherwise the update itself is the primary goal.
-    // Based on src/app/activity/page.tsx, it listens to activity_logs.
-    await supabaseAdmin.from("activity_logs").insert({
-      user_id: user.id,
-      action: "fixture_time_updated",
-      fixture_id: fixtureId,
-      metadata: {
-        home_team: fixture.home_team,
-        away_team: fixture.away_team,
-        new_time: newKickoffAt
-      }
-    }).catch(err => console.error("Log insert failed:", err));
+    // 2. Log the activity (Safe patterns, no .catch() on query builder)
+    try {
+      const { error: logError } = await supabaseAdmin.from("activity_logs").insert({
+        user_id: user.id,
+        action: "fixture_time_updated",
+        fixture_id: fixtureId,
+        metadata: {
+          home_team: fixture.home_team,
+          away_team: fixture.away_team,
+          new_time: newKickoffAt
+        }
+      });
+      if (logError) console.error("Log insert failed:", logError);
+    } catch (logErr) {
+      console.error("Log exception:", logErr);
+    }
 
     return NextResponse.json({ success: true });
   } catch (err: any) {

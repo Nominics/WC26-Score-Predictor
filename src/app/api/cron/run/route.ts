@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -255,11 +254,16 @@ export async function POST(req: Request) {
             eventKey
           });
           
-          await supabaseAdmin.from('prediction_reminder_logs').insert({
-            user_id: user.id,
-            fixture_id: fixture.id,
-            reminder_type: interval.label
-          }).catch(() => {});
+          try {
+            const { error: logErr } = await supabaseAdmin.from('prediction_reminder_logs').insert({
+              user_id: user.id,
+              fixture_id: fixture.id,
+              reminder_type: interval.label
+            });
+            if (logErr) console.error("Reminder log insert failed:", logErr);
+          } catch (e) {
+            console.error("Reminder log exception:", e);
+          }
           
           remindersSent++;
         }
@@ -303,7 +307,7 @@ async function createPulseEvent({
     if (existing) return;
 
     // 2. Insert into match_pulse_events table
-    await supabaseAdmin.from("match_pulse_events").insert({
+    const { error: pulseError } = await supabaseAdmin.from("match_pulse_events").insert({
       fixture_id: fixtureId,
       event_type: type,
       emoji,
@@ -312,6 +316,11 @@ async function createPulseEvent({
       event_key: eventKey,
       metadata
     });
+
+    if (pulseError) {
+      console.error("Pulse Event DB Error:", pulseError);
+      return;
+    }
 
     // 3. Broadcast as a notification to all users
     const { data: profiles } = await supabaseAdmin.from("profiles").select("id");
@@ -331,6 +340,6 @@ async function createPulseEvent({
       ));
     }
   } catch (err) {
-    console.error("Pulse Event Error:", err);
+    console.error("Pulse Event Exception:", err);
   }
 }
