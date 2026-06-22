@@ -117,9 +117,10 @@ export async function POST(req: Request) {
         home_score: parseScore(game.home_score, status),
         away_score: parseScore(game.away_score, status),
         updated_at: new Date().toISOString(),
-        // New Extended Fields
+        // Goal Scorers mapping
         home_scorers: cleanScorers(game.home_scorers),
         away_scorers: cleanScorers(game.away_scorers),
+        // Extended Mapping
         home_team_name_fa: game.home_team_name_fa ?? null,
         away_team_name_fa: game.away_team_name_fa ?? null,
         api_time_elapsed: game.time_elapsed,

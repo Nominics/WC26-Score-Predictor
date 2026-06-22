@@ -88,9 +88,10 @@ export async function POST(req: Request) {
             home_score: status !== "scheduled" ? parseInt(game.home_score) : null,
             away_score: status !== "scheduled" ? parseInt(game.away_score) : null,
             updated_at: new Date().toISOString(),
-            // Extended mapping
+            // Goal Scorers mapping
             home_scorers: cleanScorers(game.home_scorers),
             away_scorers: cleanScorers(game.away_scorers),
+            // Extended mapping
             home_team_name_fa: game.home_team_name_fa ?? null,
             away_team_name_fa: game.away_team_name_fa ?? null,
             api_time_elapsed: game.time_elapsed,
