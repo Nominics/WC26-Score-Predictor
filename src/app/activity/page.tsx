@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Zap, MessageSquare, Loader2, Star, TrendingUp, TrendingDown } from "lucide-react"
+import { Zap, MessageSquare, Loader2, Star, TrendingUp, TrendingDown, Clock, ShieldCheck } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
@@ -102,12 +102,17 @@ export default function Activity() {
           logs.map((log) => {
             const flagUrl = getTeamFlagUrl(log.favorite_team)
             const isManualAdjustment = log.action === 'manual_points_awarded'
+            const isFixtureUpdate = log.action === 'fixture_time_updated'
             
             return (
               <div key={log.id} className="flex gap-4 p-5 bg-white rounded-3xl border border-gray-100 items-center shadow-xl transition-all hover:scale-[1.01]">
                 <Avatar className="h-12 w-12 border-2 border-white shadow-md">
                   {flagUrl ? (
                     <AvatarImage src={flagUrl} className="object-cover" />
+                  ) : isFixtureUpdate ? (
+                    <AvatarFallback className="bg-gray-900 text-primary font-black text-xs">
+                      <ShieldCheck className="h-5 w-5" />
+                    </AvatarFallback>
                   ) : (
                     <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">
                       {getInitials(log.display_name)}
@@ -122,7 +127,7 @@ export default function Activity() {
                         <span className="text-gray-400 font-bold lowercase">
                           {isManualAdjustment 
                             ? (log.points_awarded > 0 ? 'received a bonus' : 'received an adjustment')
-                            : (log.action === 'prediction_created' ? 'locked in' : 'updated') + ' a pick'
+                            : isFixtureUpdate ? 'updated a match schedule' : (log.action === 'prediction_created' ? 'locked in' : 'updated') + ' a pick'
                           }
                         </span>
                       </p>
@@ -137,6 +142,16 @@ export default function Activity() {
                           </div>
                           <span className="text-[10px] font-bold text-gray-500 italic truncate italic">"{log.reason}"</span>
                         </div>
+                      ) : isFixtureUpdate ? (
+                        <div className="flex flex-col gap-1 mt-1">
+                           <p className="font-black text-gray-900 uppercase italic text-[14px] tracking-tight">
+                             {log.home_team} vs {log.away_team}
+                           </p>
+                           <div className="flex items-center gap-1.5 bg-primary/5 border border-primary/10 rounded-lg px-2 py-1 w-fit">
+                              <Clock className="h-3 w-3 text-primary" />
+                              <span className="text-[10px] font-black text-primary uppercase">New Time: {DateTime.fromISO(log.new_time).toFormat('LLL dd, HH:mm')}</span>
+                           </div>
+                        </div>
                       ) : (
                         <p className="font-black text-primary uppercase italic text-[14px] tracking-tight">
                           {log.home_team} vs {log.away_team}
@@ -148,7 +163,7 @@ export default function Activity() {
                     </span>
                   </div>
                 </div>
-                {isManualAdjustment ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" /> : <MessageSquare className="h-3 w-3 text-gray-100" />}
+                {isManualAdjustment ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" /> : isFixtureUpdate ? <Clock className="h-3 w-3 text-primary" /> : <MessageSquare className="h-3 w-3 text-gray-100" />}
               </div>
             )
           })

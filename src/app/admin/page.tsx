@@ -6,12 +6,13 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, ShieldCheck, Loader2, Zap, Star, UserSearch, UserPlus } from "lucide-react"
+import { RefreshCcw, ShieldCheck, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { DateTime } from "luxon"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,9 +30,13 @@ export default function AdminPage() {
   const [isSyncing, setIsSyncing] = useState(false)
   const [isAwarding, setIsAwarding] = useState(false)
   const [isPromoting, setIsPromoting] = useState(false)
+  const [isUpdatingTime, setIsUpdatingTime] = useState(false)
   const [allProfiles, setAllProfiles] = useState<any[]>([])
+  const [fixtures, setFixtures] = useState<any[]>([])
   const [selectedUser, setSelectedUser] = useState("")
   const [selectedUserForRole, setSelectedUserForRole] = useState("")
+  const [selectedFixture, setSelectedFixture] = useState("")
+  const [newTime, setNewTime] = useState("")
   const [points, setPoints] = useState("")
   const [reason, setReason] = useState("")
   const [showConfirmPoints, setShowConfirmPoints] = useState(false)
@@ -46,12 +51,55 @@ export default function AdminPage() {
     }
     if (profile?.role === "superadmin") {
       fetchProfiles()
+      fetchFixtures()
     }
   }, [user, profile, authLoading, router])
 
   const fetchProfiles = async () => {
     const { data } = await supabase.from("profiles").select("id, display_name, role").order("display_name")
     setAllProfiles(data || [])
+  }
+
+  const fetchFixtures = async () => {
+    const { data } = await supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true })
+    setFixtures(data || [])
+  }
+
+  const handleUpdateTime = async () => {
+    if (!selectedFixture || !newTime) return
+    setIsUpdatingTime(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error("Session expired.")
+
+      // Construct a valid ISO string from the date-time-local input
+      // The input is local time, we should treat it as tournament time (e.g., America/New_York)
+      const isoTime = DateTime.fromISO(newTime, { zone: "America/New_York" }).toUTC().toISO()
+
+      const response = await fetch("/api/admin/update-fixture-time", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fixtureId: selectedFixture,
+          newKickoffAt: isoTime
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Update failed")
+
+      toast({ title: "Time Updated!", description: "The fixture kickoff time has been changed." })
+      setSelectedFixture("")
+      setNewTime("")
+      fetchFixtures()
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Update Failed", description: error.message })
+    } finally {
+      setIsUpdatingTime(false)
+    }
   }
 
   const handleSync = async () => {
@@ -71,6 +119,7 @@ export default function AdminPage() {
       if (!response.ok) throw new Error(data.error || "Failed to sync fixtures")
 
       toast({ title: "Sync Successful", description: `Successfully synchronized ${data.count} fixtures.` })
+      fetchFixtures()
     } catch (error: any) {
       toast({ variant: "destructive", title: "Sync Failed", description: error.message })
     } finally {
@@ -240,6 +289,56 @@ export default function AdminPage() {
             >
               {isAwarding ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <Star className="h-6 w-6 mr-2" />}
               Award Points
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Fixture Management Section */}
+        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-100 p-8">
+            <CardTitle className="text-xl font-black uppercase italic text-gray-900">Fixture Management</CardTitle>
+            <CardDescription className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-1">
+              Correct Match Times
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-8 space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 flex items-center gap-2">
+                <Calendar className="h-3 w-3" /> Select Match
+              </label>
+              <Select value={selectedFixture} onValueChange={setSelectedFixture}>
+                <SelectTrigger className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 font-bold">
+                  <SelectValue placeholder="Choose a fixture..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {fixtures.map(f => (
+                    <SelectItem key={f.id} value={f.id}>
+                      {f.home_team} vs {f.away_team} ({DateTime.fromISO(f.kickoff_at).toFormat('LLL dd, HH:mm')})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase text-gray-400 flex items-center gap-2">
+                <Clock className="h-3 w-3" /> New Kickoff Time (EST)
+              </label>
+              <Input 
+                type="datetime-local"
+                value={newTime}
+                onChange={(e) => setNewTime(e.target.value)}
+                className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 font-bold"
+              />
+            </div>
+
+            <Button 
+              onClick={handleUpdateTime}
+              disabled={!selectedFixture || !newTime || isUpdatingTime}
+              className="w-full h-16 rounded-2xl bg-gray-900 hover:bg-black text-white font-black uppercase text-lg tracking-tight shadow-lg"
+            >
+              {isUpdatingTime ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <Clock className="h-6 w-6 mr-2" />}
+              Update Match Time
             </Button>
           </CardContent>
         </Card>

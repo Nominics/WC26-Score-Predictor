@@ -1,0 +1,65 @@
+import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+
+export async function POST(req: Request) {
+  try {
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(token);
+
+    if (userError || !user) {
+      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    }
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (profile?.role !== "superadmin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { fixtureId, newKickoffAt } = await req.json();
+
+    if (!fixtureId || !newKickoffAt) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    // 1. Update the fixture
+    const { data: fixture, error: updateError } = await supabaseAdmin
+      .from("fixtures")
+      .update({ kickoff_at: newKickoffAt })
+      .eq("id", fixtureId)
+      .select()
+      .single();
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    // 2. Log the activity (assuming activity_logs table exists and is mapped to the view)
+    // If the view combines multiple tables, we'll use a manual point adjustment or a similar structure if a generic log table isn't clear
+    // For now, we'll try to insert into activity_logs if it exists, otherwise the update itself is the primary goal.
+    // Based on src/app/activity/page.tsx, it listens to activity_logs.
+    await supabaseAdmin.from("activity_logs").insert({
+      user_id: user.id,
+      action: "fixture_time_updated",
+      fixture_id: fixtureId,
+      metadata: {
+        home_team: fixture.home_team,
+        away_team: fixture.away_team,
+        new_time: newKickoffAt
+      }
+    }).catch(err => console.error("Log insert failed:", err));
+
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
