@@ -17,7 +17,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { NotificationBell } from "@/components/layout/notification-bell"
-import { getTeamFlagUrl } from "@/lib/team-flags"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 
@@ -142,9 +141,6 @@ export default function Dashboard() {
 
   const handlePredict = async (fixtureId: string, h: number, a: number, isLifeline: boolean) => {
     try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser()
-      if (!currentUser) throw new Error("No authenticated user session found.")
-
       if (isLifeline) {
         try {
           await useLifeline()
@@ -157,7 +153,7 @@ export default function Dashboard() {
       const { error } = await supabase
         .from("predictions")
         .upsert({
-          user_id: currentUser.id,
+          user_id: authUser?.id,
           fixture_id: fixtureId,
           predicted_home_score: Number(h),
           predicted_away_score: Number(a),
@@ -221,11 +217,11 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-6 mb-10">
-        <Card className="rounded-[2rem] border-0 shadow-2xl overflow-hidden bg-card">
-          <div className="px-6 py-3 bg-gray-900 flex items-center justify-between">
+        <Card className="rounded-[2.5rem] border-0 shadow-2xl overflow-hidden bg-card transition-all hover:shadow-primary/5">
+          <div className="px-6 py-3 bg-secondary flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary" />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Live Updates</h3>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Live Activity</h3>
             </div>
             <div className="flex items-center gap-1.5">
                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -243,7 +239,7 @@ export default function Dashboard() {
                   const isManual = log.action === 'manual_points_awarded'
                   
                   return (
-                    <div key={log.id} className="flex gap-4 p-4 bg-card rounded-2xl border border-border items-center transition-all hover:bg-muted/50 shadow-sm">
+                    <div key={log.id} className="flex gap-4 p-4 bg-card rounded-[2rem] border border-border items-center transition-all hover:bg-muted/50 shadow-sm group">
                       <UserAvatar profile={log} className="h-9 w-9" />
                       <div className="flex-1 overflow-hidden">
                         <div className="flex items-center gap-2">
@@ -265,7 +261,7 @@ export default function Dashboard() {
                             "{log.reason}"
                           </p>
                         ) : (
-                          <p className="font-black text-primary uppercase italic text-[12px] tracking-tight truncate mt-0.5">
+                          <p className="font-black text-primary uppercase italic text-[12px] tracking-tight truncate mt-0.5 group-hover:text-foreground transition-colors">
                             {log.home_team} vs {log.away_team}
                           </p>
                         )}
@@ -294,7 +290,7 @@ export default function Dashboard() {
                 key={d.iso}
                 onClick={() => setActiveDate(d.iso)}
                 className={cn(
-                  "flex flex-col items-center min-w-[4.5rem] py-3 rounded-2xl transition-all duration-300 border-2",
+                  "flex flex-col items-center min-w-[4.5rem] py-3 rounded-[2rem] transition-all duration-300 border-2",
                   activeDate === d.iso 
                     ? "bg-primary border-primary text-primary-foreground shadow-2xl scale-105" 
                     : "bg-card border-border text-muted-foreground hover:border-primary/20 hover:bg-muted shadow-sm"
@@ -318,8 +314,8 @@ export default function Dashboard() {
             </h2>
           </div>
           {displayFixtures.some(f => f.status === 'live') && (
-            <div className="flex items-center gap-2 bg-green-500 text-white px-3 py-1 rounded-full text-[9px] font-black uppercase italic animate-pulse shadow-lg">
-              <div className="h-1.5 w-1.5 rounded-full bg-white" /> Live Now
+            <div className="flex items-center gap-2 bg-emerald-500 text-black px-3 py-1 rounded-full text-[9px] font-black uppercase italic animate-pulse shadow-lg">
+              <div className="h-1.5 w-1.5 rounded-full bg-black" /> Live Now
             </div>
           )}
         </div>

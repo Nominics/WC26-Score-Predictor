@@ -5,9 +5,8 @@ import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { MainNav } from "@/components/layout/main-nav"
 import { createClient } from "@/lib/supabase/client"
-import { Send, Loader2, MessageSquare, Zap } from "lucide-react"
+import { Send, Loader2, MessageSquare, Zap, Trophy } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
-import { getTeamFlagUrl } from "@/lib/team-flags"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -15,6 +14,7 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { NotificationBell } from "@/components/layout/notification-bell"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 
@@ -36,15 +36,7 @@ export default function ChatPage() {
         event: 'INSERT', 
         schema: 'public', 
         table: 'arena_messages' 
-      }, (payload) => {
-        if (typeof window !== 'undefined' && document.visibilityState === 'hidden') {
-          if (Notification.permission === 'granted') {
-             new Notification('New Arena Message', {
-               body: 'Someone just posted in the Arena Chat!',
-               icon: '/logo.png'
-             });
-          }
-        }
+      }, () => {
         fetchMessages()
       })
       .subscribe()
@@ -131,6 +123,7 @@ export default function ChatPage() {
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle />
+            <NotificationBell />
             <PwaInstallButton />
             <ProfileSheet />
           </div>
@@ -138,7 +131,7 @@ export default function ChatPage() {
       </header>
 
       <main className="flex-1 max-w-2xl w-full mx-auto p-4 flex flex-col h-[calc(100vh-160px)] overflow-hidden mb-32 md:mb-0">
-        <div className="flex-1 bg-card rounded-[2.5rem] shadow-xl border border-border overflow-hidden flex flex-col">
+        <div className="flex-1 bg-card rounded-[2.5rem] shadow-2xl border border-border overflow-hidden flex flex-col transition-all hover:shadow-primary/5">
           <ScrollArea className="flex-1 p-6">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -151,7 +144,7 @@ export default function ChatPage() {
                 <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest text-center">No messages yet.<br/>Be the first to rally the fans!</p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {messages.map((msg) => {
                   const isOwnMessage = msg.user_id === user?.id
                   
@@ -159,30 +152,33 @@ export default function ChatPage() {
                     <div 
                       key={msg.id} 
                       className={cn(
-                        "flex gap-3",
+                        "flex gap-4 items-end",
                         isOwnMessage ? "flex-row-reverse" : "flex-row"
                       )}
                     >
-                      <UserAvatar profile={msg} className="h-10 w-10 shrink-0" />
+                      <UserAvatar profile={msg} className="h-10 w-10 shrink-0 shadow-lg" />
                       
                       <div className={cn(
-                        "flex flex-col space-y-1 max-w-[75%]",
-                        isOwnMessage ? "items-end" : "items-start"
+                        "flex flex-col space-y-1.5 max-w-[75%]",
+                        isOwnMessage ? "items-end text-right" : "items-start text-left"
                       )}>
                         <div className="flex items-center gap-2 px-1">
-                          <span className="text-[9px] font-black uppercase text-muted-foreground tracking-tight">
+                          <span className={cn(
+                            "text-[10px] font-black uppercase tracking-tight",
+                            isOwnMessage ? "text-primary italic" : "text-muted-foreground"
+                          )}>
                             {msg.display_name || "Unknown Fan"}
                           </span>
-                          <span className="text-[8px] font-bold text-muted-foreground">
+                          <span className="text-[8px] font-bold text-muted-foreground/50">
                             {DateTime.fromISO(msg.created_at).toFormat('HH:mm')}
                           </span>
                         </div>
                         
                         <div className={cn(
-                          "px-5 py-3 rounded-2xl text-sm font-medium shadow-sm leading-relaxed",
+                          "px-6 py-4 rounded-[2rem] text-sm font-semibold shadow-md leading-relaxed transition-all",
                           isOwnMessage 
-                            ? "bg-primary text-primary-foreground rounded-tr-none" 
-                            : "bg-muted text-foreground rounded-tl-none"
+                            ? "bg-primary text-primary-foreground rounded-br-none border-2 border-primary/20" 
+                            : "bg-muted text-foreground rounded-bl-none border border-border/50"
                         )}>
                           {msg.message}
                         </div>
@@ -195,20 +191,20 @@ export default function ChatPage() {
             )}
           </ScrollArea>
 
-          <div className="p-4 bg-muted/50 border-t border-border">
-            <form onSubmit={handleSendMessage} className="flex gap-2">
+          <div className="p-6 bg-muted/30 border-t border-border/50 backdrop-blur-sm">
+            <form onSubmit={handleSendMessage} className="flex gap-3">
               <Input
                 placeholder="Message the Arena..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 disabled={sending}
                 maxLength={300}
-                className="h-14 rounded-2xl border-border bg-background font-bold px-6 shadow-inner"
+                className="h-14 rounded-full border-border bg-background font-bold px-8 shadow-inner focus:ring-primary/20"
               />
               <Button 
                 type="submit" 
                 disabled={!newMessage.trim() || sending}
-                className="h-14 w-14 rounded-2xl bg-primary text-primary-foreground hover:bg-black hover:text-primary shadow-lg transition-all active:scale-95 border-2 border-primary shrink-0"
+                className="h-14 w-14 rounded-full bg-primary text-primary-foreground hover:bg-black hover:text-primary shadow-xl transition-all active:scale-90 border-2 border-primary shrink-0"
               >
                 {sending ? <Loader2 className="h-6 w-6 animate-spin" /> : <Send className="h-6 w-6" />}
               </Button>

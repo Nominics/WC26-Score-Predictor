@@ -9,10 +9,10 @@ import { UserAvatar } from "@/components/user-avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
-import { getTeamFlagUrl } from "@/lib/team-flags"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
+import { NotificationBell } from "@/components/layout/notification-bell"
 import Image from "next/image"
 
 export default function Leaderboard() {
@@ -97,6 +97,7 @@ export default function Leaderboard() {
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle />
+            <NotificationBell />
             <PwaInstallButton />
             <ProfileSheet />
           </div>
@@ -118,19 +119,23 @@ export default function Leaderboard() {
             {entries.map((entry, i) => {
               const rank = i + 1
               const isTopThree = rank <= 3
+              const isCurrentUser = entry.user_id === user?.id
 
               return (
                 <div 
                   key={entry.user_id} 
                   className={cn(
-                    "flex flex-col p-5 bg-card rounded-[2.5rem] border transition-all hover:scale-[1.01] hover:shadow-2xl relative overflow-hidden",
-                    isTopThree ? "border-primary/20 shadow-xl" : "border-border shadow-lg"
+                    "flex flex-col p-6 bg-card rounded-[2.5rem] border transition-all hover:shadow-xl relative overflow-hidden group",
+                    isTopThree ? "border-primary/20 shadow-lg" : "border-border shadow-sm",
+                    isCurrentUser && "ring-2 ring-primary ring-offset-4 dark:ring-offset-background"
                   )}
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 flex flex-col items-center justify-center">
                       {rank === 1 ? (
-                        <Medal className="h-6 w-6 text-yellow-500 fill-yellow-500" />
+                        <div className="relative h-8 w-8 flex items-center justify-center">
+                           <Trophy className="h-6 w-6 text-yellow-500 fill-yellow-500 animate-bounce" />
+                        </div>
                       ) : rank === 2 ? (
                         <Medal className="h-6 w-6 text-gray-400 fill-gray-400" />
                       ) : rank === 3 ? (
@@ -142,11 +147,14 @@ export default function Leaderboard() {
                     
                     <UserAvatar 
                       profile={entry} 
-                      className={cn("h-12 w-12", isTopThree && "border-primary/20")} 
+                      className={cn("h-12 w-12", isTopThree && "border-primary shadow-primary/20")} 
                     />
 
                     <div className="flex-1 min-w-0">
-                      <span className="font-black text-[13px] uppercase tracking-tight text-foreground truncate block">
+                      <span className={cn(
+                        "font-black text-[14px] uppercase tracking-tight truncate block",
+                        isCurrentUser ? "text-primary italic" : "text-foreground"
+                      )}>
                         {entry.display_name}
                       </span>
                       <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -159,46 +167,43 @@ export default function Leaderboard() {
                         {entry.starting_points > 0 && (
                           <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
                              <Zap className="h-2 w-2 text-blue-500 fill-blue-500" />
-                             <span className="text-[8px] font-black text-blue-600 uppercase">Late Join Bonus (+{entry.starting_points})</span>
+                             <span className="text-[8px] font-black text-blue-600 uppercase">Late Bonus (+{entry.starting_points})</span>
                           </div>
                         )}
                         {entry.manual_points !== 0 && (
                           <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
                              <Star className="h-2 w-2 text-yellow-500 fill-yellow-500" />
-                             <span className="text-[8px] font-black text-yellow-600 uppercase">Adjusted ({entry.manual_points > 0 ? '+' : ''}{entry.manual_points})</span>
+                             <span className="text-[8px] font-black text-yellow-600 uppercase">({entry.manual_points > 0 ? '+' : ''}{entry.manual_points})</span>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-end min-w-[60px]">
-                         <div className="flex items-center gap-1 bg-primary text-primary-foreground px-3 py-1.5 rounded-2xl shadow-lg shadow-primary/20">
-                            <Trophy className="h-3 w-3 fill-primary-foreground/20" />
-                            <span className="text-sm font-black italic">{entry.total_points}</span>
-                         </div>
-                         <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mt-1 mr-1">Points</span>
-                      </div>
+                    <div className="flex flex-col items-end min-w-[70px]">
+                       <div className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-2xl shadow-xl shadow-primary/10 group-hover:scale-110 transition-transform">
+                          <Trophy className="h-3.5 w-3.5 fill-primary-foreground/20" />
+                          <span className="text-base font-black italic tabular-nums leading-none">{entry.total_points}</span>
+                       </div>
+                       <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1 mr-1">PTS</span>
                     </div>
                   </div>
                   
-                  <div className="mt-3 pt-3 border-t border-border flex justify-end gap-4">
-                     <div className="flex items-center gap-1">
-                        <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Picks:</span>
-                        <span className="text-[9px] font-black text-foreground">{entry.prediction_points}</span>
+                  <div className="mt-4 pt-4 border-t border-border/50 flex justify-between items-center px-2">
+                     <div className="flex gap-4">
+                        <div className="flex items-center gap-1">
+                            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Picks:</span>
+                            <span className="text-[9px] font-black text-foreground">{entry.prediction_points}</span>
+                        </div>
+                        {entry.starting_points > 0 && (
+                          <div className="flex items-center gap-1">
+                              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Bonus:</span>
+                              <span className="text-[9px] font-black text-foreground">+{entry.starting_points}</span>
+                          </div>
+                        )}
                      </div>
-                     {entry.starting_points > 0 && (
-                       <div className="flex items-center gap-1">
-                          <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Bonus:</span>
-                          <span className="text-[9px] font-black text-foreground">+{entry.starting_points}</span>
-                       </div>
-                     )}
-                     {entry.manual_points !== 0 && (
-                       <div className="flex items-center gap-1">
-                          <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Adjust:</span>
-                          <span className="text-[9px] font-black text-foreground">{entry.manual_points > 0 ? '+' : ''}{entry.manual_points}</span>
-                       </div>
-                     )}
+                     <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
+                       Last: {entry.last_prediction_at ? DateTime.fromISO(entry.last_prediction_at).toRelative() : 'None'}
+                     </span>
                   </div>
                 </div>
               )
