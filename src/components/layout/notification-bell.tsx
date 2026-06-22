@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Bell, BellRing, Loader2, CheckCircle2, ChevronRight } from "lucide-react"
+import { Bell, BellRing, Loader2, ChevronRight, Zap } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/hooks/use-auth"
 import {
@@ -92,7 +92,7 @@ export function NotificationBell() {
             <Bell className="h-4 w-4 text-muted-foreground opacity-40" />
           )}
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-black ring-2 ring-background shadow-lg">
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full premium-gold-gradient-bg text-[8px] font-black text-black ring-2 ring-background shadow-lg">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -102,8 +102,8 @@ export function NotificationBell() {
         <div className="app-glass-card border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
           <DialogHeader className="p-8 bg-foreground text-background shrink-0">
             <div className="flex items-center justify-between">
-              <DialogTitle className="text-background font-black italic uppercase tracking-tighter text-2xl">
-                Alerts
+              <DialogTitle className="font-black italic uppercase tracking-tighter text-2xl">
+                <span className="premium-gold-gradient-text">ARENA</span> <span className="text-background">ALERTS</span>
               </DialogTitle>
               {unreadCount > 0 && (
                 <Button 
@@ -144,7 +144,7 @@ export function NotificationBell() {
                   >
                     <div className="flex justify-between items-start gap-4">
                       <div className="space-y-1 flex-1 min-w-0">
-                        <h4 className="text-xs font-black uppercase italic tracking-tight text-foreground group-hover:text-primary transition-colors">
+                        <h4 className="text-xs font-black uppercase italic tracking-tight text-foreground group-hover:premium-gold-gradient-text transition-colors">
                           {n.title}
                         </h4>
                         <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">
@@ -155,7 +155,7 @@ export function NotificationBell() {
                         </span>
                       </div>
                       {!n.is_read ? (
-                        <div className="h-2 w-2 rounded-full bg-primary mt-1 shadow-glow" />
+                        <div className="h-2 w-2 rounded-full premium-gold-gradient-bg mt-1 shadow-glow" />
                       ) : (
                         <ChevronRight className="h-3 w-3 text-muted-foreground/20" />
                       )}

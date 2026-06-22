@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Bell, Loader2, CheckCircle2, Trophy, Zap, MessageSquare, Calendar, ChevronRight } from "lucide-react"
+import { Bell, Loader2, Trophy, Zap, MessageSquare, Calendar, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DateTime } from "luxon"
@@ -92,7 +92,7 @@ export default function NotificationsPage() {
              </div>
              <div>
                <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
-                  ARENA <span className="text-primary">ALERTS</span>
+                  <span className="premium-gold-gradient-text">ARENA</span> <span className="text-foreground">ALERTS</span>
                </h1>
                <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-0.5">Notification History</p>
              </div>
@@ -127,7 +127,7 @@ export default function NotificationsPage() {
               variant="ghost" 
               size="sm" 
               onClick={markAllAsRead}
-              className="text-[9px] font-black uppercase text-primary hover:bg-primary/5 rounded-full px-4 h-8 transition-all"
+              className="text-[9px] font-black uppercase premium-gold-gradient-text hover:bg-primary/5 rounded-full px-4 h-8 transition-all"
             >
               Clear All New
             </Button>
@@ -155,17 +155,17 @@ export default function NotificationsPage() {
                   n.is_read ? "opacity-60" : "ring-1 ring-primary/20 bg-primary/[0.02]"
                 )}
               >
-                {!n.is_read && <div className="absolute top-0 left-0 w-1 h-full bg-primary rounded-l-full" />}
+                {!n.is_read && <div className="absolute top-0 left-0 w-1 h-full premium-gold-gradient-bg rounded-l-full" />}
                 <div className="flex gap-6 items-center">
                   <div className={cn(
                     "p-4 rounded-[1.2rem] shrink-0 transition-all shadow-lg",
-                    n.is_read ? "bg-muted text-muted-foreground" : "bg-primary text-black"
+                    n.is_read ? "bg-muted text-muted-foreground" : "premium-gold-gradient-bg text-black"
                   )}>
                     {getIcon(n.type)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start gap-4">
-                       <h3 className="font-black text-sm uppercase italic tracking-tight text-foreground group-hover:text-primary transition-colors">
+                       <h3 className="font-black text-sm uppercase italic tracking-tight text-foreground group-hover:premium-gold-gradient-text transition-colors">
                         {n.title}
                        </h3>
                     </div>
@@ -177,7 +177,7 @@ export default function NotificationsPage() {
                      <span className="text-[9px] font-black text-muted-foreground uppercase bg-muted/50 px-3 py-1 rounded-full whitespace-nowrap opacity-60">
                        {DateTime.fromISO(n.created_at).toRelative()}
                      </span>
-                     {!n.is_read && <CheckCircle2 className="h-4 w-4 text-primary animate-in zoom-in duration-500" />}
+                     {!n.is_read && <Zap className="h-4 w-4 text-primary animate-in zoom-in duration-500 fill-primary" />}
                      {n.is_read && <ChevronRight className="h-4 w-4 text-muted-foreground/20" />}
                   </div>
                 </div>

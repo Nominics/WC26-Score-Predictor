@@ -1,11 +1,10 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { MainNav } from "@/components/layout/main-nav"
 import { createClient } from "@/lib/supabase/client"
-import { Send, Loader2, MessageSquare, Zap, Trophy } from "lucide-react"
+import { Send, Loader2, MessageSquare, Zap } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
@@ -99,18 +98,18 @@ export default function ChatPage() {
       <header className="px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 text-foreground leading-none uppercase">
+            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 leading-none uppercase">
               <div className="relative h-6 w-6 shrink-0">
                 <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
               </div>
-              ARENA <span className="text-primary">CHAT</span>
+              <span className="premium-gold-gradient-text">ARENA</span> <span className="text-foreground">CHAT</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
                <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest">Global Discussion</p>
                {stats && (
                  <div className="flex items-center gap-1.5">
                    <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                   <span className="text-[9px] font-black premium-gold-gradient-text uppercase italic">Rank #{stats.rank}</span>
                    <span className="text-[9px] font-black text-foreground uppercase">({stats.points} pts)</span>
                    <span className="h-0.5 w-0.5 rounded-full bg-border" />
                    <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20">
@@ -165,7 +164,7 @@ export default function ChatPage() {
                         <div className="flex items-center gap-2 px-1">
                           <span className={cn(
                             "text-[10px] font-black uppercase tracking-tight",
-                            isOwnMessage ? "text-primary italic" : "text-muted-foreground"
+                            isOwnMessage ? "premium-gold-gradient-text italic" : "text-muted-foreground"
                           )}>
                             {msg.display_name || "Unknown Fan"}
                           </span>

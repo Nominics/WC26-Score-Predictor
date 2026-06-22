@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -203,13 +202,13 @@ export default function Dashboard() {
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-1 text-foreground leading-none uppercase">
-                ARENA <span className="text-primary">CENTER</span>
+              <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-1 leading-none uppercase">
+                <span className="premium-gold-gradient-text">ARENA</span> <span className="text-foreground">CENTER</span>
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
                  {stats && (
                    <div className="flex items-center gap-1.5">
-                     <span className="text-[9px] font-black text-primary uppercase italic tracking-wider">Rank #{stats.rank}</span>
+                     <span className="text-[9px] font-black premium-gold-gradient-text uppercase italic tracking-wider">Rank #{stats.rank}</span>
                      <span className="h-0.5 w-0.5 rounded-full bg-border" />
                      <div className="flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20">
                         <Zap className="h-2 w-2 text-primary fill-primary" />
@@ -305,7 +304,7 @@ export default function Dashboard() {
                   className={cn(
                     "flex flex-col items-center min-w-[4.6rem] py-3.5 rounded-[2rem] transition-all duration-500 border-2 relative isolate",
                     isActive 
-                      ? "bg-gradient-to-br from-yellow-400 via-amber-400 to-orange-500 border-yellow-300 text-black shadow-2xl scale-105 z-20 ring-4 ring-yellow-400/20" 
+                      ? "premium-gold-gradient-bg border-yellow-300 text-black shadow-2xl scale-105 z-20 ring-4 ring-yellow-400/20" 
                       : "bg-white/80 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 shadow-sm"
                   )}
                 >
@@ -337,7 +336,7 @@ export default function Dashboard() {
       <main className="px-4 py-8 space-y-10 max-w-2xl mx-auto">
         <div className="flex justify-between items-center px-4">
           <div className="flex items-center gap-3">
-            <div className="h-6 w-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+            <div className="h-6 w-1.5 premium-gold-gradient-bg rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
             <h2 className="text-sm font-black uppercase italic text-foreground tracking-widest">
               {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Schedule'}
             </h2>

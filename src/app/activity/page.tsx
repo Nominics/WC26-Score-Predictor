@@ -1,10 +1,9 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Radio, Loader2, ChevronRight, Filter } from "lucide-react"
+import { Radio, Loader2 } from "lucide-react"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -61,15 +60,15 @@ export default function ActivityFeed() {
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-1 text-foreground leading-none uppercase">
-                MATCH <span className="text-primary">PULSE</span>
+              <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-1 leading-none uppercase">
+                <span className="premium-gold-gradient-text">MATCH</span> <span className="text-foreground">PULSE</span>
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
                  <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest">Live Stream</p>
                  {stats && (
                    <div className="flex items-center gap-1.5">
                      <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                     <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                     <span className="text-[9px] font-black premium-gold-gradient-text uppercase italic">Rank #{stats.rank}</span>
                    </div>
                  )}
               </div>

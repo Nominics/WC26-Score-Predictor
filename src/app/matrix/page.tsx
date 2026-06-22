@@ -1,11 +1,10 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, Zap, LayoutGrid, Trophy, Star } from "lucide-react"
+import { Trophy } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -15,7 +14,7 @@ import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import Image from "next/image"
 import { DateTime } from "luxon"
 import { useAuth } from "@/hooks/use-auth"
-import { useRouter } from "next/navigation"
+import { useRouter } from "navigation"
 
 export default function Matrix() {
   const { user, profile, stats, loading: authLoading } = useAuth()
@@ -117,8 +116,8 @@ export default function Matrix() {
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-black italic tracking-tighter text-foreground uppercase leading-none flex items-center gap-1">
-                STRATEGY <span className="text-primary">MATRIX</span>
+              <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none flex items-center gap-1">
+                <span className="premium-gold-gradient-text">STRATEGY</span> <span className="text-foreground">MATRIX</span>
               </h1>
               <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-0.5">Heat Map</p>
             </div>
@@ -155,18 +154,18 @@ export default function Matrix() {
                               {f.home_flag && <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-white/10"><Image src={f.home_flag} alt="" fill className="object-cover" /></div>}
                               <span className="text-[11px] font-black text-foreground">{f.home_team.substring(0,3).toUpperCase()}</span>
                             </div>
-                            <span className="text-[12px] font-black text-primary italic">{f.home_score ?? '-'}</span>
+                            <span className="text-[12px] font-black premium-gold-gradient-text italic">{f.home_score ?? '-'}</span>
                           </div>
                           <div className="flex items-center justify-between gap-3 bg-muted/50 px-3 py-1.5 rounded-2xl border border-border/50">
                             <div className="flex items-center gap-2">
                               {f.away_flag && <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-white/10"><Image src={f.away_flag} alt="" fill className="object-cover" /></div>}
                               <span className="text-[11px] font-black text-foreground">{f.away_team.substring(0,3).toUpperCase()}</span>
                             </div>
-                            <span className="text-[12px] font-black text-primary italic">{f.away_score ?? '-'}</span>
+                            <span className="text-[12px] font-black premium-gold-gradient-text italic">{f.away_score ?? '-'}</span>
                           </div>
                         </div>
                         {f.status === 'finished' ? (
-                           <span className="bg-primary text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic shadow-lg shadow-primary/20">Final</span>
+                           <span className="premium-gold-gradient-bg text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic shadow-lg shadow-primary/20">Final</span>
                         ) : f.status === 'live' ? (
                            <span className="bg-emerald-500 text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest animate-pulse">Live</span>
                         ) : (
@@ -187,7 +186,7 @@ export default function Matrix() {
                           <span className="font-black text-sm uppercase tracking-tight text-foreground whitespace-nowrap">{p.display_name}</span>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <Trophy className="h-3 w-3 text-primary opacity-60" />
-                            <span className="text-[10px] font-black text-primary uppercase italic">
+                            <span className="text-[10px] font-black premium-gold-gradient-text uppercase italic">
                               {getPlayerPoints(p.id)} <span className="text-muted-foreground not-italic opacity-40">PTS</span>
                             </span>
                           </div>

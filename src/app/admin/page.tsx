@@ -6,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play, Send, Bell, UserCircle, ShieldCheck } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -30,11 +30,10 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function AdminPage() {
-  const { user, profile, stats, loading: authLoading } = useAuth()
+  const { user, profile, loading: authLoading } = useAuth()
   const { toast } = useToast()
   const [isRunningCron, setIsRunningCron] = useState(false)
   const [isAwarding, setIsAwarding] = useState(false)
-  const [isPromoting, setIsPromoting] = useState(false)
   const [isUpdatingTime, setIsUpdatingTime] = useState(false)
   const [isSendingNotif, setIsSendingNotif] = useState(false)
   const [isAssigningIcon, setIsAssigningIcon] = useState(false)
@@ -61,7 +60,6 @@ export default function AdminPage() {
   const [notifType, setNotifType] = useState("manual_admin")
 
   const [showConfirmPoints, setShowConfirmPoints] = useState(false)
-  const [showConfirmPromote, setShowConfirmPromote] = useState(false)
   
   const router = useRouter()
   const supabase = createClient()
@@ -217,37 +215,6 @@ export default function AdminPage() {
     }
   }
 
-  const handlePromoteUser = async () => {
-    setIsPromoting(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) throw new Error("Session expired.")
-
-      const response = await fetch("/api/admin/promote-user", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${session.access_token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          targetUserId: selectedUserForRole
-        })
-      })
-
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || "Promotion failed")
-
-      toast({ title: "User Promoted!", description: "Superadmin access granted." })
-      setSelectedUserForRole("")
-      fetchProfiles() 
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Promotion Failed", description: error.message })
-    } finally {
-      setIsPromoting(false)
-      setShowConfirmPromote(false)
-    }
-  }
-
   const handleSetProfileIcon = async () => {
     if (!selectedUserForIcon || !selectedIconKey) return
     setIsAssigningIcon(true)
@@ -282,17 +249,13 @@ export default function AdminPage() {
   }
 
   if (authLoading || profile?.role !== "superadmin") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-      </div>
-    )
+    return <Loader2 className="h-8 w-8 text-primary animate-spin" />
   }
 
   return (
     <div className="min-h-screen bg-background pb-32">
       <MainNav />
-      <header className="px-6 py-4 bg-gray-900 text-white shadow-2xl sticky top-0 z-40 border-b border-white/5">
+      <header className="premium-header sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div className="flex items-center gap-4">
             <div className="relative h-10 w-10 shrink-0 drop-shadow-xl">
@@ -300,9 +263,9 @@ export default function AdminPage() {
             </div>
             <div>
               <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
-                CONTROL <span className="text-primary">TOWER</span>
+                <span className="premium-gold-gradient-text">CONTROL</span> <span className="text-foreground">TOWER</span>
               </h1>
-              <p className="text-[9px] uppercase font-black text-primary/60 tracking-[0.3em] mt-1 flex items-center gap-1.5">
+              <p className="text-[9px] uppercase font-black premium-gold-gradient-text tracking-[0.3em] mt-1 flex items-center gap-1.5">
                 <ShieldCheck className="h-2.5 w-2.5" /> SUPERADMIN ACCESS
               </p>
             </div>
@@ -592,12 +555,12 @@ export default function AdminPage() {
             <AlertDialogHeader>
               <AlertDialogTitle className="font-black uppercase italic text-foreground text-2xl tracking-tighter">Confirm Adjustment</AlertDialogTitle>
               <AlertDialogDescription className="font-medium text-muted-foreground text-sm">
-                You are awarding <span className="text-primary font-black italic">+{points}</span> points to <span className="text-foreground font-black uppercase">{allProfiles.find(p => p.id === selectedUser)?.display_name}</span>. This is public and permanent.
+                You are awarding <span className="premium-gold-gradient-text font-black italic">+{points}</span> points to <span className="text-foreground font-black uppercase">{allProfiles.find(p => p.id === selectedUser)?.display_name}</span>. This is public and permanent.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-6 flex gap-3">
               <AlertDialogCancel className="rounded-2xl border-border/50 font-black uppercase text-[10px] tracking-widest h-12 flex-1">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleAwardPoints} className="rounded-2xl bg-primary text-black font-black uppercase text-[10px] tracking-widest h-12 flex-1 shadow-lg shadow-primary/20">Confirm Award</AlertDialogAction>
+              <AlertDialogAction onClick={handleAwardPoints} className="rounded-2xl premium-gold-gradient-bg text-black font-black uppercase text-[10px] tracking-widest h-12 flex-1 shadow-lg shadow-primary/20">Confirm Award</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

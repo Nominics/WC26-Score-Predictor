@@ -1,4 +1,3 @@
-
 "use client"
 
 import { MainNav } from "@/components/layout/main-nav"
@@ -41,18 +40,18 @@ export default function Rules() {
       <header className="px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter text-foreground uppercase leading-none flex items-center gap-2">
+            <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none flex items-center gap-2">
               <div className="relative h-6 w-6 shrink-0">
                 <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
               </div>
-              THE <span className="text-primary">RULES</span>
+              <span className="text-foreground">THE</span> <span className="premium-gold-gradient-text">RULES</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
                <p className="text-[8px] text-muted-foreground uppercase font-black tracking-widest">Arena Guidelines</p>
                {stats && (
                  <div className="flex items-center gap-1.5">
                    <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
+                   <span className="text-[9px] font-black premium-gold-gradient-text uppercase italic">Rank #{stats.rank}</span>
                    <span className="text-[9px] font-black text-foreground uppercase">({stats.points} pts)</span>
                    <span className="h-0.5 w-0.5 rounded-full bg-border" />
                    <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20">
@@ -98,7 +97,7 @@ export default function Rules() {
               </div>
               {rule.points > 0 && (
                 <div className="text-right">
-                    <span className="text-4xl font-black italic text-primary leading-none">+{rule.points}</span>
+                    <span className="text-4xl font-black italic premium-gold-gradient-text leading-none">+{rule.points}</span>
                     <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">points</p>
                 </div>
               )}

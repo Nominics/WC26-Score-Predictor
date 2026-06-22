@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -13,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, Target, Star, Bell, Lock, Loader2, UserCircle } from "lucide-react"
+import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Trophy, Zap, UserCircle, Lock, Loader2 } from "lucide-react"
 import { copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { getTeamFlagUrl, COUNTRIES } from "@/lib/team-flags"
@@ -137,7 +136,7 @@ export function ProfileSheet() {
       </DialogTrigger>
       <DialogContent className="max-w-[420px] w-[92vw] p-0 border-0 bg-transparent shadow-none overflow-hidden rounded-[2.5rem]">
         <div className="bg-white dark:bg-slate-950 border border-border/50 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] transition-colors">
-          <DialogHeader className="p-8 bg-primary shrink-0 relative">
+          <DialogHeader className="p-8 premium-gold-gradient-bg shrink-0 relative">
             <DialogTitle className="text-black font-black italic uppercase tracking-tighter text-2xl">
               Arena Profile
             </DialogTitle>
@@ -148,7 +147,7 @@ export function ProfileSheet() {
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative">
                   <UserAvatar profile={profile} className="h-28 w-24 border-4 border-primary/20 shadow-2xl rounded-full" fallbackClassName="text-3xl" />
-                  <div className="absolute -bottom-1 -right-1 bg-primary text-black rounded-full px-2 py-0.5 text-[9px] font-black uppercase italic shadow-lg border-2 border-background">
+                  <div className="absolute -bottom-1 -right-1 premium-gold-gradient-bg text-black rounded-full px-2 py-0.5 text-[9px] font-black uppercase italic shadow-lg border-2 border-background">
                     #{stats?.rank || "--"}
                   </div>
                 </div>
@@ -172,7 +171,7 @@ export function ProfileSheet() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <h3 className="text-2xl font-black uppercase italic text-foreground dark:text-white tracking-tighter leading-tight">
+                      <h3 className="text-2xl font-black uppercase italic premium-gold-gradient-text tracking-tighter leading-tight">
                         {profile?.display_name}
                       </h3>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors" onClick={() => setIsEditing(true)}>
@@ -189,14 +188,14 @@ export function ProfileSheet() {
                    <div className="rounded-[2rem] p-6 flex justify-around items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm">
                       <div className="text-center space-y-0.5">
                          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Points</span>
-                         <p className="text-2xl font-black italic tracking-tighter text-slate-950 dark:text-white leading-none">{stats?.points || "0"}</p>
+                         <p className="text-2xl font-black italic tracking-tighter premium-gold-gradient-text leading-none">{stats?.points || "0"}</p>
                       </div>
                       <div className="h-10 w-px bg-slate-200 dark:bg-white/10" />
                       <div className="text-center space-y-0.5">
                          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Lifelines</span>
                          <div className="flex items-center gap-1 justify-center">
                             <Zap className="h-3.5 w-3.5 text-primary fill-primary" />
-                            <p className="text-2xl font-black italic tracking-tighter text-slate-950 dark:text-white leading-none">{stats?.lifelines || "0"}</p>
+                            <p className="text-2xl font-black italic tracking-tighter premium-gold-gradient-text leading-none">{stats?.lifelines || "0"}</p>
                          </div>
                       </div>
                    </div>
@@ -212,7 +211,7 @@ export function ProfileSheet() {
                         <Button 
                           variant="ghost" 
                           onClick={() => handleUpdateIcon(null)}
-                          className="h-7 px-3 text-[9px] font-black uppercase text-primary border border-primary/20 rounded-full hover:bg-primary/5 transition-all"
+                          className="h-7 px-3 text-[9px] font-black uppercase premium-gold-gradient-text border border-primary/20 rounded-full hover:bg-primary/5 transition-all"
                         >
                           Use Nation Flag
                         </Button>
@@ -262,7 +261,7 @@ export function ProfileSheet() {
 
                 <div className="w-full space-y-4 pt-4 text-left">
                   <div className="flex items-center gap-2 mb-1">
-                    <Bell className="h-3.5 w-3.5 text-primary" />
+                    <Zap className="h-3.5 w-3.5 text-primary" />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Arena Alerts</span>
                   </div>
                   <NotificationToggle />
@@ -274,13 +273,13 @@ export function ProfileSheet() {
                     onClick={handleShare}
                     className="rounded-full h-12 flex-1 font-black uppercase text-[10px] tracking-widest gap-2 bg-white dark:bg-slate-900 text-foreground border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm"
                   >
-                    <Share2 className="h-3.5 w-3.5 text-primary" /> Invite Friends
+                    <Share2 className="h-3.5 w-3.5 premium-gold-gradient-text" /> Invite Friends
                   </Button>
                   
                   {isSuperadmin && (
                     <Link href="/admin" className="flex-1">
                       <Button variant="outline" className="w-full rounded-full h-12 font-black uppercase text-[10px] tracking-widest gap-2 bg-black dark:bg-white text-white dark:text-black border-0 shadow-lg hover:opacity-90">
-                        <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Admin Panel
+                        <ShieldCheck className="h-3.5 w-3.5 premium-gold-gradient-text" /> Admin Panel
                       </Button>
                     </Link>
                   )}
@@ -318,7 +317,7 @@ export function ProfileSheet() {
                     />
                     <div className="flex gap-2">
                       <Button 
-                        className="flex-1 rounded-xl h-12 bg-primary text-black font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90"
+                        className="flex-1 rounded-xl h-12 premium-gold-gradient-bg text-black font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90"
                         onClick={handlePasswordUpdate}
                         disabled={isUpdatingPassword}
                       >

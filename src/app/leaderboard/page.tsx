@@ -1,10 +1,9 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Medal, Loader2, Trophy, Zap, Star, Hash } from "lucide-react"
+import { Medal, Trophy, Zap, Hash } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -85,8 +84,8 @@ export default function Leaderboard() {
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-black italic tracking-tighter text-foreground uppercase leading-none flex items-center gap-1">
-                GLOBAL <span className="text-primary">STANDINGS</span>
+              <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none flex items-center gap-1">
+                <span className="premium-gold-gradient-text">GLOBAL</span> <span className="text-foreground">STANDINGS</span>
               </h1>
               <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-0.5">Top Players</p>
             </div>
@@ -143,7 +142,7 @@ export default function Leaderboard() {
                     <div className="flex-1 min-w-0">
                       <span className={cn(
                         "font-black text-base uppercase tracking-tight truncate block",
-                        isCurrentUser ? "text-primary italic" : "text-foreground"
+                        isCurrentUser ? "premium-gold-gradient-text italic" : "text-foreground"
                       )}>
                         {entry.display_name}
                       </span>

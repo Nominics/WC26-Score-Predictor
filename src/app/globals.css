@@ -104,7 +104,7 @@
   }
 
   .active-pill {
-    @apply bg-primary text-black shadow-[0_4px_15px_rgba(234,179,8,0.5)];
+    @apply premium-gold-gradient-bg text-black shadow-[0_4px_15px_rgba(234,179,8,0.5)];
   }
 
   .premium-header {
@@ -113,6 +113,15 @@
 
   .soft-button {
     @apply rounded-full font-black uppercase text-[10px] tracking-widest transition-all active:scale-95;
+  }
+
+  /* Premium Heading Gradients */
+  .premium-gold-gradient-text {
+    @apply bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent;
+  }
+
+  .premium-gold-gradient-bg {
+    @apply bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500;
   }
 }
 
