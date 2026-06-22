@@ -1,41 +1,47 @@
-
-self.addEventListener('push', function (event) {
-  if (!event.data) return;
-
-  const data = event.data.json();
-  const options = {
-    body: data.body,
-    icon: '/logo.png',
-    badge: '/logo.png',
-    data: {
-      url: data.url || '/dashboard'
-    },
-    vibrate: [100, 50, 100],
-    actions: [
-      { action: 'open', title: 'Open Arena' }
-    ]
+self.addEventListener("push", function (event) {
+  let payload = {
+    title: "WC26 Predictor",
+    body: "You have a new update.",
+    url: "/dashboard",
   };
 
+  if (event.data) {
+    try {
+      payload = event.data.json();
+    } catch {
+      payload.body = event.data.text();
+    }
+  }
+
   event.waitUntil(
-    self.registration.showNotification(data.title || 'WC26 Predictor', options)
+    self.registration.showNotification(payload.title || "WC26 Predictor", {
+      body: payload.body,
+      icon: "/logo.png",
+      badge: "/logo.png",
+      data: {
+        url: payload.url || "/dashboard",
+      },
+    })
   );
 });
 
-self.addEventListener('notificationclick', function (event) {
+self.addEventListener("notificationclick", function (event) {
   event.notification.close();
 
-  const urlToOpen = event.notification.data.url;
+  const url = event.notification.data?.url || "/dashboard";
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
-      for (let i = 0; i < clientList.length; i++) {
-        const client = clientList[i];
-        if (client.url === urlToOpen && 'focus' in client) {
-          return client.focus();
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ("focus" in client) {
+          client.focus();
+          client.navigate(url);
+          return;
         }
       }
+
       if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
+        return clients.openWindow(url);
       }
     })
   );
