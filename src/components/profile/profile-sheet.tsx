@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -10,7 +9,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -131,21 +129,24 @@ export function ProfileSheet() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 bg-white border shadow-sm hover:scale-105 transition-all">
+        <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 bg-background border shadow-sm hover:scale-105 transition-all">
           <UserAvatar profile={profile} className="h-8 w-8" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[320px] sm:w-[400px] p-0 border-l-0 overflow-y-auto no-scrollbar">
-        <SheetHeader className="p-8 bg-primary text-white">
-          <SheetTitle className="text-white font-black italic uppercase tracking-tighter text-2xl">
-            My Profile
+      <SheetContent side="right" className="w-[320px] sm:w-[400px] p-0 border-l-0 overflow-y-auto no-scrollbar bg-background">
+        <SheetHeader className="p-8 bg-primary text-primary-foreground">
+          <SheetTitle className="text-primary-foreground font-black italic uppercase tracking-tighter text-2xl">
+            Arena Profile
           </SheetTitle>
         </SheetHeader>
         
         <div className="p-6 space-y-8 pb-12">
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="relative">
-              <UserAvatar profile={profile} className="h-24 w-24 border-4 border-white shadow-2xl" fallbackClassName="text-2xl" />
+              <UserAvatar profile={profile} className="h-28 w-24 border-4 border-primary/20 shadow-2xl rounded-full" fallbackClassName="text-3xl" />
+              <div className="absolute -bottom-1 -right-1 bg-primary text-black rounded-full px-2 py-0.5 text-[9px] font-black uppercase italic shadow-lg border-2 border-background">
+                #{stats?.rank || "--"}
+              </div>
             </div>
             
             <div className="space-y-1 w-full flex flex-col items-center">
@@ -154,57 +155,73 @@ export function ProfileSheet() {
                   <Input 
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    className="h-10 text-center font-bold"
+                    className="h-12 text-center font-black uppercase tracking-tight rounded-xl border-primary/20 bg-muted/30"
                     disabled={isSaving}
                     autoFocus
                   />
-                  <Button size="icon" variant="ghost" className="h-10 w-10 text-green-600" onClick={handleUpdateName} disabled={isSaving}>
+                  <Button size="icon" className="h-10 w-10 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white" onClick={handleUpdateName} disabled={isSaving}>
                     <Check className="h-4 w-4" />
                   </Button>
-                  <Button size="icon" variant="ghost" className="h-10 w-10 text-gray-400" onClick={() => setIsEditing(false)} disabled={isSaving}>
+                  <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-muted-foreground" onClick={() => setIsEditing(false)} disabled={isSaving}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h3 className="text-xl font-black uppercase italic text-gray-900 dark:text-white leading-tight">
+                  <h3 className="text-2xl font-black uppercase italic text-foreground tracking-tighter leading-tight">
                     {profile?.display_name}
                   </h3>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400" onClick={() => setIsEditing(true)}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-40 hover:opacity-100" onClick={() => setIsEditing(true)}>
                     <Edit2 className="h-4 w-4" />
                   </Button>
                 </div>
               )}
-              <p className="text-xs font-bold text-gray-400 flex items-center justify-center gap-1.5 uppercase tracking-widest mt-1">
-                <Mail className="h-3 w-3" /> {user.email}
+              <p className="text-[10px] font-bold text-muted-foreground flex items-center justify-center gap-1.5 uppercase tracking-[0.2em] mt-1">
+                <Mail className="h-3 w-3 opacity-40" /> {user.email}
               </p>
             </div>
 
-            {/* Profile Icon Selection Grid */}
-            <div className="w-full space-y-4 pt-6 border-t border-gray-100">
+            <div className="w-full pt-6 space-y-6">
+               <div className="app-surface-panel p-6 flex justify-around items-center gap-4 bg-muted/40">
+                  <div className="text-center space-y-0.5">
+                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Points</span>
+                     <p className="text-2xl font-black italic tracking-tighter text-foreground leading-none">{stats?.points || "0"}</p>
+                  </div>
+                  <div className="h-8 w-px bg-border/40" />
+                  <div className="text-center space-y-0.5">
+                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Lifelines</span>
+                     <div className="flex items-center gap-1 justify-center">
+                        <Zap className="h-3 w-3 text-primary fill-primary" />
+                        <p className="text-2xl font-black italic tracking-tighter text-foreground leading-none">{stats?.lifelines || "0"}</p>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <div className="w-full space-y-4 pt-4 text-left">
                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UserCircle className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Profile Icons</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Avatar Presets</span>
                   </div>
                   {profile?.profile_icon_key && (
                     <Button 
                       variant="ghost" 
                       onClick={() => handleUpdateIcon(null)}
-                      className="h-6 px-2 text-[8px] font-black uppercase text-primary border border-primary/20 rounded-lg"
+                      className="h-7 px-3 text-[9px] font-black uppercase text-primary border border-primary/20 rounded-full hover:bg-primary/5"
                     >
-                      Use Team Flag
+                      Use Nation Flag
                     </Button>
                   )}
                </div>
-               <div className="grid grid-cols-5 gap-2">
+               <div className="grid grid-cols-5 gap-3 p-4 bg-muted/20 rounded-[2rem] border border-border/30">
                   {PROFILE_ICON_PRESETS.map((icon) => (
                     <button
                       key={icon.key}
                       onClick={() => handleUpdateIcon(icon.key)}
                       className={cn(
-                        "relative aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-105",
-                        profile?.profile_icon_key === icon.key ? "border-primary shadow-lg scale-105" : "border-transparent opacity-60 grayscale hover:grayscale-0"
+                        "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:scale-110",
+                        profile?.profile_icon_key === icon.key ? "border-primary shadow-lg shadow-primary/20 scale-105 z-10" : "border-transparent opacity-40 grayscale hover:grayscale-0 hover:opacity-100"
                       )}
                     >
                       <Image src={icon.imagePath} alt={icon.label} fill className="object-cover" />
@@ -213,20 +230,20 @@ export function ProfileSheet() {
                </div>
             </div>
 
-            <div className="w-full space-y-3 pt-6 border-t border-gray-100 text-left">
+            <div className="w-full space-y-3 text-left">
                <div className="flex items-center gap-2">
                   <Flag className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">National Representation</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Representation</span>
                </div>
                <Select value={profile?.favorite_team || ""} onValueChange={handleUpdateTeam}>
-                  <SelectTrigger className="w-full h-12 rounded-2xl border-gray-100 bg-gray-50/50">
+                  <SelectTrigger className="w-full h-14 rounded-2xl border-border/50 bg-card shadow-sm font-black uppercase text-xs italic tracking-tight">
                     <SelectValue placeholder="Select National Team" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
+                  <SelectContent className="max-h-[300px] rounded-2xl">
                     {COUNTRIES.map((country) => (
-                      <SelectItem key={country} value={country}>
+                      <SelectItem key={country} value={country} className="rounded-xl">
                         <div className="flex items-center gap-3">
-                          <div className="relative h-4 w-6 rounded-sm overflow-hidden border">
+                          <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-border/30 shadow-sm">
                             <Image src={getTeamFlagUrl(country)!} alt="" fill className="object-cover" />
                           </div>
                           <span className="font-bold text-xs uppercase">{country}</span>
@@ -237,74 +254,73 @@ export function ProfileSheet() {
                </Select>
             </div>
             
-            <div className="flex flex-wrap justify-center gap-2 pt-4">
+            <div className="flex flex-wrap justify-center gap-3 pt-6 border-t border-border/30 w-full">
               <Button 
                 variant="outline" 
-                size="sm" 
                 onClick={handleShare}
-                className="rounded-full h-9 px-6 font-black uppercase text-[10px] tracking-widest gap-2"
+                className="rounded-full h-12 flex-1 font-black uppercase text-[10px] tracking-widest gap-2 bg-card hover:bg-muted border-border/50 shadow-sm"
               >
-                <Share2 className="h-3 w-3" /> Share Predictor
+                <Share2 className="h-3.5 w-3.5 text-primary" /> Invite Friends
               </Button>
               
               {isSuperadmin && (
-                <Link href="/admin">
-                  <Button variant="outline" size="sm" className="rounded-full h-9 px-6 font-black uppercase text-[10px] tracking-widest gap-2">
-                    <ShieldCheck className="h-3 w-3" /> Admin Panel
+                <Link href="/admin" className="flex-1">
+                  <Button variant="outline" className="w-full rounded-full h-12 font-black uppercase text-[10px] tracking-widest gap-2 bg-foreground text-background border-0 shadow-lg hover:opacity-90">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Admin Panel
                   </Button>
                 </Link>
               )}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 mb-2">
-               <Bell className="h-3 w-3 text-primary" />
-               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Arena Alerts</span>
+          <div className="space-y-4 pt-4">
+            <div className="flex items-center gap-2 mb-1">
+               <Bell className="h-3.5 w-3.5 text-primary" />
+               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Arena Alerts</span>
             </div>
             <NotificationToggle />
           </div>
 
-          <div className="space-y-4 pt-4 border-t border-gray-100">
-            <div className="flex items-center gap-2 mb-2">
-              <Lock className="h-3 w-3 text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Security</span>
+          <div className="space-y-4 pt-6 border-t border-border/30">
+            <div className="flex items-center gap-2">
+              <Lock className="h-3.5 w-3.5 text-primary" />
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Security</span>
             </div>
             {!isChangingPassword ? (
               <Button 
                 variant="outline" 
                 onClick={() => setIsChangingPassword(true)}
-                className="w-full rounded-2xl h-12 font-black uppercase text-[10px] tracking-widest gap-2 border-gray-100"
+                className="w-full rounded-2xl h-14 font-black uppercase text-[10px] tracking-widest gap-2 border-border/50 bg-muted/20"
               >
-                <Lock className="h-3 w-3" /> Change Password
+                <Lock className="h-3.5 w-3.5 opacity-40" /> Change Password
               </Button>
             ) : (
-              <div className="space-y-3 p-4 bg-gray-50 rounded-3xl border border-gray-100">
+              <div className="space-y-4 p-5 app-surface-panel bg-card border-primary/20">
                 <Input 
                   type="password" 
                   placeholder="New Password" 
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="rounded-xl h-12 text-sm bg-white"
+                  className="rounded-xl h-12 text-sm font-bold bg-muted/40 border-border/40"
                 />
                 <Input 
                   type="password" 
                   placeholder="Confirm New Password" 
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="rounded-xl h-12 text-sm bg-white"
+                  className="rounded-xl h-12 text-sm font-bold bg-muted/40 border-border/40"
                 />
                 <div className="flex gap-2">
                   <Button 
-                    className="flex-1 rounded-xl h-11 bg-primary text-black font-black text-[10px] uppercase tracking-widest"
+                    className="flex-1 rounded-xl h-12 bg-primary text-black font-black text-[10px] uppercase tracking-widest shadow-lg"
                     onClick={handlePasswordUpdate}
                     disabled={isUpdatingPassword}
                   >
-                    {isUpdatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Password"}
+                    {isUpdatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
                   </Button>
                   <Button 
                     variant="ghost"
-                    className="rounded-xl h-11 text-[10px] uppercase font-black text-gray-400 tracking-widest"
+                    className="rounded-xl h-12 text-[10px] uppercase font-black text-muted-foreground opacity-60 hover:opacity-100"
                     onClick={() => {
                       setIsChangingPassword(false)
                       setNewPassword("")
@@ -318,72 +334,8 @@ export function ProfileSheet() {
             )}
           </div>
 
-          <div className="space-y-4">
-            <div className="p-5 bg-primary text-white rounded-3xl text-center space-y-1 shadow-xl shadow-primary/20">
-               <div className="flex items-center justify-center gap-2 opacity-80">
-                  <Trophy className="h-3 w-3" />
-                  <p className="text-[10px] font-black uppercase tracking-widest">Global Arena Rank</p>
-               </div>
-               <span className="text-4xl font-black italic">#{stats?.rank || "--"}</span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3">
-              <div className="p-5 bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border rounded-3xl flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                   <div className="bg-white dark:bg-background p-2 rounded-xl border border-gray-100 dark:border-border">
-                      <Trophy className="h-4 w-4 text-primary" />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Total Points</p>
-                      <span className="text-xl font-black text-gray-900 dark:text-white">{stats?.points || "0"}</span>
-                   </div>
-                </div>
-              </div>
-
-              <div className="p-5 bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border rounded-3xl flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                   <div className="bg-white dark:bg-background p-2 rounded-xl border border-gray-100 dark:border-border">
-                      <Target className="h-4 w-4 text-green-500" />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Prediction Points</p>
-                      <span className="text-xl font-black text-gray-900 dark:text-white">{stats?.predictionPoints || "0"}</span>
-                   </div>
-                </div>
-              </div>
-
-              <div className="p-5 bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border rounded-3xl flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                   <div className="bg-white dark:bg-background p-2 rounded-xl border border-gray-100 dark:border-border">
-                      <Zap className="h-4 w-4 text-blue-500" />
-                   </div>
-                   <div className="text-left">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Late Join Bonus</p>
-                      <span className="text-xl font-black text-gray-900 dark:text-white">{stats?.startingPoints || "0"}</span>
-                   </div>
-                </div>
-              </div>
-
-              {stats?.manualPoints !== 0 && (
-                <div className="p-5 bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border rounded-3xl flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-white dark:bg-background p-2 rounded-xl border border-gray-100 dark:border-border">
-                        <Star className="h-4 w-4 text-yellow-500" />
-                    </div>
-                    <div className="text-left">
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Manual Adjustment</p>
-                        <span className="text-xl font-black text-gray-900 dark:text-white">
-                          {stats?.manualPoints! > 0 ? '+' : ''}{stats?.manualPoints}
-                        </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="pt-6 border-t border-gray-100">
-            <Button variant="destructive" onClick={() => logout()} className="w-full rounded-2xl h-14 font-black uppercase tracking-widest text-xs gap-2">
+          <div className="pt-10">
+            <Button variant="destructive" onClick={() => logout()} className="w-full rounded-3xl h-16 font-black uppercase tracking-[0.2em] text-xs gap-3 shadow-xl shadow-red-500/10 active:scale-95 transition-all">
               <LogOut className="h-4 w-4" /> Sign Out
             </Button>
           </div>

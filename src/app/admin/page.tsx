@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -7,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play, Send, Bell, UserCircle } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play, Send, Bell, UserCircle, ShieldCheck } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -293,17 +292,19 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background pb-32">
       <MainNav />
-      <header className="px-6 py-4 bg-gray-900 text-white shadow-lg sticky top-0 z-40">
+      <header className="px-6 py-4 bg-gray-900 text-white shadow-2xl sticky top-0 z-40 border-b border-white/5">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div className="flex items-center gap-4">
-            <div className="relative h-6 w-6 shrink-0">
+            <div className="relative h-10 w-10 shrink-0 drop-shadow-xl">
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
             <div>
               <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
                 CONTROL <span className="text-primary">TOWER</span>
               </h1>
-              <p className="text-[8px] uppercase font-bold text-gray-400 tracking-widest mt-1">Superadmin Terminal</p>
+              <p className="text-[9px] uppercase font-black text-primary/60 tracking-[0.3em] mt-1 flex items-center gap-1.5">
+                <ShieldCheck className="h-2.5 w-2.5" /> SUPERADMIN ACCESS
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -313,71 +314,71 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto p-6 space-y-6">
+      <main className="max-w-2xl mx-auto p-4 space-y-8 mt-6">
         {/* System Operations */}
-        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden bg-card">
-          <CardHeader className="bg-muted/50 border-b border-border p-8">
-            <CardTitle className="text-xl font-black uppercase italic text-foreground">System Operations</CardTitle>
-            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">
-              Run Sync & Reminder Routines
+        <Card className="app-glass-card border-primary/20 shadow-primary/5">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
+            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">System Sync</CardTitle>
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
+              Trigger Tournament Data Refresh
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-8">
+          <CardContent className="p-6">
             <Button 
               onClick={handleRunCron} 
               disabled={isRunningCron}
-              className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-black uppercase text-lg tracking-tight shadow-lg"
+              className="w-full h-14 rounded-2xl bg-primary text-black hover:bg-primary/90 font-black uppercase text-sm tracking-[0.1em] shadow-xl shadow-primary/10 transition-all active:scale-95"
             >
-              {isRunningCron ? <Loader2 className="h-6 w-6 mr-2 animate-spin" /> : <Play className="h-6 w-6 mr-2" />}
-              Force Cron Sync (Sync & Reminders)
+              {isRunningCron ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <RefreshCcw className="h-5 w-5 mr-2" />}
+              Execute Cron Routine
             </Button>
           </CardContent>
         </Card>
 
-        {/* Manual Broadcast Section */}
-        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden bg-card">
-          <CardHeader className="bg-muted/50 border-b border-border p-8">
-            <CardTitle className="text-xl font-black uppercase italic text-foreground">Broadcast Center</CardTitle>
-            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">
+        {/* Broadcast Center */}
+        <Card className="app-glass-card border-border/40">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
+            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">Broadcast Center</CardTitle>
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
               Push Notification & App Alerts
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-4">
+          <CardContent className="p-6 space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground">Target</label>
+                <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest">Target Audience</label>
                 <Select value={notifTarget} onValueChange={setNotifTarget}>
-                  <SelectTrigger className="h-12 rounded-xl">
+                  <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-border/50 font-black uppercase text-[11px] italic tracking-tight">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Broadcast to All</SelectItem>
-                    <SelectItem value="single">Single User</SelectItem>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="all">Global Broadcast</SelectItem>
+                    <SelectItem value="single">Targeted Alert</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground">Category</label>
+                <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest">Category</label>
                 <Select value={notifType} onValueChange={setNotifType}>
-                  <SelectTrigger className="h-12 rounded-xl">
+                  <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-border/50 font-black uppercase text-[11px] italic tracking-tight">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manual_admin">General Alert</SelectItem>
-                    <SelectItem value="app_update">App Update</SelectItem>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="manual_admin">General Notice</SelectItem>
+                    <SelectItem value="app_update">System Update</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             {notifTarget === "single" && (
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-muted-foreground">Select Recipient</label>
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest">Select Recipient</label>
                 <Select value={notifSelectedUser} onValueChange={setNotifSelectedUser}>
-                  <SelectTrigger className="h-12 rounded-xl">
-                    <SelectValue placeholder="Select user..." />
+                  <SelectTrigger className="h-12 rounded-xl bg-muted/30 border-border/50 font-bold">
+                    <SelectValue placeholder="Choose user..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-xl max-h-[240px]">
                     {allProfiles.map(p => (
                       <SelectItem key={p.id} value={p.id}>{p.display_name}</SelectItem>
                     ))}
@@ -387,29 +388,29 @@ export default function AdminPage() {
             )}
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground">Alert Title</label>
+              <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest">Headline</label>
               <Input 
-                placeholder="Match Update, Maintenance, etc."
+                placeholder="Brief summary of the alert..."
                 value={notifTitle}
                 onChange={(e) => setNotifTitle(e.target.value)}
-                className="h-12 rounded-xl font-bold"
+                className="h-12 rounded-xl font-bold bg-muted/30 border-border/50"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground">Message Body</label>
+              <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest">Message Details</label>
               <Textarea 
-                placeholder="Enter the broadcast message..."
+                placeholder="Describe the update in detail..."
                 value={notifMessage}
                 onChange={(e) => setNotifMessage(e.target.value)}
-                className="rounded-xl min-h-[100px]"
+                className="rounded-xl min-h-[100px] bg-muted/30 border-border/50 font-medium"
               />
             </div>
 
             <Button 
               onClick={handleSendNotification}
               disabled={!notifTitle || !notifMessage || (notifTarget === "single" && !notifSelectedUser) || isSendingNotif}
-              className="w-full h-14 rounded-2xl bg-foreground text-background font-black uppercase text-sm tracking-widest shadow-lg"
+              className="w-full h-14 rounded-2xl bg-foreground text-background hover:bg-foreground/90 font-black uppercase text-xs tracking-[0.2em] shadow-lg transition-all"
             >
               {isSendingNotif ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Send className="h-5 w-5 mr-2" />}
               Dispatch Broadcast
@@ -418,23 +419,23 @@ export default function AdminPage() {
         </Card>
 
         {/* Profile Icon Assignment */}
-        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden bg-card">
-          <CardHeader className="bg-muted/50 border-b border-border p-8">
-            <CardTitle className="text-xl font-black uppercase italic text-foreground">Assign Profile Icon</CardTitle>
-            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">
-              Give users without icons a soccer avatar
+        <Card className="app-glass-card border-border/40">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
+            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">Identity Assignment</CardTitle>
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
+              Assign Avatar to Users Without Icons
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-4">
+          <CardContent className="p-6 space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
-                <UserCircle className="h-3 w-3" /> Select Target User
+              <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
+                <UserCircle className="h-3 w-3" /> Target User
               </label>
               <Select value={selectedUserForIcon} onValueChange={setSelectedUserForIcon}>
-                <SelectTrigger className="h-14 rounded-2xl border-border bg-muted/50 font-bold">
-                  <SelectValue placeholder="Users without icon keys..." />
+                <SelectTrigger className="h-14 rounded-2xl border-border/50 bg-muted/30 font-bold">
+                  <SelectValue placeholder="Users without presets..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl max-h-[240px]">
                   {allProfiles
                     .filter(p => !p.profile_icon_key)
                     .map(p => (
@@ -445,18 +446,18 @@ export default function AdminPage() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
                 <Star className="h-3 w-3" /> Select Icon
               </label>
-              <div className="grid grid-cols-5 gap-2 bg-muted/30 p-4 rounded-2xl">
+              <div className="grid grid-cols-5 gap-3 bg-muted/20 p-4 rounded-[2rem] border border-border/30">
                 {PROFILE_ICON_PRESETS.map((icon) => (
                   <button
                     key={icon.key}
                     onClick={() => setSelectedIconKey(icon.key)}
                     className={cn(
-                      "relative aspect-square rounded-xl overflow-hidden border-2 transition-all",
-                      selectedIconKey === icon.key ? "border-primary shadow-lg scale-110 z-10" : "border-transparent opacity-50 grayscale hover:grayscale-0"
+                      "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:scale-105",
+                      selectedIconKey === icon.key ? "border-primary shadow-xl scale-110 z-10" : "border-transparent opacity-40 grayscale hover:grayscale-0"
                     )}
                   >
                     <Image src={icon.imagePath} alt={icon.label} fill className="object-cover" />
@@ -468,32 +469,32 @@ export default function AdminPage() {
             <Button 
               onClick={handleSetProfileIcon}
               disabled={!selectedUserForIcon || !selectedIconKey || isAssigningIcon}
-              className="w-full h-16 rounded-2xl bg-foreground hover:bg-foreground/90 text-background font-black uppercase text-lg tracking-tight shadow-lg"
+              className="w-full h-16 rounded-2xl bg-foreground text-background hover:opacity-90 font-black uppercase text-sm tracking-[0.2em] shadow-xl"
             >
-              {isAssigningIcon ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <UserPlus className="h-6 w-6 mr-2" />}
-              Assign Profile Icon
+              {isAssigningIcon ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <UserPlus className="h-5 w-5 mr-2" />}
+              Assign Identity
             </Button>
           </CardContent>
         </Card>
 
         {/* Manual Points Section */}
-        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden bg-card">
-          <CardHeader className="bg-muted/50 border-b border-border p-8">
-            <CardTitle className="text-xl font-black uppercase italic text-foreground">Manual Points</CardTitle>
-            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">
-              Award Bonus or Adjust Scores
+        <Card className="app-glass-card border-border/40">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
+            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">Manual Points</CardTitle>
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
+              Award Bonuses or Penalize Players
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-4">
+          <CardContent className="p-6 space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
                 <UserSearch className="h-3 w-3" /> Select Player
               </label>
               <Select value={selectedUser} onValueChange={setSelectedUser}>
-                <SelectTrigger className="h-14 rounded-2xl border-border bg-muted/50 font-bold">
+                <SelectTrigger className="h-14 rounded-2xl border-border/50 bg-muted/30 font-bold">
                   <SelectValue placeholder="Choose a player..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl max-h-[240px]">
                   {allProfiles.map(p => (
                     <SelectItem key={p.id} value={p.id}>{p.display_name}</SelectItem>
                   ))}
@@ -501,60 +502,58 @@ export default function AdminPage() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-               <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
-                    <Star className="h-3 w-3" /> Points
-                  </label>
-                  <Input 
-                    type="number"
-                    placeholder="+10 or -5"
-                    value={points}
-                    onChange={(e) => setPoints(e.target.value)}
-                    className="h-14 rounded-2xl border-border bg-muted/50 font-bold"
-                  />
-               </div>
+            <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
+                  <Star className="h-3 w-3" /> Points Amount
+                </label>
+                <Input 
+                  type="number"
+                  placeholder="e.g. +10 or -5"
+                  value={points}
+                  onChange={(e) => setPoints(e.target.value)}
+                  className="h-14 rounded-2xl border-border/50 bg-muted/30 font-black italic text-lg"
+                />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground">Reason for Adjustment</label>
+              <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest">Reason for Adjustment</label>
               <Textarea 
-                placeholder="e.g. Correct Prediction Bonus, Referral Reward, etc."
+                placeholder="e.g. Correct Prediction Bonus, Referral Reward..."
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="rounded-2xl border-border bg-muted/50 font-medium min-h-[100px]"
+                className="rounded-2xl border-border/50 bg-muted/30 font-medium min-h-[100px]"
               />
             </div>
 
             <Button 
               onClick={() => setShowConfirmPoints(true)}
               disabled={!selectedUser || !points || points === "0" || !reason || isAwarding}
-              className="w-full h-16 rounded-2xl bg-foreground hover:bg-foreground/90 text-background font-black uppercase text-lg tracking-tight shadow-lg"
+              className="w-full h-16 rounded-2xl bg-foreground text-background hover:opacity-90 font-black uppercase text-sm tracking-[0.2em] shadow-xl"
             >
-              {isAwarding ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <Star className="h-6 w-6 mr-2" />}
+              {isAwarding ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Star className="h-5 w-5 mr-2" />}
               Award Points
             </Button>
           </CardContent>
         </Card>
 
         {/* Fixture Management Section */}
-        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden bg-card">
-          <CardHeader className="bg-muted/50 border-b border-border p-8">
-            <CardTitle className="text-xl font-black uppercase italic text-foreground">Fixture Management</CardTitle>
-            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">
-              Correct Match Times
+        <Card className="app-glass-card border-border/40">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
+            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">Fixture Control</CardTitle>
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
+              Correct Individual Match Data
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-8 space-y-4">
+          <CardContent className="p-6 space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
                 <Calendar className="h-3 w-3" /> Select Match
               </label>
               <Select value={selectedFixture} onValueChange={setSelectedFixture}>
-                <SelectTrigger className="h-14 rounded-2xl border-border bg-muted/50 font-bold">
+                <SelectTrigger className="h-14 rounded-2xl border-border/50 bg-muted/30 font-black uppercase text-[11px] italic tracking-tight">
                   <SelectValue placeholder="Choose a fixture..." />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl max-h-[300px]">
                   {fixtures.map(f => (
                     <SelectItem key={f.id} value={f.id}>
                       {f.home_team} vs {f.away_team} ({DateTime.fromISO(f.kickoff_at).toFormat('LLL dd, HH:mm')})
@@ -565,94 +564,40 @@ export default function AdminPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
+              <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
                 <Clock className="h-3 w-3" /> New Kickoff Time (EST)
               </label>
               <Input 
                 type="datetime-local"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
-                className="h-14 rounded-2xl border-border bg-muted/50 font-bold"
+                className="h-14 rounded-2xl border-border/50 bg-muted/30 font-bold"
               />
             </div>
 
             <Button 
               onClick={handleUpdateTime}
               disabled={!selectedFixture || !newTime || isUpdatingTime}
-              className="w-full h-16 rounded-2xl bg-foreground hover:bg-foreground/90 text-background font-black uppercase text-lg tracking-tight shadow-lg"
+              className="w-full h-16 rounded-2xl bg-foreground text-background hover:opacity-90 font-black uppercase text-sm tracking-[0.2em] shadow-xl"
             >
-              {isUpdatingTime ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <Clock className="h-6 w-6 mr-2" />}
+              {isUpdatingTime ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Clock className="h-5 w-5 mr-2" />}
               Update Match Time
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Access Management Section */}
-        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden bg-card">
-          <CardHeader className="bg-muted/50 border-b border-border p-8">
-            <CardTitle className="text-xl font-black uppercase italic text-foreground">Access Management</CardTitle>
-            <CardDescription className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest mt-1">
-              Grant Administrative Privileges
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 space-y-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-muted-foreground flex items-center gap-2">
-                <UserSearch className="h-3 w-3" /> Select User
-              </label>
-              <Select value={selectedUserForRole} onValueChange={setSelectedUserForRole}>
-                <SelectTrigger className="h-14 rounded-2xl border-border bg-muted/50 font-bold">
-                  <SelectValue placeholder="Select user to promote..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {allProfiles
-                    .filter(p => p.role !== "superadmin")
-                    .map(p => (
-                      <SelectItem key={p.id} value={p.id}>{p.display_name}</SelectItem>
-                    ))
-                  }
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button 
-              onClick={() => setShowConfirmPromote(true)}
-              disabled={!selectedUserForRole || isPromoting}
-              className="w-full h-16 rounded-2xl bg-foreground hover:bg-foreground/90 text-background font-black uppercase text-lg tracking-tight shadow-lg"
-            >
-              {isPromoting ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <UserPlus className="h-6 w-6 mr-2" />}
-              Promote to Superadmin
             </Button>
           </CardContent>
         </Card>
 
         {/* Confirmation Dialogs */}
         <AlertDialog open={showConfirmPoints} onOpenChange={setShowConfirmPoints}>
-          <AlertDialogContent className="rounded-[2.5rem] bg-card">
+          <AlertDialogContent className="rounded-[2.5rem] bg-background border-primary/20">
             <AlertDialogHeader>
-              <AlertDialogTitle className="font-black uppercase italic text-foreground">Confirm Adjustment</AlertDialogTitle>
-              <AlertDialogDescription className="font-medium text-muted-foreground">
-                You are about to award <span className="text-primary font-black">{points}</span> points to <span className="text-foreground font-black">{allProfiles.find(p => p.id === selectedUser)?.display_name}</span>. This action will be visible in the live feed.
+              <AlertDialogTitle className="font-black uppercase italic text-foreground text-2xl tracking-tighter">Confirm Adjustment</AlertDialogTitle>
+              <AlertDialogDescription className="font-medium text-muted-foreground text-sm">
+                You are awarding <span className="text-primary font-black italic">+{points}</span> points to <span className="text-foreground font-black uppercase">{allProfiles.find(p => p.id === selectedUser)?.display_name}</span>. This is public and permanent.
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleAwardPoints} className="rounded-2xl bg-primary text-primary-foreground">Confirm Award</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        <AlertDialog open={showConfirmPromote} onOpenChange={setShowConfirmPromote}>
-          <AlertDialogContent className="rounded-[2.5rem] bg-card">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="font-black uppercase italic text-foreground">Grant Admin Access?</AlertDialogTitle>
-              <AlertDialogDescription className="font-medium text-muted-foreground">
-                Are you sure you want to grant <span className="text-foreground font-black">{allProfiles.find(p => p.id === selectedUserForRole)?.display_name}</span> Superadmin privileges? They will have full control over the Arena.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handlePromoteUser} className="rounded-2xl bg-primary text-primary-foreground">Confirm Promotion</AlertDialogAction>
+            <AlertDialogFooter className="mt-6 flex gap-3">
+              <AlertDialogCancel className="rounded-2xl border-border/50 font-black uppercase text-[10px] tracking-widest h-12 flex-1">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleAwardPoints} className="rounded-2xl bg-primary text-black font-black uppercase text-[10px] tracking-widest h-12 flex-1 shadow-lg shadow-primary/20">Confirm Award</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

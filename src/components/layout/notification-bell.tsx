@@ -1,8 +1,7 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
-import { Bell, BellRing, Loader2, CheckCircle2 } from "lucide-react"
+import { Bell, BellRing, Loader2, CheckCircle2, ChevronRight } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/hooks/use-auth"
 import {
@@ -86,23 +85,23 @@ export function NotificationBell() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full border bg-background shadow-sm">
+        <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full border bg-background shadow-sm hover:scale-105 transition-all">
           {unreadCount > 0 ? (
             <BellRing className="h-4 w-4 text-primary animate-pulse" />
           ) : (
-            <Bell className="h-4 w-4 text-muted-foreground" />
+            <Bell className="h-4 w-4 text-muted-foreground opacity-40" />
           )}
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-black text-white ring-2 ring-background shadow-lg">
+            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[8px] font-black text-black ring-2 ring-background shadow-lg">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-[320px] sm:w-[400px] p-0 border-l-0 flex flex-col">
-        <SheetHeader className="p-8 bg-gray-900 text-white">
+      <SheetContent className="w-[320px] sm:w-[400px] p-0 border-l-0 flex flex-col bg-background">
+        <SheetHeader className="p-8 bg-foreground text-background">
           <div className="flex items-center justify-between">
-            <SheetTitle className="text-white font-black italic uppercase tracking-tighter text-2xl">
+            <SheetTitle className="text-background font-black italic uppercase tracking-tighter text-2xl">
               Alerts
             </SheetTitle>
             {unreadCount > 0 && (
@@ -110,7 +109,7 @@ export function NotificationBell() {
                 variant="ghost" 
                 size="sm" 
                 onClick={markAllAsRead}
-                className="text-[9px] font-black uppercase text-primary hover:text-white hover:bg-white/10"
+                className="text-[9px] font-black uppercase text-primary hover:text-white hover:bg-white/10 rounded-full px-3"
               >
                 Clear All
               </Button>
@@ -120,29 +119,29 @@ export function NotificationBell() {
 
         <ScrollArea className="flex-1">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-50">
               <Loader2 className="h-6 w-6 text-primary animate-spin" />
-              <span className="text-[10px] font-black uppercase text-muted-foreground">Syncing feed...</span>
+              <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Syncing Feed...</span>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center px-8 opacity-40">
               <Bell className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest leading-relaxed">
-                Quiet in the Arena.<br/>Notifications for goals and scores will appear here.
+                Quiet in the Arena.
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-border/30">
               {notifications.map((n) => (
                 <div 
                   key={n.id} 
                   onClick={() => !n.is_read && markAsRead(n.id)}
                   className={cn(
-                    "p-6 transition-colors cursor-pointer group",
-                    n.is_read ? "bg-background" : "bg-primary/5 border-l-4 border-l-primary"
+                    "p-6 transition-all cursor-pointer group hover:bg-muted/30",
+                    n.is_read ? "bg-background" : "bg-primary/[0.03] border-l-4 border-l-primary"
                   )}
                 >
-                  <div className="flex justify-between items-start gap-3">
+                  <div className="flex justify-between items-start gap-4">
                     <div className="space-y-1 flex-1 min-w-0">
                       <h4 className="text-xs font-black uppercase italic tracking-tight text-foreground group-hover:text-primary transition-colors">
                         {n.title}
@@ -154,7 +153,11 @@ export function NotificationBell() {
                         {DateTime.fromISO(n.created_at).toRelative()}
                       </span>
                     </div>
-                    {!n.is_read && <CheckCircle2 className="h-3 w-3 text-primary mt-1" />}
+                    {!n.is_read ? (
+                      <div className="h-2 w-2 rounded-full bg-primary mt-1 shadow-glow" />
+                    ) : (
+                      <ChevronRight className="h-3 w-3 text-muted-foreground/20" />
+                    )}
                   </div>
                 </div>
               ))}
@@ -162,10 +165,10 @@ export function NotificationBell() {
           )}
         </ScrollArea>
 
-        <div className="p-4 bg-muted/30 border-t border-border">
-           <Link href="/notifications" className="block">
-              <Button variant="outline" className="w-full h-12 rounded-2xl font-black uppercase text-[10px] tracking-widest gap-2 bg-background">
-                View All History
+        <div className="p-4 bg-muted/40 border-t border-border/50 backdrop-blur-md">
+           <Link href="/notifications" className="block" onClick={() => {}}>
+              <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 bg-card border-border/50 hover:bg-primary hover:text-black transition-all shadow-sm">
+                View Full History
               </Button>
            </Link>
         </div>
