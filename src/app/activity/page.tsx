@@ -1,17 +1,16 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Zap, Loader2, Star, TrendingUp, TrendingDown, Clock, ShieldCheck, Activity, ChevronRight } from "lucide-react"
-import { UserAvatar } from "@/components/user-avatar"
+import { Radio, Loader2, ChevronRight, Filter } from "lucide-react"
 import { DateTime } from "luxon"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { useAuth } from "@/hooks/use-auth"
 import { NotificationBell } from "@/components/layout/notification-bell"
-import { cn } from "@/lib/utils"
 import Image from "next/image"
 
 export default function ActivityFeed() {
@@ -26,9 +25,9 @@ export default function ActivityFeed() {
     fetchLogs()
     
     const channel = supabase
-      .channel('activity-realtime')
+      .channel('match-pulse-realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_pulse_events' }, () => fetchLogs())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => fetchLogs())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'manual_point_awards' }, () => fetchLogs())
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
@@ -37,15 +36,15 @@ export default function ActivityFeed() {
   const fetchLogs = async () => {
     try {
       const { data, error } = await supabase
-        .from("activity_feed")
+        .from("match_pulse_feed")
         .select("*")
         .order("created_at", { ascending: false })
-        .limit(40)
+        .limit(60)
       
       if (error) throw error
       setLogs(data || [])
     } catch (err) {
-      console.error("Activity fetch error:", err)
+      console.error("Pulse fetch error:", err)
     } finally {
       setLoading(false)
     }
@@ -65,7 +64,7 @@ export default function ActivityFeed() {
                 MATCH <span className="text-primary">PULSE</span>
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
-                 <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest">Live Activity</p>
+                 <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest">Live Stream</p>
                  {stats && (
                    <div className="flex items-center gap-1.5">
                      <span className="h-0.5 w-0.5 rounded-full bg-border" />
@@ -84,86 +83,71 @@ export default function ActivityFeed() {
         </div>
       </header>
 
-      <main className="p-4 space-y-4 max-w-2xl mx-auto mt-6">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-40 gap-4 opacity-50">
-            <Loader2 className="h-10 w-10 text-primary animate-spin" />
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.4em]">Syncing Feed...</p>
+      <main className="max-w-2xl mx-auto mt-8 px-4">
+        <div className="app-glass-card border-primary/10 overflow-hidden shadow-2xl">
+          <div className="px-6 py-4 bg-muted/30 border-b border-border/40 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="relative h-2 w-2">
+                <span className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75" />
+                <span className="relative block h-2 w-2 bg-red-500 rounded-full" />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Live Broadcast Log</span>
+            </div>
+            <div className="flex items-center gap-2">
+               <span className="text-[8px] font-black text-muted-foreground uppercase opacity-40 tabular-nums">AUTO-SYNC ACTIVE</span>
+            </div>
           </div>
-        ) : logs.length === 0 ? (
-          <div className="text-center py-32 app-surface-panel border-2 border-dashed mx-4">
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">No activity in the Arena yet</p>
-          </div>
-        ) : (
-          <div className="space-y-3 px-2">
-            {logs.map((log) => {
-              const isManualAdjustment = log.action === 'manual_points_awarded'
-              const isFixtureUpdate = log.action === 'fixture_time_updated'
-              
-              return (
-                <div key={log.id} className="app-glass-card p-5 group flex items-center gap-4 transition-all hover:scale-[1.01] hover:bg-card/80 border-border/40">
-                  <div className="relative">
-                    <UserAvatar profile={log} className="h-12 w-12 shadow-lg group-hover:scale-105 transition-transform" />
-                    {isManualAdjustment && <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1 shadow-lg border border-background"><Star className="h-2.5 w-2.5 text-yellow-950 fill-yellow-950" /></div>}
-                  </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                      <div className="space-y-0.5">
-                        <p className="text-xs">
-                          <span className="font-black text-foreground uppercase mr-1">{log.display_name}</span>
-                          <span className="text-muted-foreground font-bold lowercase opacity-70">
-                            {isManualAdjustment 
-                              ? (log.points_awarded > 0 ? 'received a bonus' : 'received an adjustment')
-                              : isFixtureUpdate ? 'updated a match schedule' : (log.action === 'prediction_created' ? 'locked in' : 'updated') + ' a pick'
-                            }
+          <div className="bg-black/[0.02] dark:bg-white/[0.01]">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-40 gap-4 opacity-50">
+                <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.4em]">Establishing Stream...</p>
+              </div>
+            ) : logs.length === 0 ? (
+              <div className="text-center py-32 mx-4">
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Awaiting match action in the Arena</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border/5 p-4 sm:p-6 space-y-0.5">
+                {logs.map((log) => {
+                  // Filter out duplicate/noisy prediction updates
+                  if (log.event_type === 'prediction_updated' && log.metadata?.old_score === log.metadata?.new_score) return null;
+
+                  return (
+                    <div key={log.id} className="group flex gap-4 py-3 items-start transition-all hover:bg-primary/[0.02] -mx-4 px-4 rounded-xl">
+                      <span className="shrink-0 text-lg grayscale-[0.4] group-hover:grayscale-0 transition-all scale-95 group-hover:scale-105 duration-300">
+                        {log.emoji || '⚽'}
+                      </span>
+                      
+                      <div className="flex-1 min-w-0 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] text-muted-foreground/50 tabular-nums">
+                            {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
                           </span>
+                          <span className="text-[9px] font-black text-foreground uppercase tracking-tight bg-muted/40 px-2 py-0.5 rounded-md">
+                            {log.title}
+                          </span>
+                        </div>
+                        <p className="text-[13px] font-medium text-muted-foreground leading-relaxed">
+                          {log.message}
                         </p>
-                        {isManualAdjustment ? (
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <div className={cn(
-                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black italic uppercase shadow-sm border",
-                              log.points_awarded > 0 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20"
-                            )}>
-                               {log.points_awarded > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                               {log.points_awarded > 0 ? '+' : ''}{log.points_awarded} PTS
-                            </div>
-                            <span className="text-[10px] font-bold text-muted-foreground italic truncate max-w-[120px]">"{log.reason}"</span>
-                          </div>
-                        ) : isFixtureUpdate ? (
-                          <div className="flex flex-col gap-1.5 mt-1">
-                             <p className="font-black text-foreground uppercase italic text-[14px] tracking-tight">
-                               {log.home_team} <span className="text-primary text-[10px] mx-1">VS</span> {log.away_team}
-                             </p>
-                             <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-full px-2.5 py-0.5 w-fit">
-                                <Clock className="h-3 w-3 text-primary" />
-                                <span className="text-[8px] font-black text-primary uppercase">K.O. UPDATED: {DateTime.fromISO(log.new_time).toFormat('HH:mm')}</span>
-                             </div>
-                          </div>
-                        ) : (
-                          <p className="font-black text-primary uppercase italic text-[14px] tracking-tight group-hover:text-foreground transition-colors mt-0.5">
-                            {log.home_team} vs {log.away_team}
-                          </p>
-                        )}
+                      </div>
+
+                      <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Radio className="h-3 w-3 text-primary animate-pulse" />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex flex-col items-end gap-1.5 min-w-[70px]">
-                    <span className="text-[8px] text-muted-foreground font-black uppercase bg-muted/50 px-2 py-1 rounded-full whitespace-nowrap opacity-60">
-                      {hasMounted ? DateTime.fromISO(log.created_at).toRelative() : '...'}
-                    </span>
-                    {isFixtureUpdate ? (
-                      <ShieldCheck className="h-3.5 w-3.5 text-primary opacity-60" />
-                    ) : (
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/20 group-hover:translate-x-1 transition-transform" />
-                    )}
-                  </div>
-                </div>
-              )
-            })}
+                  )
+                })}
+              </div>
+            )}
           </div>
-        )}
+          
+          <div className="p-4 bg-muted/20 border-t border-border/40 text-center">
+             <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.4em]">End of Stream</p>
+          </div>
+        </div>
       </main>
     </div>
   )

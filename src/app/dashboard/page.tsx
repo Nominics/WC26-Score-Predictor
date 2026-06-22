@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -6,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Zap, Activity, ChevronRight, Loader2, Star } from "lucide-react"
+import { Zap, Activity, ChevronRight, Loader2, Star, Radio } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
@@ -18,6 +19,7 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { NotificationBell } from "@/components/layout/notification-bell"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import Link from "next/link"
 
 export default function Dashboard() {
   const { user: authUser, profile, loading: authLoading, stats, useLifeline } = useAuth()
@@ -53,17 +55,15 @@ export default function Dashboard() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'fixtures' }, () => fetchData())
         .subscribe()
 
-      const predictionsChannel = supabase
-        .channel('predictions-realtime')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'predictions' }, () => {
-           fetchData()
-           fetchActivity()
-        })
+      const pulseChannel = supabase
+        .channel('pulse-realtime')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_pulse_events' }, () => fetchActivity())
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => fetchActivity())
         .subscribe()
 
       return () => {
         supabase.removeChannel(fixturesChannel)
-        supabase.removeChannel(predictionsChannel)
+        supabase.removeChannel(pulseChannel)
       }
     }
   }, [authUser])
@@ -109,10 +109,10 @@ export default function Dashboard() {
 
   const fetchActivity = async () => {
     const { data } = await supabase
-      .from("activity_feed")
+      .from("match_pulse_feed")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(10)
+      .limit(20)
     setActivityLogs(data || [])
   }
 
@@ -142,9 +142,6 @@ export default function Dashboard() {
     const newH = Number(h)
     const newA = Number(a)
 
-    // 1. Guard against redundant updates to prevent activity log spam
-    // This ensures that we only update the DB and trigger a log entry if the score actually changed.
-    // It also prevents wasting a lifeline if the user didn't actually change their pick.
     const existing = predictions.find(p => p.fixture_id === fixtureId)
     if (existing && 
         existing.predicted_home_score === newH && 
@@ -228,60 +225,46 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-8 mb-10">
-        <Card className="app-glass-card group border-primary/5">
-          <div className="px-6 py-4 bg-muted/40 backdrop-blur-md flex items-center justify-between border-b border-border/40">
-            <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary animate-pulse" />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Live Activity</h3>
+        <Card className="app-glass-card border-primary/5 overflow-hidden">
+          <div className="px-5 py-3 bg-muted/20 backdrop-blur-md flex items-center justify-between border-b border-border/40">
+            <div className="flex items-center gap-2.5">
+              <div className="relative flex items-center justify-center">
+                <Radio className="h-3 w-3 text-red-500 animate-pulse relative z-10" />
+                <span className="absolute inset-0 bg-red-500/20 rounded-full animate-ping scale-150" />
+              </div>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-foreground/80">Arena Pulse</h3>
             </div>
-            <div className="flex items-center gap-1.5">
-               <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-               <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Match Pulse</span>
-            </div>
+            <Link href="/activity" className="group flex items-center gap-1.5">
+              <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest group-hover:text-primary transition-colors">Full Stream</span>
+              <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-0.5" />
+            </Link>
           </div>
-          <ScrollArea className="h-[220px]">
-            <div className="p-4 space-y-3">
+          
+          <ScrollArea className="h-[180px] bg-black/[0.02] dark:bg-white/[0.01]">
+            <div className="p-3 space-y-1">
               {activityLogs.length === 0 ? (
                 <div className="py-12 text-center opacity-40">
-                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Waiting for match action...</p>
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Waiting for broadcast...</p>
                 </div>
               ) : (
                 activityLogs.map((log) => {
-                  const isManual = log.action === 'manual_points_awarded'
+                  // Filter redundant logs
+                  if (log.event_type === 'prediction_updated' && log.metadata?.old_score === log.metadata?.new_score) return null;
                   
                   return (
-                    <div key={log.id} className="flex gap-4 p-5 bg-background/20 rounded-[2rem] border border-border/30 items-center transition-all hover:bg-background/40 hover:scale-[1.01] shadow-sm group">
-                      <UserAvatar profile={log} className="h-10 w-10 shadow-md group-hover:scale-110 transition-transform" />
-                      <div className="flex-1 overflow-hidden">
-                        <div className="flex items-center gap-2">
-                          <span className="font-black text-xs uppercase tracking-tight text-foreground">{log.display_name}</span>
-                          <span className={cn(
-                            "text-[8px] font-black uppercase px-2 py-0.5 rounded-full border whitespace-nowrap shadow-sm",
-                            isManual 
-                              ? (log.points_awarded > 0 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20")
-                              : "bg-muted text-muted-foreground border-border"
-                          )}>
-                            {isManual 
-                              ? `${log.points_awarded > 0 ? '+' : ''}${log.points_awarded} Bonus`
-                              : (log.action === 'prediction_created' ? 'locked in' : 'updated')
-                            }
-                          </span>
-                        </div>
-                        {isManual ? (
-                          <p className="text-[10px] font-bold text-muted-foreground italic truncate mt-0.5">
-                            "{log.reason}"
-                          </p>
-                        ) : (
-                          <p className="font-black text-primary uppercase italic text-[12px] tracking-tight truncate mt-0.5 group-hover:text-foreground transition-colors">
-                            {log.home_team} vs {log.away_team}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right flex flex-col items-end min-w-[60px]">
-                         <span className="text-[8px] text-muted-foreground font-black uppercase block opacity-60">
-                          {hasMounted ? DateTime.fromISO(log.created_at).toRelative() : '...'}
+                    <div key={log.id} className="flex gap-2.5 py-1.5 border-b border-border/5 last:border-0 items-start group">
+                      <span className="shrink-0 text-sm grayscale-[0.3] group-hover:grayscale-0 transition-all scale-90 group-hover:scale-100">{log.emoji || '⚽'}</span>
+                      <span className="shrink-0 font-mono text-[9px] text-muted-foreground/60 pt-1 tracking-tight">
+                        {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
+                      </span>
+                      <div className="flex-1 min-w-0 flex items-baseline gap-2">
+                        <span className="font-black text-foreground/90 shrink-0 uppercase tracking-tight text-[9px] min-w-[45px]">
+                          {log.title}
                         </span>
-                        {isManual ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mt-1.5" /> : <ChevronRight className="h-3 w-3 text-muted-foreground/30 mt-1.5" />}
+                        <span className="text-muted-foreground/20 shrink-0 text-[8px]">•</span>
+                        <span className="text-[11px] font-medium text-muted-foreground/80 truncate leading-relaxed">
+                          {log.message}
+                        </span>
                       </div>
                     </div>
                   )
