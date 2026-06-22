@@ -64,8 +64,8 @@ export default function Onboarding() {
         />
       </div>
       
-      <div className="relative z-10 w-full max-w-sm space-y-8 text-center">
-        <div className="flex flex-col items-center space-y-6">
+      <div className="relative z-10 w-full max-w-sm space-y-8 text-center overflow-visible">
+        <div className="flex flex-col items-center space-y-6 overflow-visible">
           <div className="relative h-32 w-32 drop-shadow-[0_0_15px_rgba(251,191,36,0.3)]">
             {logo && (
               <Image 
@@ -76,9 +76,9 @@ export default function Onboarding() {
               />
             )}
           </div>
-          <div className="space-y-1">
-            <h1 className="text-3xl font-black text-white tracking-tighter leading-none uppercase">
-              Claim Your <span className="premium-gold-gradient-text italic">Identity</span>
+          <div className="space-y-1 overflow-visible">
+            <h1 className="text-3xl leading-none uppercase overflow-visible">
+              Claim Your <span className="premium-gold-gradient-heading italic">Identity</span>
             </h1>
             <p className="text-gray-400 text-[10px] uppercase tracking-[0.4em] font-black mt-2">
               Arena Registration

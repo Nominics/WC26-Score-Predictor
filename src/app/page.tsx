@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -98,8 +97,8 @@ export default function LandingPage() {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
 
-      <div className="relative z-10 w-full max-w-sm space-y-8 text-center">
-        <div className="flex flex-col items-center space-y-6">
+      <div className="relative z-10 w-full max-w-sm space-y-8 text-center overflow-visible">
+        <div className="flex flex-col items-center space-y-6 overflow-visible">
           <div className="relative h-44 w-44 drop-shadow-[0_0_20px_rgba(251,191,36,0.3)]">
             {logo && (
               <Image 
@@ -112,9 +111,9 @@ export default function LandingPage() {
               />
             )}
           </div>
-          <div className="space-y-1">
-            <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
-              WC26<br/><span className="premium-gold-gradient-text italic">PREDICTOR</span>
+          <div className="space-y-1 overflow-visible">
+            <h1 className="text-5xl font-black text-white tracking-tighter leading-tight uppercase overflow-visible">
+              WC26<br/><span className="premium-gold-gradient-heading italic">PREDICTOR</span>
             </h1>
             <div className="flex items-center justify-center gap-2 mt-2">
                 <Sparkles className="h-3 w-3 text-primary" />
@@ -210,8 +209,8 @@ export default function LandingPage() {
               {mode === "signup" && (
                 <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3">
                   <TrendingUp className="h-4 w-4 text-primary mt-0.5" />
-                  <div className="text-left">
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">Late Join Bonus Active</p>
+                  <div className="text-left overflow-visible">
+                    <p className="premium-gold-gradient-heading text-[10px] uppercase tracking-widest">Late Join Bonus Active</p>
                     <p className="text-[9px] font-bold text-gray-500 leading-tight mt-0.5">Register now to receive a one-time points bonus based on current leaderboards!</p>
                   </div>
                 </div>

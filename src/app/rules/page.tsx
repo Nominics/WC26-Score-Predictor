@@ -39,19 +39,19 @@ export default function Rules() {
       <MainNav />
       <header className="px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
-          <div>
-            <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none flex items-center gap-2">
+          <div className="overflow-visible">
+            <h1 className="text-xl leading-none flex items-center gap-2 uppercase overflow-visible">
               <div className="relative h-6 w-6 shrink-0">
                 <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
               </div>
-              <span className="text-foreground">THE</span> <span className="premium-gold-gradient-text">RULES</span>
+              <span className="text-foreground font-black italic tracking-tight">THE</span> <span className="premium-gold-gradient-heading">RULES</span>
             </h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1 overflow-visible">
                <p className="text-[8px] text-muted-foreground uppercase font-black tracking-widest">Arena Guidelines</p>
                {stats && (
-                 <div className="flex items-center gap-1.5">
+                 <div className="flex items-center gap-1.5 overflow-visible">
                    <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                   <span className="text-[9px] font-black premium-gold-gradient-text uppercase italic">Rank #{stats.rank}</span>
+                   <span className="premium-gold-gradient-heading text-[9px] uppercase italic">Rank #{stats.rank}</span>
                    <span className="text-[9px] font-black text-foreground uppercase">({stats.points} pts)</span>
                    <span className="h-0.5 w-0.5 rounded-full bg-border" />
                    <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20">
@@ -71,8 +71,8 @@ export default function Rules() {
       </header>
 
       <main className="p-4 space-y-4 max-w-2xl mx-auto mt-6">
-        <Card className="bg-card border border-border shadow-xl rounded-3xl overflow-hidden">
-          <CardHeader className="flex flex-row items-center gap-3 bg-muted/50 p-6">
+        <Card className="bg-card border border-border shadow-xl rounded-3xl overflow-visible">
+          <CardHeader className="flex flex-row items-center gap-3 bg-muted/50 p-6 rounded-t-3xl">
             <div className="bg-primary/10 p-2 rounded-xl">
                 <Info className="text-primary h-5 w-5"/>
             </div>
@@ -83,21 +83,21 @@ export default function Rules() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 overflow-visible">
           {RULES.map((rule, i) => (
-            <div key={i} className="p-6 bg-card rounded-3xl border border-border flex justify-between items-center shadow-lg transition-transform hover:scale-[1.01]">
+            <div key={i} className="p-6 bg-card rounded-3xl border border-border flex justify-between items-center shadow-lg transition-transform hover:scale-[1.01] overflow-visible">
               <div className="flex items-center gap-4">
                 <div className="bg-muted p-3 rounded-2xl">
                     <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : "text-muted-foreground")} />
                 </div>
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 overflow-visible">
                     <h3 className="text-lg font-black italic text-foreground uppercase tracking-tight">{rule.title}</h3>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{rule.description}</p>
                 </div>
               </div>
               {rule.points > 0 && (
-                <div className="text-right">
-                    <span className="text-4xl font-black italic premium-gold-gradient-text leading-none">+{rule.points}</span>
+                <div className="text-right overflow-visible">
+                    <span className="premium-gold-gradient-number text-4xl">+{rule.points}</span>
                     <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">points</p>
                 </div>
               )}
@@ -105,8 +105,8 @@ export default function Rules() {
           ))}
         </div>
 
-        <Card className="bg-card border border-border shadow-xl rounded-3xl overflow-hidden">
-          <CardHeader className="flex flex-row items-center gap-3 bg-primary/5 p-6">
+        <Card className="bg-card border border-border shadow-xl rounded-3xl overflow-visible">
+          <CardHeader className="flex flex-row items-center gap-3 bg-primary/5 p-6 rounded-t-3xl">
             <div className="bg-primary/10 p-2 rounded-xl">
                 <Flag className="text-primary h-5 w-5"/>
             </div>
@@ -122,8 +122,8 @@ export default function Rules() {
           </CardContent>
         </Card>
 
-        <Card className="bg-blue-600 text-white shadow-xl rounded-3xl overflow-hidden border-0">
-          <CardHeader className="flex flex-row items-center gap-3 bg-white/10 p-6">
+        <Card className="bg-blue-600 text-white shadow-xl rounded-3xl overflow-visible border-0">
+          <CardHeader className="flex flex-row items-center gap-3 bg-white/10 p-6 rounded-t-3xl">
             <div className="bg-white/20 p-2 rounded-xl">
                 <span className="text-white"><Sparkles className="h-5 w-5"/></span>
             </div>

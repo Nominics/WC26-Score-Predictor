@@ -116,8 +116,8 @@ export default function Matrix() {
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none flex items-center gap-1">
-                <span className="premium-gold-gradient-text">STRATEGY</span> <span className="text-foreground">MATRIX</span>
+              <h1 className="text-xl leading-none flex items-center gap-1 uppercase">
+                <span className="premium-gold-gradient-heading">STRATEGY</span> <span className="text-foreground font-black italic tracking-tight">MATRIX</span>
               </h1>
               <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-0.5">Heat Map</p>
             </div>
@@ -131,15 +131,15 @@ export default function Matrix() {
       </header>
 
       <main className="px-6 py-10 max-w-7xl mx-auto">
-        <div className="bg-card/40 backdrop-blur-2xl rounded-[3rem] border border-border/50 overflow-hidden shadow-2xl">
+        <div className="bg-card/40 backdrop-blur-2xl rounded-[3rem] border border-border/50 overflow-visible shadow-2xl">
           <div className="overflow-x-auto no-scrollbar">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/50 hover:bg-transparent bg-muted/30">
                   <TableHead className="text-muted-foreground font-black uppercase text-[10px] py-12 px-10 sticky left-0 bg-background/95 backdrop-blur-md z-20 border-r border-border/50">
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-1 overflow-visible">
                       <span className="opacity-40 tracking-[0.3em]">FIXTURE</span>
-                      <span className="text-foreground text-lg italic tracking-tighter">PREDICTIONS</span>
+                      <span className="premium-gold-gradient-heading text-lg">PREDICTIONS</span>
                     </div>
                   </TableHead>
                   {fixtures.map(f => (
@@ -148,20 +148,20 @@ export default function Matrix() {
                         <span className="text-[10px] font-black uppercase text-muted-foreground tracking-widest opacity-60">
                           {DateTime.fromISO(f.kickoff_at).toFormat('LLL dd')}
                         </span>
-                        <div className="flex flex-col gap-1 w-full">
+                        <div className="flex flex-col gap-1 w-full overflow-visible">
                           <div className="flex items-center justify-between gap-3 bg-muted/50 px-3 py-1.5 rounded-2xl border border-border/50">
                             <div className="flex items-center gap-2">
                               {f.home_flag && <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-white/10"><Image src={f.home_flag} alt="" fill className="object-cover" /></div>}
                               <span className="text-[11px] font-black text-foreground">{f.home_team.substring(0,3).toUpperCase()}</span>
                             </div>
-                            <span className="text-[12px] font-black premium-gold-gradient-text italic">{f.home_score ?? '-'}</span>
+                            <span className="premium-gold-gradient-number text-[12px]">{f.home_score ?? '-'}</span>
                           </div>
                           <div className="flex items-center justify-between gap-3 bg-muted/50 px-3 py-1.5 rounded-2xl border border-border/50">
                             <div className="flex items-center gap-2">
                               {f.away_flag && <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-white/10"><Image src={f.away_flag} alt="" fill className="object-cover" /></div>}
                               <span className="text-[11px] font-black text-foreground">{f.away_team.substring(0,3).toUpperCase()}</span>
                             </div>
-                            <span className="text-[12px] font-black premium-gold-gradient-text italic">{f.away_score ?? '-'}</span>
+                            <span className="premium-gold-gradient-number text-[12px]">{f.away_score ?? '-'}</span>
                           </div>
                         </div>
                         {f.status === 'finished' ? (
@@ -180,13 +180,13 @@ export default function Matrix() {
                 {profiles.map(p => (
                   <TableRow key={p.id} className="border-border/30 hover:bg-primary/[0.02] transition-colors">
                     <TableCell className="px-10 py-8 sticky left-0 bg-background/90 backdrop-blur-md z-10 border-r border-border/50 shadow-[10px_0_30px_-15px_rgba(0,0,0,0.1)]">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 overflow-visible">
                         <UserAvatar profile={p} className="h-10 w-10 shadow-xl border-primary/20" />
                         <div className="flex flex-col">
                           <span className="font-black text-sm uppercase tracking-tight text-foreground whitespace-nowrap">{p.display_name}</span>
-                          <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex items-center gap-1.5 mt-0.5 overflow-visible">
                             <Trophy className="h-3 w-3 text-primary opacity-60" />
-                            <span className="text-[10px] font-black premium-gold-gradient-text uppercase italic">
+                            <span className="premium-gold-gradient-number text-[10px] uppercase">
                               {getPlayerPoints(p.id)} <span className="text-muted-foreground not-italic opacity-40">PTS</span>
                             </span>
                           </div>
@@ -197,7 +197,7 @@ export default function Matrix() {
                       const { text, color, points } = getCellData(p.id, f)
                       return (
                         <TableCell key={f.id} className="text-center p-6">
-                          <div className="relative inline-block">
+                          <div className="relative inline-block overflow-visible">
                             <div className={cn(
                               "flex items-center justify-center min-w-[80px] h-12 rounded-2xl font-black text-[14px] border transition-all duration-300",
                               color

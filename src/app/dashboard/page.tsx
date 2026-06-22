@@ -203,12 +203,12 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-1 leading-none uppercase">
-                <span className="premium-gold-gradient-text">ARENA</span> <span className="text-foreground">CENTER</span>
+                <span className="premium-gold-gradient-heading">ARENA</span> <span className="text-foreground">CENTER</span>
               </h1>
               <div className="flex items-center gap-2 mt-0.5">
                  {stats && (
                    <div className="flex items-center gap-1.5">
-                     <span className="text-[9px] font-black premium-gold-gradient-text uppercase italic tracking-wider">Rank #{stats.rank}</span>
+                     <span className="text-[9px] premium-gold-gradient-heading uppercase italic tracking-wider">Rank #{stats.rank}</span>
                      <span className="h-0.5 w-0.5 rounded-full bg-border" />
                      <div className="flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20">
                         <Zap className="h-2 w-2 text-primary fill-primary" />
@@ -229,7 +229,7 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-8 mb-4">
-        <Card className="app-glass-card border-primary/5 overflow-hidden">
+        <Card className="app-glass-card border-primary/5 overflow-visible">
           <div className="px-5 py-3 bg-muted/20 backdrop-blur-md flex items-center justify-between border-b border-border/40">
             <div className="flex items-center gap-2.5">
               <div className="relative flex items-center justify-center">
@@ -239,7 +239,7 @@ export default function Dashboard() {
               <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-foreground/80">Arena Pulse</h3>
             </div>
             <Link href="/activity" className="group flex items-center gap-1.5">
-              <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest group-hover:premium-gold-gradient-text transition-colors">History</span>
+              <span className="text-[8px] premium-gold-gradient-heading uppercase tracking-widest transition-colors">History</span>
               <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-0.5" />
             </Link>
           </div>
@@ -271,8 +271,8 @@ export default function Dashboard() {
                       <span className="shrink-0 font-mono text-[9px] text-muted-foreground/60 tabular-nums">
                         {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
                       </span>
-                      <div className="flex-1 min-w-0 flex items-center gap-2">
-                        <span className="font-black text-foreground/90 shrink-0 uppercase tracking-tight text-[9px] min-w-[70px]">
+                      <div className="flex-1 min-w-0 flex items-center gap-2 overflow-visible">
+                        <span className="premium-gold-gradient-heading shrink-0 uppercase tracking-tight text-[9px] min-w-[70px]">
                           {displayTitle}
                         </span>
                         <span className="text-[11px] font-medium text-muted-foreground/80 truncate leading-none">
@@ -315,7 +315,7 @@ export default function Dashboard() {
                     {d.day}
                   </span>
                   <span className={cn(
-                    "text-2xl font-black leading-none tracking-tighter transition-transform duration-500",
+                    "text-2xl font-black leading-tight tracking-tighter transition-transform duration-500",
                     isActive && "scale-110 drop-shadow-sm"
                   )}>
                     {d.date}

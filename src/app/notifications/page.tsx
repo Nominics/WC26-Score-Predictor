@@ -86,13 +86,13 @@ export default function NotificationsPage() {
       <MainNav />
       <header className="premium-header">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 overflow-visible">
              <div className="relative h-10 w-10 shrink-0 drop-shadow-xl">
                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
              </div>
-             <div>
-               <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
-                  <span className="premium-gold-gradient-text">ARENA</span> <span className="text-foreground">ALERTS</span>
+             <div className="overflow-visible">
+               <h1 className="text-xl leading-none uppercase overflow-visible">
+                  <span className="premium-gold-gradient-heading">ARENA</span> <span className="text-foreground font-black italic tracking-tight">ALERTS</span>
                </h1>
                <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-0.5">Notification History</p>
              </div>
@@ -145,28 +145,28 @@ export default function NotificationsPage() {
              <p className="text-[11px] font-black uppercase text-muted-foreground tracking-[0.4em]">Quiet in the Arena</p>
           </div>
         ) : (
-          <div className="space-y-4 px-2 pb-20">
+          <div className="space-y-4 px-2 pb-20 overflow-visible">
             {notifications.map((n) => (
               <div 
                 key={n.id} 
                 onClick={() => !n.is_read && markAsRead(n.id)}
                 className={cn(
-                  "app-glass-card p-6 group cursor-pointer relative border-border/40 transition-all hover:scale-[1.01] hover:bg-card/80",
+                  "app-glass-card p-6 group cursor-pointer relative border-border/40 transition-all hover:scale-[1.01] hover:bg-card/80 overflow-visible",
                   n.is_read ? "opacity-60" : "ring-1 ring-primary/20 bg-primary/[0.02]"
                 )}
               >
                 {!n.is_read && <div className="absolute top-0 left-0 w-1 h-full premium-gold-gradient-bg rounded-l-full" />}
-                <div className="flex gap-6 items-center">
+                <div className="flex gap-6 items-center overflow-visible">
                   <div className={cn(
                     "p-4 rounded-[1.2rem] shrink-0 transition-all shadow-lg",
                     n.is_read ? "bg-muted text-muted-foreground" : "premium-gold-gradient-bg text-black"
                   )}>
                     {getIcon(n.type)}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start gap-4">
-                       <h3 className="font-black text-sm uppercase italic tracking-tight text-foreground group-hover:premium-gold-gradient-text transition-colors">
-                        {n.title}
+                  <div className="flex-1 min-w-0 overflow-visible">
+                    <div className="flex justify-between items-start gap-4 overflow-visible">
+                       <h3 className="text-sm overflow-visible">
+                        <span className="premium-gold-gradient-heading">{n.title}</span>
                        </h3>
                     </div>
                     <p className="text-[12px] font-medium text-muted-foreground leading-relaxed mt-0.5">

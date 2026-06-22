@@ -18,6 +18,7 @@ import { NotificationBell } from "@/components/layout/notification-bell"
 import { PROFILE_ICON_PRESETS } from "@/lib/profile-icons"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -257,15 +258,15 @@ export default function AdminPage() {
       <MainNav />
       <header className="premium-header sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 overflow-visible">
             <div className="relative h-10 w-10 shrink-0 drop-shadow-xl">
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
-            <div>
-              <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
-                <span className="premium-gold-gradient-text">CONTROL</span> <span className="text-foreground">TOWER</span>
+            <div className="overflow-visible">
+              <h1 className="text-xl leading-none flex items-center gap-1 uppercase overflow-visible">
+                <span className="premium-gold-gradient-heading">CONTROL</span> <span className="text-foreground font-black italic tracking-tight">TOWER</span>
               </h1>
-              <p className="text-[9px] uppercase font-black premium-gold-gradient-text tracking-[0.3em] mt-1 flex items-center gap-1.5">
+              <p className="text-[9px] uppercase font-black premium-gold-gradient-heading tracking-[0.3em] mt-1 flex items-center gap-1.5 overflow-visible">
                 <ShieldCheck className="h-2.5 w-2.5" /> SUPERADMIN ACCESS
               </p>
             </div>
@@ -277,11 +278,13 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto p-4 space-y-8 mt-6">
+      <main className="max-w-2xl mx-auto p-4 space-y-8 mt-6 overflow-visible">
         {/* System Operations */}
-        <Card className="app-glass-card border-primary/20 shadow-primary/5">
-          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
-            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">System Sync</CardTitle>
+        <Card className="app-glass-card border-primary/20 shadow-primary/5 overflow-visible">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6 rounded-t-[2.5rem] overflow-visible">
+            <CardTitle className="overflow-visible">
+              <span className="premium-gold-gradient-heading text-lg">System Sync</span>
+            </CardTitle>
             <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
               Trigger Tournament Data Refresh
             </CardDescription>
@@ -299,9 +302,11 @@ export default function AdminPage() {
         </Card>
 
         {/* Broadcast Center */}
-        <Card className="app-glass-card border-border/40">
-          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
-            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">Broadcast Center</CardTitle>
+        <Card className="app-glass-card border-border/40 overflow-visible">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6 rounded-t-[2.5rem] overflow-visible">
+            <CardTitle className="overflow-visible">
+              <span className="premium-gold-gradient-heading text-lg">Broadcast Center</span>
+            </CardTitle>
             <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
               Push Notification & App Alerts
             </CardDescription>
@@ -382,9 +387,11 @@ export default function AdminPage() {
         </Card>
 
         {/* Profile Icon Assignment */}
-        <Card className="app-glass-card border-border/40">
-          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
-            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">Identity Assignment</CardTitle>
+        <Card className="app-glass-card border-border/40 overflow-visible">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6 rounded-t-[2.5rem] overflow-visible">
+            <CardTitle className="overflow-visible">
+              <span className="premium-gold-gradient-heading text-lg">Identity Assignment</span>
+            </CardTitle>
             <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
               Assign Avatar to Users Without Icons
             </CardDescription>
@@ -441,9 +448,11 @@ export default function AdminPage() {
         </Card>
 
         {/* Manual Points Section */}
-        <Card className="app-glass-card border-border/40">
-          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
-            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">Manual Points</CardTitle>
+        <Card className="app-glass-card border-border/40 overflow-visible">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6 rounded-t-[2.5rem] overflow-visible">
+            <CardTitle className="overflow-visible">
+              <span className="premium-gold-gradient-heading text-lg">Manual Points</span>
+            </CardTitle>
             <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
               Award Bonuses or Penalize Players
             </CardDescription>
@@ -500,9 +509,11 @@ export default function AdminPage() {
         </Card>
 
         {/* Fixture Management Section */}
-        <Card className="app-glass-card border-border/40">
-          <CardHeader className="bg-muted/40 border-b border-border/50 p-6">
-            <CardTitle className="text-lg font-black uppercase italic text-foreground tracking-tight">Fixture Control</CardTitle>
+        <Card className="app-glass-card border-border/40 overflow-visible">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6 rounded-t-[2.5rem] overflow-visible">
+            <CardTitle className="overflow-visible">
+              <span className="premium-gold-gradient-heading text-lg">Fixture Control</span>
+            </CardTitle>
             <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
               Correct Individual Match Data
             </CardDescription>
@@ -551,11 +562,13 @@ export default function AdminPage() {
 
         {/* Confirmation Dialogs */}
         <AlertDialog open={showConfirmPoints} onOpenChange={setShowConfirmPoints}>
-          <AlertDialogContent className="rounded-[2.5rem] bg-background border-primary/20">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="font-black uppercase italic text-foreground text-2xl tracking-tighter">Confirm Adjustment</AlertDialogTitle>
+          <AlertDialogContent className="rounded-[2.5rem] bg-background border-primary/20 overflow-visible">
+            <AlertDialogHeader className="overflow-visible">
+              <AlertDialogTitle className="overflow-visible">
+                <span className="premium-gold-gradient-heading text-2xl">Confirm Adjustment</span>
+              </AlertDialogTitle>
               <AlertDialogDescription className="font-medium text-muted-foreground text-sm">
-                You are awarding <span className="premium-gold-gradient-text font-black italic">+{points}</span> points to <span className="text-foreground font-black uppercase">{allProfiles.find(p => p.id === selectedUser)?.display_name}</span>. This is public and permanent.
+                You are awarding <span className="premium-gold-gradient-heading font-black italic">+{points}</span> points to <span className="text-foreground font-black uppercase">{allProfiles.find(p => p.id === selectedUser)?.display_name}</span>. This is public and permanent.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-6 flex gap-3">

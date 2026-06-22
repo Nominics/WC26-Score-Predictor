@@ -70,6 +70,31 @@
 }
 
 @layer components {
+  /* Premium Heading Gradients with Clipping Protection */
+  .premium-gold-gradient-text {
+    @apply inline-block bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent;
+    line-height: 1.18;
+    padding-top: 0.05em;
+    padding-bottom: 0.08em;
+  }
+
+  .premium-gold-gradient-heading {
+    @apply inline-block bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent font-black italic tracking-tight;
+    line-height: 1.16;
+    padding-top: 0.06em;
+    padding-bottom: 0.1em;
+    padding-left: 0.02em;
+    padding-right: 0.08em;
+  }
+
+  .premium-gold-gradient-number {
+    @apply inline-block bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent font-black italic tracking-tighter;
+    line-height: 1.2;
+    padding-top: 0.04em;
+    padding-bottom: 0.08em;
+    padding-right: 0.06em;
+  }
+
   /* Reusable Design Components */
   .app-glass-card {
     @apply bg-card/60 backdrop-blur-xl border border-border/50 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300;
@@ -113,11 +138,6 @@
 
   .soft-button {
     @apply rounded-full font-black uppercase text-[10px] tracking-widest transition-all active:scale-95;
-  }
-
-  /* Premium Heading Gradients */
-  .premium-gold-gradient-text {
-    @apply bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500 bg-clip-text text-transparent;
   }
 
   .premium-gold-gradient-bg {

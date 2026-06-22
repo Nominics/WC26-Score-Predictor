@@ -84,8 +84,8 @@ export default function Leaderboard() {
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
             <div>
-              <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none flex items-center gap-1">
-                <span className="premium-gold-gradient-text">GLOBAL</span> <span className="text-foreground">STANDINGS</span>
+              <h1 className="text-xl leading-none flex items-center gap-1 uppercase">
+                <span className="premium-gold-gradient-heading">GLOBAL</span> <span className="text-foreground font-black italic tracking-tight">STANDINGS</span>
               </h1>
               <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-0.5">Top Players</p>
             </div>
@@ -116,7 +116,7 @@ export default function Leaderboard() {
                 <div 
                   key={entry.user_id} 
                   className={cn(
-                    "app-glass-card p-7 group",
+                    "app-glass-card p-7 group overflow-visible",
                     isTopThree ? "border-primary/30 ring-1 ring-primary/5" : "border-border/50",
                     isCurrentUser && "premium-gold-ring ring-offset-4 dark:ring-offset-slate-900"
                   )}
@@ -142,7 +142,7 @@ export default function Leaderboard() {
                     <div className="flex-1 min-w-0">
                       <span className={cn(
                         "font-black text-base uppercase tracking-tight truncate block",
-                        isCurrentUser ? "premium-gold-gradient-text italic" : "text-foreground"
+                        isCurrentUser ? "premium-gold-gradient-heading" : "text-foreground"
                       )}>
                         {entry.display_name}
                       </span>
@@ -156,7 +156,7 @@ export default function Leaderboard() {
                         {entry.starting_points > 0 && (
                           <div className="flex items-center gap-1.5 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                              <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
-                             <span className="text-[9px] font-black text-primary uppercase italic tracking-tighter">Bonus (+{entry.starting_points})</span>
+                             <span className="premium-gold-gradient-heading text-[9px] uppercase tracking-tighter">Bonus (+{entry.starting_points})</span>
                           </div>
                         )}
                       </div>
@@ -173,12 +173,12 @@ export default function Leaderboard() {
                   
                   <div className="mt-6 pt-5 border-t border-border/40 flex justify-between items-center px-2">
                      <div className="flex gap-6">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col overflow-visible">
                             <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Accuracy</span>
-                            <span className="text-[11px] font-black text-foreground italic">{entry.prediction_points} <span className="text-[9px] not-italic opacity-40 uppercase ml-0.5">pts</span></span>
+                            <span className="premium-gold-gradient-number text-[11px]">{entry.prediction_points} <span className="text-[9px] not-italic opacity-40 uppercase ml-0.5">pts</span></span>
                         </div>
                         {entry.manual_points !== 0 && (
-                          <div className="flex flex-col">
+                          <div className="flex flex-col overflow-visible">
                               <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Modifiers</span>
                               <span className={cn(
                                 "text-[11px] font-black italic",

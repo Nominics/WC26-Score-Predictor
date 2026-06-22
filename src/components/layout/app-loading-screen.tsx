@@ -1,4 +1,3 @@
-
 "use client"
 
 import Image from "next/image"
@@ -12,7 +11,7 @@ export function AppLoadingScreen() {
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
       </div>
 
-      <div className="relative flex flex-col items-center gap-10 animate-in fade-in zoom-in-95 duration-700">
+      <div className="relative flex flex-col items-center gap-10 animate-in fade-in zoom-in-95 duration-700 overflow-visible">
         {/* Logo with Glow */}
         <div className="relative h-32 w-32 drop-shadow-[0_0_25px_rgba(234,179,8,0.4)]">
           <Image 
@@ -25,9 +24,9 @@ export function AppLoadingScreen() {
         </div>
         
         {/* WC26 Branding */}
-        <div className="flex flex-col items-center gap-4">
-          <h1 className="text-5xl font-black italic tracking-tighter text-foreground uppercase">
-            ARENA <span className="text-primary">WC26</span>
+        <div className="flex flex-col items-center gap-4 overflow-visible">
+          <h1 className="text-5xl leading-tight uppercase overflow-visible">
+            <span className="text-foreground font-black italic tracking-tight">ARENA</span> <span className="premium-gold-gradient-heading">WC26</span>
           </h1>
           
           <div className="flex flex-col items-center gap-3">

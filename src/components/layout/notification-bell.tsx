@@ -99,11 +99,11 @@ export function NotificationBell() {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[420px] w-[92vw] p-0 border-0 bg-transparent shadow-none overflow-hidden rounded-[2.5rem]">
-        <div className="app-glass-card border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
-          <DialogHeader className="p-8 bg-foreground text-background shrink-0">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="font-black italic uppercase tracking-tighter text-2xl">
-                <span className="premium-gold-gradient-text">ARENA</span> <span className="text-background">ALERTS</span>
+        <div className="app-glass-card border-white/10 shadow-2xl overflow-visible flex flex-col max-h-[80vh]">
+          <DialogHeader className="p-8 bg-foreground text-background shrink-0 rounded-t-[2.5rem] overflow-visible">
+            <div className="flex items-center justify-between overflow-visible">
+              <DialogTitle className="overflow-visible">
+                <span className="premium-gold-gradient-heading text-2xl">ARENA</span> <span className="text-background font-black italic tracking-tight text-2xl">ALERTS</span>
               </DialogTitle>
               {unreadCount > 0 && (
                 <Button 
@@ -118,7 +118,7 @@ export function NotificationBell() {
             </div>
           </DialogHeader>
 
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1" hideScrollbar>
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-50">
                 <Loader2 className="h-6 w-6 text-primary animate-spin" />
@@ -132,20 +132,20 @@ export function NotificationBell() {
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-border/30">
+              <div className="divide-y divide-border/30 overflow-visible">
                 {notifications.map((n) => (
                   <div 
                     key={n.id} 
                     onClick={() => !n.is_read && markAsRead(n.id)}
                     className={cn(
-                      "p-6 transition-all cursor-pointer group hover:bg-muted/30",
+                      "p-6 transition-all cursor-pointer group hover:bg-muted/30 overflow-visible",
                       n.is_read ? "bg-background" : "bg-primary/[0.03] border-l-4 border-l-primary"
                     )}
                   >
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="space-y-1 flex-1 min-w-0">
-                        <h4 className="text-xs font-black uppercase italic tracking-tight text-foreground group-hover:premium-gold-gradient-text transition-colors">
-                          {n.title}
+                    <div className="flex justify-between items-start gap-4 overflow-visible">
+                      <div className="space-y-1 flex-1 min-w-0 overflow-visible">
+                        <h4 className="overflow-visible">
+                          <span className="premium-gold-gradient-heading text-xs">{n.title}</span>
                         </h4>
                         <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">
                           {n.body}
@@ -166,7 +166,7 @@ export function NotificationBell() {
             )}
           </ScrollArea>
 
-          <div className="p-4 bg-muted/40 border-t border-border/50 backdrop-blur-md shrink-0">
+          <div className="p-4 bg-muted/40 border-t border-border/50 backdrop-blur-md shrink-0 rounded-b-[2.5rem]">
              <Link href="/notifications" className="block">
                 <Button variant="outline" className="w-full h-14 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] gap-2 bg-card border-border/50 hover:bg-primary hover:text-black transition-all shadow-sm">
                   View Full History

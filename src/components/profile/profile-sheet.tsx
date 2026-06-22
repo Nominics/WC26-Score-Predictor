@@ -143,7 +143,7 @@ export function ProfileSheet() {
           </DialogHeader>
           
           <ScrollArea className="flex-1" hideScrollbar>
-            <div className="p-6 space-y-8 pb-12">
+            <div className="p-6 space-y-8 pb-12 overflow-visible">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative">
                   <UserAvatar profile={profile} className="h-28 w-24 border-4 border-primary/20 shadow-2xl rounded-full" fallbackClassName="text-3xl" />
@@ -171,7 +171,7 @@ export function ProfileSheet() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <h3 className="text-2xl font-black uppercase italic premium-gold-gradient-text tracking-tighter leading-tight">
+                      <h3 className="text-2xl premium-gold-gradient-heading">
                         {profile?.display_name}
                       </h3>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:premium-gold-gradient-text transition-colors" onClick={() => setIsEditing(true)}>
@@ -188,14 +188,14 @@ export function ProfileSheet() {
                    <div className="rounded-[2rem] p-6 flex justify-around items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm">
                       <div className="text-center space-y-0.5">
                          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Points</span>
-                         <p className="text-2xl font-black italic tracking-tighter premium-gold-gradient-text leading-none">{stats?.points || "0"}</p>
+                         <p className="text-2xl premium-gold-gradient-number leading-none">{stats?.points || "0"}</p>
                       </div>
                       <div className="h-10 w-px bg-slate-200 dark:bg-white/10" />
                       <div className="text-center space-y-0.5">
                          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Lifelines</span>
                          <div className="flex items-center gap-1 justify-center">
                             <Zap className="h-3.5 w-3.5 text-primary fill-primary" />
-                            <p className="text-2xl font-black italic tracking-tighter premium-gold-gradient-text leading-none">{stats?.lifelines || "0"}</p>
+                            <p className="text-2xl premium-gold-gradient-number leading-none">{stats?.lifelines || "0"}</p>
                          </div>
                       </div>
                    </div>
@@ -205,7 +205,7 @@ export function ProfileSheet() {
                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <UserCircle className="h-3.5 w-3.5 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Avatar Presets</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 dark:text-slate-300">Avatar Presets</span>
                       </div>
                       {profile?.profile_icon_key && (
                         <Button 
@@ -226,7 +226,7 @@ export function ProfileSheet() {
                             "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 active:scale-95",
                             profile?.profile_icon_key === icon.key 
                               ? "premium-gold-ring shadow-lg scale-105 z-10 opacity-100" 
-                              : "border-transparent opacity-80 grayscale-[0.2] hover:grayscale-0 hover:opacity-100"
+                              : "border-transparent opacity-100 grayscale-[0.2] hover:grayscale-0 hover:opacity-100"
                           )}
                         >
                           <Image src={icon.imagePath} alt={icon.label} fill className="object-cover" />
@@ -238,7 +238,7 @@ export function ProfileSheet() {
                 <div className="w-full space-y-3 text-left">
                    <div className="flex items-center gap-2">
                       <Flag className="h-3.5 w-3.5 text-primary" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Representation</span>
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 dark:text-slate-300">Representation</span>
                    </div>
                    <Select value={profile?.favorite_team || ""} onValueChange={handleUpdateTeam}>
                       <SelectTrigger className="w-full h-14 rounded-2xl border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm font-black uppercase text-xs italic tracking-tight text-foreground">
@@ -262,7 +262,7 @@ export function ProfileSheet() {
                 <div className="w-full space-y-4 pt-4 text-left">
                   <div className="flex items-center gap-2 mb-1">
                     <Zap className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Arena Alerts</span>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 dark:text-slate-300">Arena Alerts</span>
                   </div>
                   <NotificationToggle />
                 </div>
@@ -289,7 +289,7 @@ export function ProfileSheet() {
               <div className="space-y-4 pt-6 border-t border-slate-200 dark:border-white/10">
                 <div className="flex items-center gap-2">
                   <Lock className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Security</span>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 dark:text-slate-300">Security</span>
                 </div>
                 {!isChangingPassword ? (
                   <Button 

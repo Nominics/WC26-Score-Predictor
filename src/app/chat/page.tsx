@@ -97,19 +97,19 @@ export default function ChatPage() {
       <MainNav />
       <header className="px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
-          <div>
-            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 leading-none uppercase">
+          <div className="overflow-visible">
+            <h1 className="text-xl flex items-center gap-2 leading-none uppercase overflow-visible">
               <div className="relative h-6 w-6 shrink-0">
                 <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
               </div>
-              <span className="premium-gold-gradient-text">ARENA</span> <span className="text-foreground">CHAT</span>
+              <span className="premium-gold-gradient-heading">ARENA</span> <span className="text-foreground font-black italic tracking-tight">CHAT</span>
             </h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1 overflow-visible">
                <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest">Global Discussion</p>
                {stats && (
-                 <div className="flex items-center gap-1.5">
+                 <div className="flex items-center gap-1.5 overflow-visible">
                    <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                   <span className="text-[9px] font-black premium-gold-gradient-text uppercase italic">Rank #{stats.rank}</span>
+                   <span className="premium-gold-gradient-heading text-[9px] uppercase italic">Rank #{stats.rank}</span>
                    <span className="text-[9px] font-black text-foreground uppercase">({stats.points} pts)</span>
                    <span className="h-0.5 w-0.5 rounded-full bg-border" />
                    <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20">
@@ -143,7 +143,7 @@ export default function ChatPage() {
                 <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest text-center">No messages yet.<br/>Be the first to rally the fans!</p>
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-8 overflow-visible">
                 {messages.map((msg) => {
                   const isOwnMessage = msg.user_id === user?.id
                   
@@ -151,20 +151,20 @@ export default function ChatPage() {
                     <div 
                       key={msg.id} 
                       className={cn(
-                        "flex gap-4 items-end",
+                        "flex gap-4 items-end overflow-visible",
                         isOwnMessage ? "flex-row-reverse" : "flex-row"
                       )}
                     >
                       <UserAvatar profile={msg} className="h-10 w-10 shrink-0 shadow-lg" />
                       
                       <div className={cn(
-                        "flex flex-col space-y-1.5 max-w-[75%]",
+                        "flex flex-col space-y-1.5 max-w-[75%] overflow-visible",
                         isOwnMessage ? "items-end text-right" : "items-start text-left"
                       )}>
-                        <div className="flex items-center gap-2 px-1">
+                        <div className="flex items-center gap-2 px-1 overflow-visible">
                           <span className={cn(
-                            "text-[10px] font-black uppercase tracking-tight",
-                            isOwnMessage ? "premium-gold-gradient-text italic" : "text-muted-foreground"
+                            "text-[10px] uppercase tracking-tight overflow-visible",
+                            isOwnMessage ? "premium-gold-gradient-heading italic" : "text-muted-foreground font-black"
                           )}>
                             {msg.display_name || "Unknown Fan"}
                           </span>
