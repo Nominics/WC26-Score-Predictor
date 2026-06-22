@@ -1,3 +1,4 @@
+
 self.addEventListener("push", function (event) {
   let payload = {
     title: "WC26 Predictor",

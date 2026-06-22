@@ -92,6 +92,7 @@ export async function POST(req: Request) {
     }
 
     // 2. PREDICTION REMINDERS
+    // Reminders are only sent if user has NO row in predictions for that fixture
     const now = DateTime.now().toUTC();
     const intervals = [
       { label: '8h', minutes: 8 * 60 },
@@ -115,12 +116,22 @@ export async function POST(req: Request) {
       if (!upcomingFixtures?.length) continue;
 
       for (const fixture of upcomingFixtures) {
-        // Find users with enabled subscriptions who HAVEN'T predicted for this fixture AND haven't received THIS reminder
-        const { data: usersToRemind } = await supabaseAdmin
+        /**
+         * The RPC 'get_users_needing_reminders' enforces the "NOT EXISTS" logic:
+         * 1. User has enabled push subscription
+         * 2. NOT EXISTS (select 1 from predictions where user_id = p.id and fixture_id = f_id)
+         * 3. NOT EXISTS (select 1 from prediction_reminder_logs where user_id = p.id and fixture_id = f_id and reminder_type = r_type)
+         */
+        const { data: usersToRemind, error: rpcError } = await supabaseAdmin
           .rpc('get_users_needing_reminders', { 
             f_id: fixture.id, 
             r_type: interval.label 
           });
+
+        if (rpcError) {
+          console.error("RPC Error fetching reminder targets:", rpcError.message);
+          continue;
+        }
 
         if (!usersToRemind?.length) continue;
 
@@ -139,10 +150,13 @@ export async function POST(req: Request) {
             url: "/dashboard"
           });
 
+          let successfullySentToAny = false;
+
           for (const sub of subs) {
             try {
               await webpush.sendNotification(sub.subscription, payload);
               remindersSent++;
+              successfullySentToAny = true;
             } catch (err: any) {
               if (err.statusCode === 404 || err.statusCode === 410) {
                 await supabaseAdmin.from('push_subscriptions').update({ enabled: false }).eq('id', sub.id);
@@ -151,12 +165,14 @@ export async function POST(req: Request) {
             }
           }
 
-          // Log the reminder
-          await supabaseAdmin.from('prediction_reminder_logs').insert({
-            user_id: user.id,
-            fixture_id: fixture.id,
-            reminder_type: interval.label
-          });
+          // If we successfully pushed to at least one subscription, log it to prevent double sends for this window
+          if (successfullySentToAny) {
+            await supabaseAdmin.from('prediction_reminder_logs').insert({
+              user_id: user.id,
+              fixture_id: fixture.id,
+              reminder_type: interval.label
+            });
+          }
         }
       }
     }
