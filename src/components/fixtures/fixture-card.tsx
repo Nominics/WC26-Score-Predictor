@@ -60,11 +60,16 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
 
   const cleanScorers = (scorers: string | null) => {
     if (!scorers || scorers === 'null') return null;
-    return scorers.split(';').map(s => s.trim()).join(' • ');
+    // Strip braces, quotes, and normalize separators
+    let cleaned = scorers.replace(/[{}"']/g, '');
+    const parts = cleaned.split(/[;,]/).map(s => s.trim()).filter(Boolean);
+    if (parts.length === 0) return null;
+    return parts.join(' • ');
   }
 
   const homeScorers = cleanScorers(fixture.home_scorers);
   const awayScorers = cleanScorers(fixture.away_scorers);
+  const showScorers = (isLive || isFinished) && (homeScorers || awayScorers);
   
   return (
     <Card className={cn(
@@ -231,8 +236,8 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
         </div>
 
         {/* Scorers Section */}
-        {(homeScorers || awayScorers) && (
-          <div className="px-6 pb-8">
+        {showScorers && (
+          <div className="px-6 pb-8 animate-in fade-in slide-in-from-bottom-1 duration-500">
             <div className="p-4 bg-muted/30 rounded-3xl border border-border/50 flex flex-col gap-2 shadow-inner">
                <div className="flex items-center justify-center gap-3">
                  <div className="h-[1px] bg-border/50 flex-1" />
@@ -243,16 +248,16 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
                  <div className="h-[1px] bg-border/50 flex-1" />
                </div>
                <div className="flex justify-between gap-6 pt-1">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     {homeScorers && (
-                      <p className="text-[10px] font-bold text-foreground/70 uppercase leading-relaxed italic">
+                      <p className="text-[10px] font-bold text-foreground/70 uppercase leading-relaxed italic break-words">
                         {homeScorers}
                       </p>
                     )}
                   </div>
-                  <div className="flex-1 text-right">
+                  <div className="flex-1 text-right min-w-0">
                     {awayScorers && (
-                      <p className="text-[10px] font-bold text-foreground/70 uppercase leading-relaxed italic">
+                      <p className="text-[10px] font-bold text-foreground/70 uppercase leading-relaxed italic break-words">
                         {awayScorers}
                       </p>
                     )}
