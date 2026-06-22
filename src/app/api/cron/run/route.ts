@@ -1,26 +1,32 @@
-
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getTeamFlagUrl } from "@/lib/team-flags";
 import webpush from "web-push";
 
+type WorldCupApiGame = {
+  id: string;
+  home_score: string;
+  away_score: string;
+  group: string;
+  matchday: string;
+  local_date: string;
+  stadium_id: string;
+  finished: "TRUE" | "FALSE";
+  time_elapsed: string;
+  type: string;
+  home_team_name_en?: string;
+  away_team_name_en?: string;
+  home_team_label?: string;
+  away_team_label?: string;
+  home_scorers?: string | null;
+  away_scorers?: string | null;
+  home_team_name_fa?: string;
+  away_team_name_fa?: string;
+};
+
 type WorldCupApiResponse = {
-  games: Array<{
-    id: string;
-    home_score: string;
-    away_score: string;
-    group: string;
-    local_date: string;
-    stadium_id: string;
-    finished: "TRUE" | "FALSE";
-    time_elapsed: string;
-    type: string;
-    home_team_name_en?: string;
-    away_team_name_en?: string;
-    home_team_label?: string;
-    away_team_label?: string;
-  }>;
+  games: WorldCupApiGame[];
 };
 
 // Configure Web Push
@@ -66,6 +72,8 @@ export async function POST(req: Request) {
           const awayTeam = game.away_team_name_en || game.away_team_label || "TBD";
           const kickoff = parseKickoffToUtc(game.local_date);
 
+          const cleanScorers = (val?: string | null) => (val === "null" || !val ? null : val);
+
           return {
             external_id: game.id,
             match_number: parseInt(game.id, 10),
@@ -80,6 +88,15 @@ export async function POST(req: Request) {
             home_score: status !== "scheduled" ? parseInt(game.home_score) : null,
             away_score: status !== "scheduled" ? parseInt(game.away_score) : null,
             updated_at: new Date().toISOString(),
+            // Extended mapping
+            home_scorers: cleanScorers(game.home_scorers),
+            away_scorers: cleanScorers(game.away_scorers),
+            home_team_name_fa: game.home_team_name_fa ?? null,
+            away_team_name_fa: game.away_team_name_fa ?? null,
+            api_time_elapsed: game.time_elapsed,
+            api_finished: game.finished,
+            stadium_id: game.stadium_id,
+            matchday: game.matchday,
           };
         });
 
@@ -92,7 +109,6 @@ export async function POST(req: Request) {
     }
 
     // 2. PREDICTION REMINDERS
-    // Reminders are only sent if user has NO row in predictions for that fixture
     const now = DateTime.now().toUTC();
     const intervals = [
       { label: '8h', minutes: 8 * 60 },
@@ -103,9 +119,8 @@ export async function POST(req: Request) {
 
     for (const interval of intervals) {
       const windowStart = now.plus({ minutes: interval.minutes });
-      const windowEnd = windowStart.plus({ minutes: 15 }); // 15 min buffer matching cron frequency
+      const windowEnd = windowStart.plus({ minutes: 15 });
 
-      // Find fixtures starting in this window
       const { data: upcomingFixtures } = await supabaseAdmin
         .from('fixtures')
         .select('*')
@@ -116,12 +131,6 @@ export async function POST(req: Request) {
       if (!upcomingFixtures?.length) continue;
 
       for (const fixture of upcomingFixtures) {
-        /**
-         * The RPC 'get_users_needing_reminders' enforces the "NOT EXISTS" logic:
-         * 1. User has enabled push subscription
-         * 2. NOT EXISTS (select 1 from predictions where user_id = p.id and fixture_id = f_id)
-         * 3. NOT EXISTS (select 1 from prediction_reminder_logs where user_id = p.id and fixture_id = f_id and reminder_type = r_type)
-         */
         const { data: usersToRemind, error: rpcError } = await supabaseAdmin
           .rpc('get_users_needing_reminders', { 
             f_id: fixture.id, 
@@ -165,7 +174,6 @@ export async function POST(req: Request) {
             }
           }
 
-          // If we successfully pushed to at least one subscription, log it to prevent double sends for this window
           if (successfullySentToAny) {
             await supabaseAdmin.from('prediction_reminder_logs').insert({
               user_id: user.id,

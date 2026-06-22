@@ -18,6 +18,10 @@ type WorldCupApiGame = {
   away_team_name_en?: string;
   home_team_label?: string;
   away_team_label?: string;
+  home_scorers?: string | null;
+  away_scorers?: string | null;
+  home_team_name_fa?: string;
+  away_team_name_fa?: string;
 };
 
 type WorldCupApiResponse = {
@@ -96,6 +100,8 @@ export async function POST(req: Request) {
       const homeTeam = game.home_team_name_en || game.home_team_label || "TBD";
       const awayTeam = game.away_team_name_en || game.away_team_label || "TBD";
 
+      const cleanScorers = (val?: string | null) => (val === "null" || !val ? null : val);
+
       return {
         external_id: game.id,
         match_number: parseInt(game.id, 10),
@@ -111,6 +117,15 @@ export async function POST(req: Request) {
         home_score: parseScore(game.home_score, status),
         away_score: parseScore(game.away_score, status),
         updated_at: new Date().toISOString(),
+        // New Extended Fields
+        home_scorers: cleanScorers(game.home_scorers),
+        away_scorers: cleanScorers(game.away_scorers),
+        home_team_name_fa: game.home_team_name_fa ?? null,
+        away_team_name_fa: game.away_team_name_fa ?? null,
+        api_time_elapsed: game.time_elapsed,
+        api_finished: game.finished,
+        stadium_id: game.stadium_id,
+        matchday: game.matchday,
       };
     });
 
