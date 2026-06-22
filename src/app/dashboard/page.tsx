@@ -182,29 +182,28 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background text-foreground pb-32">
       <MainNav />
-      <header className="px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40">
+      <header className="px-6 py-4 bg-background/80 backdrop-blur-2xl border-b border-border shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
-          <div>
-            <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 text-foreground leading-none uppercase">
-              <div className="relative h-6 w-6 shrink-0">
-                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
-              </div>
-              MATCH <span className="text-primary">CENTER</span>
-            </h1>
-            <div className="flex items-center gap-2 mt-1">
-               <p className="text-[8px] text-muted-foreground font-black uppercase tracking-widest">Global Arena</p>
-               {stats && (
-                 <div className="flex items-center gap-1.5">
-                   <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
-                   <span className="text-[9px] font-black text-foreground uppercase">({stats.points} pts)</span>
-                   <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                   <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20">
-                      <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
-                      <span className="text-[8px] font-black text-yellow-500">{stats.lifelines}</span>
+          <div className="flex items-center gap-3">
+            <div className="relative h-10 w-10 shrink-0 drop-shadow-lg">
+              <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-1 text-foreground leading-none uppercase">
+                ARENA <span className="text-primary">CENTER</span>
+              </h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                 {stats && (
+                   <div className="flex items-center gap-1.5">
+                     <span className="text-[9px] font-black text-primary uppercase italic tracking-wider">Rank #{stats.rank}</span>
+                     <span className="h-0.5 w-0.5 rounded-full bg-border" />
+                     <div className="flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded-full border border-primary/20">
+                        <Zap className="h-2 w-2 text-primary fill-primary" />
+                        <span className="text-[8px] font-black text-primary">{stats.lifelines}</span>
+                     </div>
                    </div>
-                 </div>
-               )}
+                 )}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -216,22 +215,22 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 pt-6 mb-10">
-        <Card className="rounded-[2.5rem] border-0 shadow-2xl overflow-hidden bg-card transition-all hover:shadow-primary/5">
-          <div className="px-6 py-3 bg-secondary flex items-center justify-between">
+      <div className="max-w-2xl mx-auto px-4 pt-8 mb-10">
+        <Card className="rounded-[2.5rem] border-0 shadow-2xl overflow-hidden bg-card/50 backdrop-blur-xl border border-white/10 group">
+          <div className="px-6 py-4 bg-secondary/50 backdrop-blur-md flex items-center justify-between border-b border-border/50">
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-primary" />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Live Activity</h3>
+              <Activity className="h-4 w-4 text-primary animate-pulse" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Live Activity</h3>
             </div>
             <div className="flex items-center gap-1.5">
                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
-               <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Match Pulse</span>
+               <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Match Pulse</span>
             </div>
           </div>
           <ScrollArea className="h-[220px]">
-            <div className="p-3 space-y-2">
+            <div className="p-4 space-y-3">
               {activityLogs.length === 0 ? (
-                <div className="py-12 text-center">
+                <div className="py-12 text-center opacity-40">
                   <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Waiting for match action...</p>
                 </div>
               ) : (
@@ -239,13 +238,13 @@ export default function Dashboard() {
                   const isManual = log.action === 'manual_points_awarded'
                   
                   return (
-                    <div key={log.id} className="flex gap-4 p-4 bg-card rounded-[2rem] border border-border items-center transition-all hover:bg-muted/50 shadow-sm group">
-                      <UserAvatar profile={log} className="h-9 w-9" />
+                    <div key={log.id} className="flex gap-4 p-5 bg-background/40 rounded-[2rem] border border-border/50 items-center transition-all hover:bg-muted/50 hover:scale-[1.02] shadow-sm group">
+                      <UserAvatar profile={log} className="h-10 w-10 shadow-lg group-hover:scale-110 transition-transform" />
                       <div className="flex-1 overflow-hidden">
                         <div className="flex items-center gap-2">
                           <span className="font-black text-xs uppercase tracking-tight text-foreground">{log.display_name}</span>
                           <span className={cn(
-                            "text-[8px] font-black uppercase px-2 py-0.5 rounded-full border whitespace-nowrap",
+                            "text-[8px] font-black uppercase px-2 py-0.5 rounded-full border whitespace-nowrap shadow-sm",
                             isManual 
                               ? (log.points_awarded > 0 ? "bg-green-500/10 text-green-600 border-green-500/20" : "bg-red-500/10 text-red-600 border-red-500/20")
                               : "bg-muted text-muted-foreground border-border"
@@ -266,11 +265,11 @@ export default function Dashboard() {
                           </p>
                         )}
                       </div>
-                      <div className="text-right flex flex-col items-end">
-                         <span className="text-[8px] text-muted-foreground font-black uppercase block">
+                      <div className="text-right flex flex-col items-end min-w-[60px]">
+                         <span className="text-[8px] text-muted-foreground font-black uppercase block opacity-60">
                           {hasMounted ? DateTime.fromISO(log.created_at).toRelative() : '...'}
                         </span>
-                        {isManual ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mt-1" /> : <ChevronRight className="h-3 w-3 text-muted-foreground mt-1" />}
+                        {isManual ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mt-1.5" /> : <ChevronRight className="h-3 w-3 text-muted-foreground/30 mt-1.5" />}
                       </div>
                     </div>
                   )
@@ -282,7 +281,7 @@ export default function Dashboard() {
       </div>
 
       {dateTabs.length > 0 && (
-        <div className="px-6 py-4 sticky top-[56px] bg-background/95 backdrop-blur-xl z-30 border-b border-border shadow-sm">
+        <div className="px-6 py-4 sticky top-[72px] bg-background/80 backdrop-blur-2xl z-30 border-b border-border/50 shadow-lg">
           <div ref={scrollContainerRef} className="flex items-center no-scrollbar overflow-x-auto gap-4 max-w-2xl mx-auto">
             {dateTabs.map((d) => (
               <button
@@ -290,14 +289,14 @@ export default function Dashboard() {
                 key={d.iso}
                 onClick={() => setActiveDate(d.iso)}
                 className={cn(
-                  "flex flex-col items-center min-w-[4.5rem] py-3 rounded-[2rem] transition-all duration-300 border-2",
+                  "flex flex-col items-center min-w-[4.8rem] py-4 rounded-[2.2rem] transition-all duration-300 border-2",
                   activeDate === d.iso 
-                    ? "bg-primary border-primary text-primary-foreground shadow-2xl scale-105" 
-                    : "bg-card border-border text-muted-foreground hover:border-primary/20 hover:bg-muted shadow-sm"
+                    ? "bg-primary border-primary text-primary-foreground shadow-[0_8px_20px_rgba(234,179,8,0.3)] scale-105" 
+                    : "bg-card/50 border-border/50 text-muted-foreground hover:border-primary/30 hover:bg-muted/80 shadow-sm"
                 )}
               >
-                <span className={cn("text-[8px] font-black uppercase mb-0.5 tracking-widest", activeDate === d.iso ? "text-primary-foreground/80" : "text-muted-foreground")}>{d.day}</span>
-                <span className="text-xl font-black leading-none">{d.date}</span>
+                <span className={cn("text-[8px] font-black uppercase mb-0.5 tracking-[0.2em]", activeDate === d.iso ? "text-primary-foreground/80" : "text-muted-foreground")}>{d.day}</span>
+                <span className="text-2xl font-black leading-none tracking-tighter">{d.date}</span>
                 <span className={cn("text-[9px] font-black uppercase mt-0.5 tracking-tighter", activeDate === d.iso ? "text-primary-foreground/80" : "text-muted-foreground")}>{d.month}</span>
               </button>
             ))}
@@ -305,33 +304,33 @@ export default function Dashboard() {
         </div>
       )}
 
-      <main className="px-4 py-8 space-y-8 max-w-2xl mx-auto">
-        <div className="flex justify-between items-center px-2">
-          <div className="flex items-center gap-2">
-            <div className="h-5 w-1 bg-primary rounded-full" />
-            <h2 className="text-sm font-black uppercase italic text-foreground tracking-tight">
+      <main className="px-4 py-10 space-y-10 max-w-2xl mx-auto">
+        <div className="flex justify-between items-center px-4">
+          <div className="flex items-center gap-3">
+            <div className="h-6 w-1.5 bg-primary rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+            <h2 className="text-sm font-black uppercase italic text-foreground tracking-widest">
               {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Schedule'}
             </h2>
           </div>
           {displayFixtures.some(f => f.status === 'live') && (
-            <div className="flex items-center gap-2 bg-emerald-500 text-black px-3 py-1 rounded-full text-[9px] font-black uppercase italic animate-pulse shadow-lg">
-              <div className="h-1.5 w-1.5 rounded-full bg-black" /> Live Now
+            <div className="flex items-center gap-2 bg-emerald-500 text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase italic animate-pulse shadow-xl shadow-emerald-500/20">
+              <div className="h-1.5 w-1.5 rounded-full bg-black" /> Live Arena
             </div>
           )}
         </div>
 
         {isLoading && fixtures.length === 0 ? (
-          <div className="space-y-6">
+          <div className="space-y-8 px-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-52 bg-card rounded-[2.5rem] animate-pulse border-0 shadow-xl" />
+              <div key={i} className="h-64 bg-card/50 rounded-[2.5rem] animate-pulse border border-white/5 shadow-2xl" />
             ))}
           </div>
         ) : displayFixtures.length === 0 ? (
-          <div className="text-center py-24 bg-card rounded-[2.5rem] border-2 border-dashed border-border shadow-inner mx-2">
-            <p className="text-muted-foreground font-black uppercase text-[11px] tracking-[0.3em]">No matches scheduled</p>
+          <div className="text-center py-32 bg-card/30 rounded-[2.5rem] border-2 border-dashed border-border shadow-inner mx-4">
+            <p className="text-muted-foreground font-black uppercase text-[11px] tracking-[0.4em]">No matches scheduled</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8 px-2">
             {displayFixtures.map((fixture) => {
               const pred = predictions.find(p => p.fixture_id === fixture.id)
               const supportersForFixture = supporters.filter(s => s.fixture_id === fixture.id)

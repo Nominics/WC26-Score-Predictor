@@ -71,29 +71,17 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen bg-background text-foreground pb-32">
       <MainNav />
-      <header className="px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40">
+      <header className="px-6 py-4 bg-background/80 backdrop-blur-2xl border-b border-border shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
-          <div>
-            <h1 className="text-xl font-black italic tracking-tighter text-foreground uppercase leading-none flex items-center gap-2">
-              <div className="relative h-6 w-6 shrink-0">
-                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
-              </div>
-              THE <span className="text-primary">LEADERBOARD</span>
-            </h1>
-            <div className="flex items-center gap-2 mt-1">
-               <p className="text-[8px] uppercase font-black text-muted-foreground tracking-widest">Global Standings</p>
-               {stats && (
-                 <div className="flex items-center gap-1.5">
-                   <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                   <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
-                   <span className="text-[9px] font-black text-foreground uppercase">({stats.points} pts)</span>
-                   <span className="h-0.5 w-0.5 rounded-full bg-border" />
-                   <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20">
-                      <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
-                      <span className="text-[8px] font-black text-yellow-600">{stats.lifelines}</span>
-                   </div>
-                 </div>
-               )}
+          <div className="flex items-center gap-3">
+            <div className="relative h-10 w-10 shrink-0 drop-shadow-xl">
+              <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+            </div>
+            <div>
+              <h1 className="text-xl font-black italic tracking-tighter text-foreground uppercase leading-none flex items-center gap-1">
+                GLOBAL <span className="text-primary">STANDINGS</span>
+              </h1>
+              <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-0.5">Top Players</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -105,18 +93,18 @@ export default function Leaderboard() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto mt-8 px-4">
+      <main className="max-w-2xl mx-auto mt-10 px-4">
         {loading ? (
-          <div className="p-20 flex flex-col items-center gap-4">
-            <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.3em]">Syncing Rankings...</p>
+          <div className="p-32 flex flex-col items-center gap-4 opacity-50">
+            <Loader2 className="h-10 w-10 text-primary animate-spin" />
+            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.4em]">Syncing Rankings...</p>
           </div>
         ) : entries.length === 0 ? (
-          <div className="p-20 text-center text-muted-foreground font-bold uppercase text-[10px] tracking-widest bg-card rounded-[2.5rem] border-2 border-dashed">
-            Competition is yet to begin.
+          <div className="p-32 text-center text-muted-foreground font-bold uppercase text-[11px] tracking-[0.3em] bg-card/30 rounded-[2.5rem] border-2 border-dashed border-border mx-4">
+            Competition starts soon.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-4 px-2">
             {entries.map((entry, i) => {
               const rank = i + 1
               const isTopThree = rank <= 3
@@ -126,84 +114,81 @@ export default function Leaderboard() {
                 <div 
                   key={entry.user_id} 
                   className={cn(
-                    "flex flex-col p-6 bg-card rounded-[2.5rem] border transition-all hover:shadow-xl relative overflow-hidden group",
-                    isTopThree ? "border-primary/20 shadow-lg" : "border-border shadow-sm",
-                    isCurrentUser && "ring-2 ring-primary ring-offset-4 dark:ring-offset-background"
+                    "flex flex-col p-7 bg-card/60 backdrop-blur-xl rounded-[2.8rem] border transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] relative overflow-hidden group",
+                    isTopThree ? "border-primary/30 shadow-xl" : "border-border shadow-sm",
+                    isCurrentUser && "ring-2 ring-primary ring-offset-8 dark:ring-offset-background"
                   )}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 flex flex-col items-center justify-center">
+                  <div className="flex items-center gap-5">
+                    <div className="w-12 flex flex-col items-center justify-center">
                       {rank === 1 ? (
-                        <div className="relative h-8 w-8 flex items-center justify-center">
-                           <Trophy className="h-6 w-6 text-yellow-500 fill-yellow-500 animate-bounce" />
-                        </div>
+                        <Trophy className="h-9 w-9 text-yellow-500 fill-yellow-500 animate-bounce drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
                       ) : rank === 2 ? (
-                        <Medal className="h-6 w-6 text-gray-400 fill-gray-400" />
+                        <Medal className="h-8 w-8 text-gray-400 fill-gray-400" />
                       ) : rank === 3 ? (
-                        <Medal className="h-6 w-6 text-orange-400 fill-orange-400" />
+                        <Medal className="h-8 w-8 text-orange-400 fill-orange-400" />
                       ) : (
-                        <span className="text-sm font-black text-muted-foreground">#{rank}</span>
+                        <span className="text-lg font-black text-muted-foreground opacity-30 italic">#{rank}</span>
                       )}
                     </div>
                     
                     <UserAvatar 
                       profile={entry} 
-                      className={cn("h-12 w-12", isTopThree && "border-primary shadow-primary/20")} 
+                      className={cn("h-14 w-14 shadow-xl", isTopThree && "border-primary/50")} 
                     />
 
                     <div className="flex-1 min-w-0">
                       <span className={cn(
-                        "font-black text-[14px] uppercase tracking-tight truncate block",
-                        isCurrentUser ? "text-primary italic" : "text-foreground"
+                        "font-black text-base uppercase tracking-tight truncate block",
+                        isCurrentUser ? "text-primary italic underline underline-offset-4 decoration-primary/30" : "text-foreground"
                       )}>
                         {entry.display_name}
                       </span>
-                      <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <div className="flex items-center gap-1.5 bg-muted px-2 py-0.5 rounded-full border border-border">
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1 rounded-full border border-border shadow-inner">
                             <Hash className="h-2.5 w-2.5 text-muted-foreground" />
-                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter">
-                              {entry.total_predictions} <span className="opacity-50">Picks</span>
+                            <span className="text-[10px] font-black text-muted-foreground uppercase tracking-tight">
+                              {entry.total_predictions} <span className="opacity-40">Picks</span>
                             </span>
                         </div>
                         {entry.starting_points > 0 && (
-                          <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
-                             <Zap className="h-2 w-2 text-blue-500 fill-blue-500" />
-                             <span className="text-[8px] font-black text-blue-600 uppercase">Late Bonus (+{entry.starting_points})</span>
-                          </div>
-                        )}
-                        {entry.manual_points !== 0 && (
-                          <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
-                             <Star className="h-2 w-2 text-yellow-500 fill-yellow-500" />
-                             <span className="text-[8px] font-black text-yellow-600 uppercase">({entry.manual_points > 0 ? '+' : ''}{entry.manual_points})</span>
+                          <div className="flex items-center gap-1.5 bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                             <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
+                             <span className="text-[9px] font-black text-primary uppercase italic tracking-tighter">Bonus (+{entry.starting_points})</span>
                           </div>
                         )}
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-end min-w-[70px]">
-                       <div className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-2xl shadow-xl shadow-primary/10 group-hover:scale-110 transition-transform">
-                          <Trophy className="h-3.5 w-3.5 fill-primary-foreground/20" />
-                          <span className="text-base font-black italic tabular-nums leading-none">{entry.total_points}</span>
+                    <div className="flex flex-col items-end min-w-[80px]">
+                       <div className="flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-[1.5rem] shadow-2xl group-hover:scale-110 transition-transform gold-glow">
+                          <Trophy className="h-4 w-4 fill-background/10" />
+                          <span className="text-xl font-black italic tabular-nums leading-none tracking-tighter">{entry.total_points}</span>
                        </div>
-                       <span className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] mt-1 mr-1">PTS</span>
+                       <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] mt-1.5 mr-1.5">PTS</span>
                     </div>
                   </div>
                   
-                  <div className="mt-4 pt-4 border-t border-border/50 flex justify-between items-center px-2">
-                     <div className="flex gap-4">
-                        <div className="flex items-center gap-1">
-                            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Picks:</span>
-                            <span className="text-[9px] font-black text-foreground">{entry.prediction_points}</span>
+                  <div className="mt-6 pt-5 border-t border-border/40 flex justify-between items-center px-2">
+                     <div className="flex gap-6">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Accuracy</span>
+                            <span className="text-[11px] font-black text-foreground italic">{entry.prediction_points} <span className="text-[9px] not-italic opacity-40 uppercase ml-0.5">pts</span></span>
                         </div>
-                        {entry.starting_points > 0 && (
-                          <div className="flex items-center gap-1">
-                              <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Bonus:</span>
-                              <span className="text-[9px] font-black text-foreground">+{entry.starting_points}</span>
+                        {entry.manual_points !== 0 && (
+                          <div className="flex flex-col">
+                              <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-50">Modifiers</span>
+                              <span className={cn(
+                                "text-[11px] font-black italic",
+                                entry.manual_points > 0 ? "text-green-500" : "text-red-500"
+                              )}>
+                                {entry.manual_points > 0 ? '+' : ''}{entry.manual_points} <span className="text-[9px] not-italic opacity-40 uppercase ml-0.5">pts</span>
+                              </span>
                           </div>
                         )}
                      </div>
-                     <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
-                       Last: {entry.last_prediction_at ? DateTime.fromISO(entry.last_prediction_at).toRelative() : 'None'}
+                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-40">
+                       Activity: {entry.last_prediction_at ? DateTime.fromISO(entry.last_prediction_at).toRelative() : 'None'}
                      </span>
                   </div>
                 </div>
