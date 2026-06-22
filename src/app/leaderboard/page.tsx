@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { NotificationBell } from "@/components/layout/notification-bell"
+import { DateTime } from "luxon"
 import Image from "next/image"
 
 export default function Leaderboard() {
