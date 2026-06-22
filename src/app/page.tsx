@@ -239,7 +239,7 @@ export default function LandingPage() {
         </Card>
         
         <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.3em] opacity-80">
-            Powered by Registration Department Created by EOS Studios
+            Powered by EOS
         </p>
       </div>
     </div>
