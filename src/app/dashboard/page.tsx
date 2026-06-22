@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -18,6 +19,8 @@ import { useRouter } from "next/navigation"
 import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import Image from "next/image"
 import Link from "next/link"
+
+const APP_ZONE = "Indian/Maldives"
 
 export default function Dashboard() {
   const { user: authUser, profile, loading: authLoading, stats, useLifeline } = useAuth()
@@ -64,9 +67,14 @@ export default function Dashboard() {
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'predictions' }, () => fetchActivity())
         .subscribe()
 
+      // Refetch on window focus to handle stale data
+      const handleFocus = () => fetchData()
+      window.addEventListener('focus', handleFocus)
+
       return () => {
         supabase.removeChannel(fixturesChannel)
         supabase.removeChannel(pulseChannel)
+        window.removeEventListener('focus', handleFocus)
       }
     }
   }, [authUser?.id, authLoading])
@@ -97,10 +105,27 @@ export default function Dashboard() {
       setPredictions(pRes.data || [])
       setSupporters(sRes.data || [])
 
-      if (fRes.data && fRes.data.length > 0 && !activeDate) {
-        const now = DateTime.now().toISODate()
-        const nearestMatch = fRes.data.find((f: any) => DateTime.fromISO(f.kickoff_at).toISODate() >= now)
-        setActiveDate(nearestMatch ? DateTime.fromISO(nearestMatch.kickoff_at).toISODate() : DateTime.fromISO(fRes.data[0].kickoff_at).toISODate())
+      // Intelligent date selection logic
+      if (fRes.data && fRes.data.length > 0) {
+        const now = DateTime.now().setZone(APP_ZONE).toISODate()
+        
+        // Find nearest match today or in the future
+        const nearestMatch = fRes.data.find((f: any) => 
+          DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() >= now
+        )
+
+        const calculatedDate = nearestMatch 
+          ? DateTime.fromISO(nearestMatch.kickoff_at).setZone(APP_ZONE).toISODate() 
+          : DateTime.fromISO(fRes.data[fRes.data.length - 1].kickoff_at).setZone(APP_ZONE).toISODate()
+
+        // Only auto-switch if no date is selected or if current selection has no matches anymore (admin change)
+        const currentMatches = fRes.data.filter((f: any) => 
+          DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() === activeDate
+        )
+
+        if (!activeDate || (currentMatches.length === 0)) {
+          setActiveDate(calculatedDate)
+        }
       }
 
     } catch (error: any) {
@@ -122,11 +147,13 @@ export default function Dashboard() {
   const dateTabs = useMemo(() => {
     const dates = new Set<string>()
     fixtures.forEach(f => {
-      const d = DateTime.fromISO(f.kickoff_at).toISODate()
-      if (d) dates.add(d)
+      if (f.kickoff_at) {
+        const d = DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate()
+        if (d) dates.add(d)
+      }
     })
     return Array.from(dates).sort().map(d => {
-      const dt = DateTime.fromISO(d)
+      const dt = DateTime.fromISO(d).setZone(APP_ZONE)
       return {
         iso: d,
         day: dt.toFormat('ccc'),
@@ -137,8 +164,10 @@ export default function Dashboard() {
   }, [fixtures])
 
   const displayFixtures = useMemo(() => {
-    if (!activeDate) return fixtures.slice(0, 10)
-    return fixtures.filter(f => DateTime.fromISO(f.kickoff_at).toISODate() === activeDate)
+    if (!activeDate) return []
+    return fixtures.filter(f => 
+      DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() === activeDate
+    )
   }, [fixtures, activeDate])
 
   const handlePredict = async (fixtureId: string, h: number, a: number, isLifeline: boolean) => {
@@ -192,18 +221,18 @@ export default function Dashboard() {
       <MainNav />
       <header className="premium-header w-full flex justify-center sticky top-0 z-40">
         <div className="max-w-md w-full flex justify-between items-center h-12 sm:h-14 px-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 overflow-visible">
             <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 drop-shadow-xl">
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
-            <div>
-              <h1 className="text-lg sm:text-xl font-black italic tracking-tighter flex items-center gap-1 leading-none uppercase">
-                <span className="premium-gold-gradient-heading">ARENA</span> <span className="text-foreground">CENTER</span>
+            <div className="overflow-visible">
+              <h1 className="text-lg sm:text-xl leading-none flex items-center gap-1 overflow-visible">
+                <span className="premium-gold-gradient-heading">ARENA</span> <span className="text-foreground font-black italic tracking-tighter">CENTER</span>
               </h1>
-              <div className="flex items-center gap-1.5 mt-0.5">
+              <div className="flex items-center gap-1.5 mt-0.5 overflow-visible">
                  {stats && (
-                   <div className="flex items-center gap-1.5">
-                     <span className="text-[8px] sm:text-[9px] premium-gold-gradient-heading uppercase italic tracking-wider">Rank #{stats.rank}</span>
+                   <div className="flex items-center gap-1.5 overflow-visible">
+                     <span className="premium-gold-gradient-heading text-[8px] sm:text-[9px] uppercase italic">Rank #{stats.rank}</span>
                      <span className="h-0.5 w-0.5 rounded-full bg-border" />
                      <div className="flex items-center gap-1 bg-primary/10 px-1 py-0.5 rounded-full border border-primary/20">
                         <Zap className="h-2 w-2 text-primary fill-primary" />
@@ -224,16 +253,16 @@ export default function Dashboard() {
 
       <div className="max-w-md w-full px-4 pt-4 sm:pt-6 mb-2">
         <Card className="app-glass-card border-primary/5 overflow-visible">
-          <div className="px-4 py-2 bg-muted/20 backdrop-blur-md flex items-center justify-between border-b border-border/40">
-            <div className="flex items-center gap-2">
-              <div className="relative flex items-center justify-center">
+          <div className="px-4 py-2 bg-muted/20 backdrop-blur-md flex items-center justify-between border-b border-border/40 overflow-visible">
+            <div className="flex items-center gap-2 overflow-visible">
+              <div className="relative flex items-center justify-center overflow-visible">
                 <Radio className="h-2.5 w-2.5 text-red-500 animate-pulse relative z-10" />
                 <span className="absolute inset-0 bg-red-500/20 rounded-full animate-ping scale-150" />
               </div>
               <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-foreground/80">Arena Pulse</h3>
             </div>
-            <Link href="/activity" className="group flex items-center gap-1">
-              <span className="text-[8px] premium-gold-gradient-heading uppercase tracking-widest transition-colors">History</span>
+            <Link href="/activity" className="group flex items-center gap-1 overflow-visible">
+              <span className="premium-gold-gradient-heading text-[8px] uppercase tracking-widest transition-colors">History</span>
               <ChevronRight className="h-2.5 w-2.5 text-muted-foreground/30 group-hover:text-primary transition-all" />
             </Link>
           </div>
@@ -260,7 +289,7 @@ export default function Dashboard() {
                   }
 
                   return (
-                    <div key={log.id} className="flex gap-2 py-1.5 border-b border-border/5 last:border-0 items-center group">
+                    <div key={log.id} className="flex gap-2 py-1.5 border-b border-border/5 last:border-0 items-center group overflow-visible">
                       <span className="shrink-0 text-xs sm:text-sm grayscale-[0.3] group-hover:grayscale-0 transition-all">{displayEmoji}</span>
                       <span className="shrink-0 font-mono text-[8px] text-muted-foreground/60 tabular-nums">
                         {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
@@ -332,7 +361,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2.5">
             <div className="h-5 w-1 premium-gold-gradient-bg rounded-full shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
             <h2 className="text-[12px] sm:text-sm font-black uppercase italic text-foreground tracking-[0.15em]">
-              {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Schedule'}
+              {activeDate ? DateTime.fromISO(activeDate).setZone(APP_ZONE).toFormat('MMMM dd, yyyy') : 'Schedule'}
             </h2>
           </div>
           {displayFixtures.some(f => f.status === 'live') && (

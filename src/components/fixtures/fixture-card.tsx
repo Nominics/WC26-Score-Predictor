@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -8,6 +9,8 @@ import { cn } from "@/lib/utils"
 import { DateTime } from "luxon"
 import Image from "next/image"
 import { UserAvatar } from "@/components/user-avatar"
+
+const APP_ZONE = "Indian/Maldives"
 
 interface FixtureCardProps {
   fixture: any
@@ -30,13 +33,13 @@ const AvatarStack = ({ supporters }: { supporters: any[] }) => {
   return (
     <div className="flex -space-x-2 overflow-visible py-1">
       {visibleSupporters.map((s, idx) => (
-        <div key={`${s.user_id}-${idx}`} className="inline-block ring-2 ring-background rounded-full transition-transform hover:-translate-y-0.5 shadow-sm">
+        <div key={`${s.user_id}-${idx}`} className="inline-block ring-2 ring-background rounded-full transition-transform hover:-translate-y-0.5 shadow-sm overflow-visible">
           <UserAvatar profile={s} className="h-6 w-6 sm:h-7 sm:w-7 border-0" />
         </div>
       ))}
       {remainingCount > 0 && (
-        <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-muted ring-2 ring-background shadow-sm">
-          <span className="text-[8px] sm:text-[9px] font-black premium-gold-gradient-text">+{remainingCount}</span>
+        <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-muted ring-2 ring-background shadow-sm overflow-visible">
+          <span className="premium-gold-gradient-number text-[8px] sm:text-[9px]">+{remainingCount}</span>
         </div>
       )}
     </div>
@@ -60,15 +63,16 @@ export function FixtureCard({
   const [isLifelineAvailable, setIsLifelineAvailable] = useState(false)
   const [isTotalLocked, setIsTotalLocked] = useState(false)
 
-  const kickoff = DateTime.fromISO(fixture.kickoff_at)
+  // Use APP_ZONE strictly for display
+  const kickoff = DateTime.fromISO(fixture.kickoff_at).setZone(APP_ZONE)
   const timeStr = kickoff.isValid ? kickoff.toFormat('HH:mm') : 'TBD'
   const dateStr = kickoff.isValid ? kickoff.toFormat('LLL dd') : ''
 
   useEffect(() => {
     const checkLock = () => {
       const now = DateTime.now()
-      const standardLock = kickoff.plus({ minutes: 15 })
-      const lifelineLock = kickoff.plus({ minutes: 50 })
+      const standardLock = DateTime.fromISO(fixture.kickoff_at).plus({ minutes: 15 })
+      const lifelineLock = DateTime.fromISO(fixture.kickoff_at).plus({ minutes: 50 })
       
       const finished = fixture.status === 'finished'
       
@@ -130,8 +134,8 @@ export function FixtureCard({
       <CardContent className="p-0 relative z-10 overflow-visible">
         {/* Top Header Pill */}
         <div className="px-5 py-3 flex justify-between items-center border-b border-border/50 bg-background/40 backdrop-blur-md rounded-t-[inherit] overflow-visible">
-          <div className="flex flex-col">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="flex flex-col overflow-visible">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground overflow-visible">
               {fixture.stage} • {dateStr}
             </span>
           </div>
@@ -196,17 +200,11 @@ export function FixtureCard({
                   "flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-2 sm:py-4 rounded-[1.5rem] sm:rounded-[2rem] border border-border/50 shadow-inner bg-background/50 overflow-visible",
                   isLive ? "ring-1 ring-emerald-500/20" : ""
                 )}>
-                  <span className={cn(
-                    "text-3xl sm:text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-sm overflow-visible",
-                    isFinished || isLive ? "text-foreground" : "text-muted-foreground/30"
-                  )}>
+                  <span className="premium-gold-gradient-number text-3xl sm:text-5xl">
                     {isFinished || isLive ? (fixture.home_score ?? 0) : '0'}
                   </span>
                   <span className="text-xl sm:text-3xl font-black text-muted-foreground/30 italic">:</span>
-                  <span className={cn(
-                    "text-3xl sm:text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-sm overflow-visible",
-                    isFinished || isLive ? "text-foreground" : "text-muted-foreground/30"
-                  )}>
+                  <span className="premium-gold-gradient-number text-3xl sm:text-5xl">
                     {isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
                   </span>
                 </div>
@@ -216,7 +214,7 @@ export function FixtureCard({
                   {myPrediction && (
                     <div className="mt-0.5 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 flex items-center gap-1.5 overflow-visible">
                       <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
-                      <span className="premium-gold-gradient-number text-[8px] sm:text-[9px] whitespace-nowrap overflow-visible">
+                      <span className="premium-gold-gradient-number text-[8px] sm:text-[9px] whitespace-nowrap">
                         {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
                       </span>
                     </div>
@@ -269,7 +267,7 @@ export function FixtureCard({
                  <div className="h-[1px] bg-border/40 flex-1" />
                  <div className="flex items-center gap-1.5 overflow-visible">
                     <Goal className="h-2.5 w-2.5 text-primary" />
-                    <span className="premium-gold-gradient-text text-[8px] uppercase tracking-[0.2em] overflow-visible">Goal Events</span>
+                    <span className="premium-gold-gradient-text text-[8px] uppercase tracking-[0.2em]">Goal Events</span>
                  </div>
                  <div className="h-[1px] bg-border/40 flex-1" />
                </div>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -29,6 +30,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+
+const APP_ZONE = "Indian/Maldives"
 
 export default function AdminPage() {
   const { user, profile, loading: authLoading } = useAuth()
@@ -149,7 +152,8 @@ export default function AdminPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error("Session expired.")
 
-      const isoTime = DateTime.fromISO(newTime, { zone: "America/New_York" }).toUTC().toISO()
+      // Admin inputs time in Maldives time, we convert to UTC for storage
+      const utcTime = DateTime.fromISO(newTime, { zone: APP_ZONE }).toUTC().toISO()
 
       const response = await fetch("/api/admin/update-fixture-time", {
         method: "POST",
@@ -159,7 +163,7 @@ export default function AdminPage() {
         },
         body: JSON.stringify({
           fixtureId: selectedFixture,
-          newKickoffAt: isoTime
+          newKickoffAt: utcTime
         })
       })
 
@@ -478,12 +482,12 @@ export default function AdminPage() {
                 <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
                   <Star className="h-3 w-3" /> Points Amount
                 </label>
-                <Input 
+                <input 
                   type="number"
                   placeholder="e.g. +10 or -5"
                   value={points}
                   onChange={(e) => setPoints(e.target.value)}
-                  className="h-14 rounded-2xl border-border/50 bg-muted/30 font-black italic text-lg"
+                  className="h-14 w-full rounded-2xl border-border/50 bg-muted/30 font-black italic text-lg px-4"
                 />
             </div>
 
@@ -515,7 +519,7 @@ export default function AdminPage() {
               <span className="premium-gold-gradient-heading text-lg">Fixture Control</span>
             </CardTitle>
             <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
-              Correct Individual Match Data
+              Correct Individual Match Data (All times in Maldives {APP_ZONE})
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 space-y-5">
@@ -530,7 +534,7 @@ export default function AdminPage() {
                 <SelectContent className="rounded-xl max-h-[300px]">
                   {fixtures.map(f => (
                     <SelectItem key={f.id} value={f.id}>
-                      {f.home_team} vs {f.away_team} ({DateTime.fromISO(f.kickoff_at).toFormat('LLL dd, HH:mm')})
+                      {f.home_team} vs {f.away_team} ({DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toFormat('LLL dd, HH:mm')})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -539,13 +543,13 @@ export default function AdminPage() {
 
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
-                <Clock className="h-3 w-3" /> New Kickoff Time (EST)
+                <Clock className="h-3 w-3" /> New Kickoff Time ({APP_ZONE})
               </label>
-              <Input 
+              <input 
                 type="datetime-local"
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
-                className="h-14 rounded-2xl border-border/50 bg-muted/30 font-bold"
+                className="h-14 w-full rounded-2xl border-border/50 bg-muted/30 font-bold px-4 text-foreground"
               />
             </div>
 
