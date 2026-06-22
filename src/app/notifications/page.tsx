@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -83,9 +82,9 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-32">
+    <div className="min-h-screen pb-32">
       <MainNav />
-      <header className="px-6 py-4 bg-background/80 backdrop-blur-2xl border-b border-border shadow-sm sticky top-0 z-40">
+      <header className="premium-header">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div className="flex items-center gap-3">
              <div className="relative h-10 w-10 shrink-0 drop-shadow-xl">
@@ -109,12 +108,12 @@ export default function NotificationsPage() {
       <main className="max-w-2xl mx-auto p-4 space-y-8 mt-6">
         <div className="sticky top-[88px] z-30 bg-background/90 backdrop-blur-xl py-4 -mx-4 px-4 border-b border-border/50 shadow-lg shadow-black/5">
           <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="w-full">
-            <TabsList className="grid grid-cols-5 h-14 rounded-[1.5rem] bg-muted/50 p-1.5 border border-border/50">
-              <TabsTrigger value="all" className="rounded-2xl text-[10px] font-black uppercase tracking-tight data-[state=active]:bg-primary data-[state=active]:text-black data-[state=active]:shadow-lg transition-all">All</TabsTrigger>
-              <TabsTrigger value="unread" className="rounded-2xl text-[10px] font-black uppercase tracking-tight data-[state=active]:bg-primary data-[state=active]:text-black transition-all">New</TabsTrigger>
-              <TabsTrigger value="match" className="rounded-2xl text-[10px] font-black uppercase tracking-tight data-[state=active]:bg-primary data-[state=active]:text-black transition-all">Match</TabsTrigger>
-              <TabsTrigger value="points" className="rounded-2xl text-[10px] font-black uppercase tracking-tight data-[state=active]:bg-primary data-[state=active]:text-black transition-all">Pts</TabsTrigger>
-              <TabsTrigger value="admin" className="rounded-2xl text-[10px] font-black uppercase tracking-tight data-[state=active]:bg-primary data-[state=active]:text-black transition-all">Sys</TabsTrigger>
+            <TabsList className="grid grid-cols-5 h-14 rounded-[1.5rem] bg-muted/50 p-1.5 border border-border/40">
+              <TabsTrigger value="all" className="soft-button h-auto py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">All</TabsTrigger>
+              <TabsTrigger value="unread" className="soft-button h-auto py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">New</TabsTrigger>
+              <TabsTrigger value="match" className="soft-button h-auto py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Match</TabsTrigger>
+              <TabsTrigger value="points" className="soft-button h-auto py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Pts</TabsTrigger>
+              <TabsTrigger value="admin" className="soft-button h-auto py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Sys</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -128,7 +127,7 @@ export default function NotificationsPage() {
               variant="ghost" 
               size="sm" 
               onClick={markAllAsRead}
-              className="text-[10px] font-black uppercase text-primary hover:text-black hover:bg-primary rounded-full px-4 h-8"
+              className="soft-button text-primary hover:bg-primary/10 rounded-full px-4 h-8"
             >
               Mark all as read
             </Button>
@@ -141,7 +140,7 @@ export default function NotificationsPage() {
              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.4em]">Syncing Feed...</p>
           </div>
         ) : notifications.length === 0 ? (
-          <div className="py-40 text-center bg-card/40 rounded-[3rem] border-2 border-dashed border-border/50 shadow-inner mx-4">
+          <div className="py-40 text-center app-surface-panel border-2 border-dashed border-border/50 mx-4">
              <Bell className="h-16 w-16 text-muted-foreground mx-auto mb-6 opacity-10" />
              <p className="text-[11px] font-black uppercase text-muted-foreground tracking-[0.4em]">No notifications yet</p>
           </div>
@@ -152,15 +151,15 @@ export default function NotificationsPage() {
                 key={n.id} 
                 onClick={() => !n.is_read && markAsRead(n.id)}
                 className={cn(
-                  "p-8 bg-card/60 backdrop-blur-xl rounded-[2.8rem] border transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] cursor-pointer group relative overflow-hidden",
-                  n.is_read ? "border-border/50" : "border-primary/40 shadow-xl gold-glow"
+                  "app-glass-card p-8 group cursor-pointer relative",
+                  n.is_read ? "border-border/40 opacity-80" : "border-primary/40 ring-1 ring-primary/10 shadow-primary/5 shadow-2xl"
                 )}
               >
-                {!n.is_read && <div className="absolute top-0 left-0 w-full h-1.5 bg-primary shadow-[0_0_10px_rgba(234,179,8,0.5)]" />}
+                {!n.is_read && <div className="absolute top-0 left-0 w-full h-1 bg-primary shadow-glow" />}
                 <div className="flex gap-6 items-start">
                   <div className={cn(
                     "p-4 rounded-[1.2rem] shrink-0 transition-all duration-500",
-                    n.is_read ? "bg-muted text-muted-foreground opacity-40" : "bg-primary text-black shadow-2xl"
+                    n.is_read ? "bg-muted text-muted-foreground opacity-40" : "bg-primary text-primary-foreground shadow-lg"
                   )}>
                     {getIcon(n.type)}
                   </div>

@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -173,19 +172,19 @@ export default function Dashboard() {
 
   if (authLoading && fixtures.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--app-bg)] flex items-center justify-center">
         <Loader2 className="h-6 w-6 text-primary animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-32">
+    <div className="min-h-screen pb-32">
       <MainNav />
-      <header className="px-6 py-4 bg-background/80 backdrop-blur-2xl border-b border-border shadow-sm sticky top-0 z-40">
+      <header className="premium-header">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div className="flex items-center gap-3">
-            <div className="relative h-10 w-10 shrink-0 drop-shadow-lg">
+            <div className="relative h-10 w-10 shrink-0 drop-shadow-xl">
               <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
             </div>
             <div>
@@ -216,8 +215,8 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 pt-8 mb-10">
-        <Card className="rounded-[2.5rem] border-0 shadow-2xl overflow-hidden bg-card/50 backdrop-blur-xl border border-white/10 group">
-          <div className="px-6 py-4 bg-secondary/50 backdrop-blur-md flex items-center justify-between border-b border-border/50">
+        <Card className="app-glass-card group border-primary/5">
+          <div className="px-6 py-4 bg-muted/40 backdrop-blur-md flex items-center justify-between border-b border-border/40">
             <div className="flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary animate-pulse" />
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-foreground">Live Activity</h3>
@@ -238,8 +237,8 @@ export default function Dashboard() {
                   const isManual = log.action === 'manual_points_awarded'
                   
                   return (
-                    <div key={log.id} className="flex gap-4 p-5 bg-background/40 rounded-[2rem] border border-border/50 items-center transition-all hover:bg-muted/50 hover:scale-[1.02] shadow-sm group">
-                      <UserAvatar profile={log} className="h-10 w-10 shadow-lg group-hover:scale-110 transition-transform" />
+                    <div key={log.id} className="flex gap-4 p-5 bg-background/20 rounded-[2rem] border border-border/30 items-center transition-all hover:bg-background/40 hover:scale-[1.01] shadow-sm group">
+                      <UserAvatar profile={log} className="h-10 w-10 shadow-md group-hover:scale-110 transition-transform" />
                       <div className="flex-1 overflow-hidden">
                         <div className="flex items-center gap-2">
                           <span className="font-black text-xs uppercase tracking-tight text-foreground">{log.display_name}</span>
@@ -313,8 +312,8 @@ export default function Dashboard() {
             </h2>
           </div>
           {displayFixtures.some(f => f.status === 'live') && (
-            <div className="flex items-center gap-2 bg-emerald-500 text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase italic animate-pulse shadow-xl shadow-emerald-500/20">
-              <div className="h-1.5 w-1.5 rounded-full bg-black" /> Live Arena
+            <div className="status-pill pill-live px-4 py-1.5 text-[10px]">
+              <div className="h-1.5 w-1.5 rounded-full bg-black" /> LIVE ARENA
             </div>
           )}
         </div>
@@ -322,11 +321,11 @@ export default function Dashboard() {
         {isLoading && fixtures.length === 0 ? (
           <div className="space-y-8 px-2">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-64 bg-card/50 rounded-[2.5rem] animate-pulse border border-white/5 shadow-2xl" />
+              <div key={i} className="h-64 app-glass-card animate-pulse border-border/10" />
             ))}
           </div>
         ) : displayFixtures.length === 0 ? (
-          <div className="text-center py-32 bg-card/30 rounded-[2.5rem] border-2 border-dashed border-border shadow-inner mx-4">
+          <div className="text-center py-32 app-surface-panel border-dashed border-2 mx-4">
             <p className="text-muted-foreground font-black uppercase text-[11px] tracking-[0.4em]">No matches scheduled</p>
           </div>
         ) : (

@@ -1,11 +1,10 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 240 20% 98%;
+    --background: 240 25% 98%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -25,6 +24,10 @@
     --input: 240 5.9% 90%;
     --ring: 45 93% 47%;
     --radius: 2.5rem;
+
+    /* Theme Tokens */
+    --app-bg: #f8fafc;
+    --surface-glow: rgba(234, 179, 8, 0.05);
   }
 
   .dark {
@@ -47,6 +50,10 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 45 93% 47%;
+
+    /* Theme Tokens Dark */
+    --app-bg: #020617;
+    --surface-glow: rgba(234, 179, 8, 0.08);
   }
 }
 
@@ -55,21 +62,41 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply bg-[var(--app-bg)] text-foreground font-body antialiased selection:bg-primary/30;
+    background-image: 
+      radial-gradient(at 0% 0%, var(--surface-glow) 0, transparent 50%),
+      radial-gradient(at 100% 0%, var(--surface-glow) 0, transparent 50%);
   }
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-white/10 shadow-2xl;
+  /* Reusable Design Components */
+  .app-glass-card {
+    @apply bg-card/60 backdrop-blur-xl border border-border/50 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300;
   }
   
-  .premium-gradient {
-    @apply bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900;
+  .app-surface-panel {
+    @apply bg-muted/30 backdrop-blur-md border border-border/40 rounded-[2rem] p-6 shadow-sm;
   }
-  
-  .gold-glow {
-    @apply shadow-[0_0_20px_rgba(234,179,8,0.15)];
+
+  .status-pill {
+    @apply px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest italic flex items-center gap-1.5 shadow-md border;
+  }
+
+  .pill-live {
+    @apply bg-emerald-500 text-black border-emerald-400 animate-pulse;
+  }
+
+  .pill-final {
+    @apply bg-orange-500/10 text-orange-600 border-orange-500/20 dark:text-orange-400;
+  }
+
+  .pill-locked {
+    @apply bg-muted text-muted-foreground border-border/50;
+  }
+
+  .pill-open {
+    @apply bg-primary/10 text-primary border-primary/20;
   }
 
   .nav-pill {
@@ -78,6 +105,14 @@
 
   .active-pill {
     @apply bg-primary text-black shadow-[0_4px_15px_rgba(234,179,8,0.5)];
+  }
+
+  .premium-header {
+    @apply px-6 py-4 bg-background/80 backdrop-blur-2xl border-b border-border shadow-sm sticky top-0 z-40;
+  }
+
+  .soft-button {
+    @apply rounded-full font-black uppercase text-[10px] tracking-widest transition-all active:scale-95;
   }
 }
 

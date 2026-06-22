@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -31,12 +30,12 @@ const AvatarStack = ({ supporters }: { supporters: any[] }) => {
   return (
     <div className="flex -space-x-2.5 overflow-hidden py-1">
       {visibleSupporters.map((s, idx) => (
-        <div key={`${s.user_id}-${idx}`} className="inline-block ring-2 ring-slate-950 rounded-full transition-transform hover:-translate-y-1">
+        <div key={`${s.user_id}-${idx}`} className="inline-block ring-2 ring-background rounded-full transition-transform hover:-translate-y-1 shadow-sm">
           <UserAvatar profile={s} className="h-7 w-7 border-0" />
         </div>
       ))}
       {remainingCount > 0 && (
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 ring-2 ring-slate-950">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted ring-2 ring-background shadow-sm">
           <span className="text-[9px] font-black text-primary">+{remainingCount}</span>
         </div>
       )}
@@ -115,38 +114,38 @@ export function FixtureCard({
 
   return (
     <Card className={cn(
-      "relative overflow-hidden border-white/10 bg-slate-950 text-white shadow-2xl transition-all duration-500 rounded-[28px]",
+      "relative overflow-hidden border-border/50 bg-card text-foreground shadow-2xl transition-all duration-500 rounded-[2.5rem]",
       isLive ? "ring-2 ring-emerald-500/50" : ""
     )}>
       {/* Dynamic Background Gradients */}
       <div className={cn(
-        "absolute inset-0 transition-opacity duration-1000",
+        "absolute inset-0 transition-opacity duration-1000 opacity-20 dark:opacity-40",
         isLive 
-          ? "bg-gradient-to-br from-emerald-950 via-slate-950 to-teal-900/60 opacity-100" 
+          ? "bg-gradient-to-br from-emerald-500 via-transparent to-teal-500" 
           : isFinished
-            ? "bg-gradient-to-br from-zinc-900 via-slate-950 to-orange-900/40 opacity-100"
-            : "bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-900/60 opacity-100"
+            ? "bg-gradient-to-br from-zinc-500 via-transparent to-orange-500"
+            : "bg-gradient-to-br from-indigo-500 via-transparent to-purple-500"
       )} />
       
-      {/* Decorative Blur Spheres */}
+      {/* Decorative Glows */}
       <div className={cn(
-        "absolute -left-16 -top-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000",
-        isLive ? "bg-emerald-500/20" : isFinished ? "bg-orange-500/10" : "bg-purple-500/20"
+        "absolute -left-16 -top-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000 opacity-20",
+        isLive ? "bg-emerald-500" : isFinished ? "bg-orange-500" : "bg-purple-500"
       )} />
       <div className={cn(
-        "absolute -right-16 -bottom-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000",
-        isLive ? "bg-teal-500/20" : isFinished ? "bg-zinc-500/20" : "bg-cyan-500/20"
+        "absolute -right-16 -bottom-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000 opacity-20",
+        isLive ? "bg-teal-500" : isFinished ? "bg-zinc-500" : "bg-cyan-500"
       )} />
 
       <CardContent className="p-0 relative z-10">
         {/* Top Header Pill */}
-        <div className="px-6 py-4 flex justify-between items-center border-b border-white/5 bg-white/5 backdrop-blur-md">
+        <div className="px-6 py-4 flex justify-between items-center border-b border-border/50 bg-background/40 backdrop-blur-md">
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground">
               {fixture.stage} • {dateStr}
             </span>
             {(fixture.group_name || fixture.matchday) && (
-              <span className="text-[9px] font-bold uppercase text-white/30 tracking-wider mt-0.5">
+              <span className="text-[9px] font-bold uppercase text-muted-foreground/60 tracking-wider mt-0.5">
                 {fixture.group_name && `Group ${fixture.group_name}`} {fixture.group_name && fixture.matchday && '•'} {fixture.matchday && `MD ${fixture.matchday}`}
               </span>
             )}
@@ -154,19 +153,19 @@ export function FixtureCard({
           
           <div className="flex items-center gap-2">
             {isFinished ? (
-              <span className="text-[9px] font-black text-orange-400 uppercase italic tracking-widest bg-orange-400/10 px-3 py-1 rounded-full border border-orange-400/20">
+              <span className="status-pill pill-final">
                 FINAL
               </span>
             ) : isLive ? (
-              <div className="flex items-center gap-2 bg-emerald-500 text-black px-3 py-1 rounded-full text-[9px] font-black uppercase italic animate-pulse shadow-lg shadow-emerald-500/20">
+              <div className="status-pill pill-live">
                 <div className="h-1 w-1 rounded-full bg-black" /> LIVE
               </div>
             ) : isStandardLocked ? (
-              <span className="text-[9px] font-black text-white/40 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
+              <span className="status-pill pill-locked">
                 <Lock className="h-2.5 w-2.5" /> LOCKED
               </span>
             ) : (
-              <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+              <span className="status-pill pill-open">
                 {timeStr}
               </span>
             )}
@@ -180,7 +179,7 @@ export function FixtureCard({
             <div className="relative group/flag">
               {fixture.home_flag ? (
                 <div className="relative h-20 w-20 sm:h-24 sm:w-24 transition-transform group-hover/flag:scale-105 duration-500">
-                  <div className="absolute inset-0 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 shadow-2xl" />
+                  <div className="absolute inset-0 rounded-full bg-background/50 backdrop-blur-sm border border-border shadow-lg" />
                   <div className="relative h-full w-full rounded-full overflow-hidden p-1">
                     <Image 
                       src={fixture.home_flag} 
@@ -191,13 +190,13 @@ export function FixtureCard({
                   </div>
                 </div>
               ) : (
-                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-white/30 uppercase italic">
+                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-muted border border-border text-[10px] font-black text-muted-foreground uppercase italic">
                   TBD
                 </div>
               )}
             </div>
             <div className="space-y-1.5 w-full flex flex-col items-center">
-              <span className="text-sm font-black uppercase tracking-tight text-white block truncate">{fixture.home_team}</span>
+              <span className="text-sm font-black uppercase tracking-tight text-foreground block truncate">{fixture.home_team}</span>
               <AvatarStack supporters={homeSupporters} />
             </div>
           </div>
@@ -211,37 +210,37 @@ export function FixtureCard({
                     type="number" 
                     value={hScore} 
                     onChange={(e) => setHScore(e.target.value)}
-                    className="w-14 h-16 text-center text-3xl font-black bg-white/10 border-2 border-primary/50 text-white rounded-2xl focus:border-primary outline-none transition-all shadow-2xl"
+                    className="w-14 h-16 text-center text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-2xl focus:border-primary outline-none transition-all shadow-inner"
                     autoFocus
                   />
-                  <span className="text-3xl font-black text-white/30 italic">:</span>
+                  <span className="text-3xl font-black text-muted-foreground italic">:</span>
                   <input 
                     type="number" 
                     value={aScore} 
                     onChange={(e) => setAScore(e.target.value)}
-                    className="w-14 h-16 text-center text-3xl font-black bg-white/10 border-2 border-primary/50 text-white rounded-2xl focus:border-primary outline-none transition-all shadow-2xl"
+                    className="w-14 h-16 text-center text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-2xl focus:border-primary outline-none transition-all shadow-inner"
                   />
                 </div>
-                <Button onClick={() => handleSave(isStandardLocked)} className="rounded-full bg-primary text-black hover:bg-white transition-all px-8 h-12 font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl border-2 border-primary">
+                <Button onClick={() => handleSave(isStandardLocked)} className="soft-button h-12 px-8 bg-primary text-primary-foreground hover:opacity-90 shadow-lg border-2 border-primary/20">
                   <Check className="h-4 w-4 mr-2" /> LOCK PICK
                 </Button>
               </div>
             ) : (
               <div className="flex flex-col items-center">
                 <div className={cn(
-                  "flex items-center gap-4 px-6 py-4 rounded-[2rem] transition-all duration-500 border border-white/10 shadow-inner",
-                  isLive ? "bg-emerald-500/10" : "bg-white/5"
+                  "flex items-center gap-4 px-6 py-4 rounded-[2rem] transition-all duration-500 border border-border/50 shadow-inner bg-background/50",
+                  isLive ? "ring-1 ring-emerald-500/20" : ""
                 )}>
                   <span className={cn(
-                    "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-lg",
-                    isFinished || isLive ? "text-white" : "text-white/20"
+                    "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-sm",
+                    isFinished || isLive ? "text-foreground" : "text-muted-foreground/30"
                   )}>
                     {isFinished || isLive ? (fixture.home_score ?? 0) : '0'}
                   </span>
-                  <span className="text-3xl font-black text-white/20 italic">:</span>
+                  <span className="text-3xl font-black text-muted-foreground/30 italic">:</span>
                   <span className={cn(
-                    "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-lg",
-                    isFinished || isLive ? "text-white" : "text-white/20"
+                    "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-sm",
+                    isFinished || isLive ? "text-foreground" : "text-muted-foreground/30"
                   )}>
                     {isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
                   </span>
@@ -261,11 +260,11 @@ export function FixtureCard({
 
                   <div className="mt-2 flex flex-col items-center gap-3">
                     {isFinished ? (
-                      <div className="flex items-center gap-2 text-[11px] font-black text-white/50 uppercase tracking-widest">
+                      <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
                          Match Result
                       </div>
                     ) : isLive ? (
-                      <div className="flex items-center gap-2 text-[11px] font-black text-emerald-400 uppercase tracking-widest">
+                      <div className="flex items-center gap-2 text-[11px] font-black text-emerald-500 uppercase tracking-widest">
                         <Timer className="h-3 w-3 animate-spin-slow" /> LIVE UPDATE
                       </div>
                     ) : (
@@ -274,16 +273,16 @@ export function FixtureCard({
                            !isStandardLocked ? (
                               <Button 
                                 onClick={() => setEditing(true)} 
-                                className="rounded-full bg-white/5 text-white border border-white/10 h-10 px-6 hover:bg-primary hover:text-black transition-all font-black uppercase text-[10px] tracking-widest group/btn"
+                                className="soft-button h-10 px-6 bg-muted text-foreground border border-border/50 hover:bg-primary hover:text-primary-foreground group/btn"
                               >
                                 <Edit2 className="h-3 w-3 mr-2 group-hover/btn:rotate-12" /> {myPrediction ? 'Change Pick' : 'Set Score'}
                               </Button>
                            ) : isLifelineAvailable ? (
                               <Button 
                                 onClick={() => setEditing(true)} 
-                                className="rounded-full bg-primary text-black px-6 h-10 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 shadow-2xl animate-pulse"
+                                className="soft-button h-10 px-6 bg-primary text-primary-foreground flex items-center gap-2 shadow-lg animate-pulse"
                               >
-                                <Zap className="h-3.5 w-3.5 fill-black" /> Use Lifeline
+                                <Zap className="h-3.5 w-3.5 fill-current" /> Use Lifeline
                               </Button>
                            ) : null
                         )}
@@ -300,7 +299,7 @@ export function FixtureCard({
             <div className="relative group/flag">
               {fixture.away_flag ? (
                 <div className="relative h-20 w-20 sm:h-24 sm:w-24 transition-transform group-hover/flag:scale-105 duration-500">
-                  <div className="absolute inset-0 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 shadow-2xl" />
+                  <div className="absolute inset-0 rounded-full bg-background/50 backdrop-blur-sm border border-border shadow-lg" />
                   <div className="relative h-full w-full rounded-full overflow-hidden p-1">
                     <Image 
                       src={fixture.away_flag} 
@@ -311,13 +310,13 @@ export function FixtureCard({
                   </div>
                 </div>
               ) : (
-                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-white/30 uppercase italic">
+                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-muted border border-border text-[10px] font-black text-muted-foreground uppercase italic">
                   TBD
                 </div>
               )}
             </div>
             <div className="space-y-1.5 w-full flex flex-col items-center">
-              <span className="text-sm font-black uppercase tracking-tight text-white block truncate">{fixture.away_team}</span>
+              <span className="text-sm font-black uppercase tracking-tight text-foreground block truncate">{fixture.away_team}</span>
               <AvatarStack supporters={awaySupporters} />
             </div>
           </div>
@@ -326,26 +325,26 @@ export function FixtureCard({
         {/* Scorers Section */}
         {showScorers && (
           <div className="px-8 pb-8">
-            <div className="p-4 bg-white/5 rounded-3xl border border-white/10 flex flex-col gap-3 shadow-inner backdrop-blur-sm">
+            <div className="p-4 bg-muted/40 rounded-3xl border border-border/40 flex flex-col gap-3 shadow-inner backdrop-blur-sm">
                <div className="flex items-center justify-center gap-4">
-                 <div className="h-[1px] bg-white/5 flex-1" />
+                 <div className="h-[1px] bg-border/40 flex-1" />
                  <div className="flex items-center gap-2">
                     <Goal className="h-3 w-3 text-primary" />
                     <span className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Goal Events</span>
                  </div>
-                 <div className="h-[1px] bg-white/5 flex-1" />
+                 <div className="h-[1px] bg-border/40 flex-1" />
                </div>
                <div className="flex justify-between gap-6 pt-1">
                   <div className="flex-1 min-w-0">
                     {homeScorers && (
-                      <p className="text-[10px] font-bold text-white/40 uppercase leading-relaxed italic break-words">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed italic break-words">
                         {homeScorers}
                       </p>
                     )}
                   </div>
                   <div className="flex-1 text-right min-w-0">
                     {awayScorers && (
-                      <p className="text-[10px] font-bold text-white/40 uppercase leading-relaxed italic break-words">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed italic break-words">
                         {awayScorers}
                       </p>
                     )}

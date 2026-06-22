@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -69,9 +68,9 @@ export default function Leaderboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-32">
+    <div className="min-h-screen pb-32">
       <MainNav />
-      <header className="px-6 py-4 bg-background/80 backdrop-blur-2xl border-b border-border shadow-sm sticky top-0 z-40">
+      <header className="premium-header">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
             <div className="relative h-10 w-10 shrink-0 drop-shadow-xl">
@@ -100,8 +99,9 @@ export default function Leaderboard() {
             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.4em]">Syncing Rankings...</p>
           </div>
         ) : entries.length === 0 ? (
-          <div className="p-32 text-center text-muted-foreground font-bold uppercase text-[11px] tracking-[0.3em] bg-card/30 rounded-[2.5rem] border-2 border-dashed border-border mx-4">
-            Competition starts soon.
+          <div className="p-32 text-center app-surface-panel border-dashed border-2 mx-4">
+            <Trophy className="h-16 w-16 text-muted-foreground mx-auto mb-6 opacity-10" />
+            <p className="text-muted-foreground font-bold uppercase text-[11px] tracking-[0.3em]">Competition starts soon.</p>
           </div>
         ) : (
           <div className="space-y-4 px-2">
@@ -114,9 +114,9 @@ export default function Leaderboard() {
                 <div 
                   key={entry.user_id} 
                   className={cn(
-                    "flex flex-col p-7 bg-card/60 backdrop-blur-xl rounded-[2.8rem] border transition-all duration-300 hover:shadow-2xl hover:scale-[1.01] relative overflow-hidden group",
-                    isTopThree ? "border-primary/30 shadow-xl" : "border-border shadow-sm",
-                    isCurrentUser && "ring-2 ring-primary ring-offset-8 dark:ring-offset-background"
+                    "app-glass-card p-7 group",
+                    isTopThree ? "border-primary/30 ring-1 ring-primary/5" : "border-border/50",
+                    isCurrentUser && "ring-2 ring-primary/40 ring-offset-4 dark:ring-offset-slate-900"
                   )}
                 >
                   <div className="flex items-center gap-5">
@@ -124,7 +124,7 @@ export default function Leaderboard() {
                       {rank === 1 ? (
                         <Trophy className="h-9 w-9 text-yellow-500 fill-yellow-500 animate-bounce drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
                       ) : rank === 2 ? (
-                        <Medal className="h-8 w-8 text-gray-400 fill-gray-400" />
+                        <Medal className="h-8 w-8 text-slate-400 fill-slate-400" />
                       ) : rank === 3 ? (
                         <Medal className="h-8 w-8 text-orange-400 fill-orange-400" />
                       ) : (
@@ -134,18 +134,18 @@ export default function Leaderboard() {
                     
                     <UserAvatar 
                       profile={entry} 
-                      className={cn("h-14 w-14 shadow-xl", isTopThree && "border-primary/50")} 
+                      className={cn("h-14 w-14 shadow-xl", isTopThree && "ring-2 ring-primary/30")} 
                     />
 
                     <div className="flex-1 min-w-0">
                       <span className={cn(
                         "font-black text-base uppercase tracking-tight truncate block",
-                        isCurrentUser ? "text-primary italic underline underline-offset-4 decoration-primary/30" : "text-foreground"
+                        isCurrentUser ? "text-primary italic" : "text-foreground"
                       )}>
                         {entry.display_name}
                       </span>
                       <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1 rounded-full border border-border shadow-inner">
+                        <div className="flex items-center gap-1.5 bg-muted/50 px-3 py-1 rounded-full border border-border/40 shadow-inner">
                             <Hash className="h-2.5 w-2.5 text-muted-foreground" />
                             <span className="text-[10px] font-black text-muted-foreground uppercase tracking-tight">
                               {entry.total_predictions} <span className="opacity-40">Picks</span>
@@ -161,7 +161,7 @@ export default function Leaderboard() {
                     </div>
 
                     <div className="flex flex-col items-end min-w-[80px]">
-                       <div className="flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-[1.5rem] shadow-2xl group-hover:scale-110 transition-transform gold-glow">
+                       <div className="flex items-center gap-2 bg-foreground text-background px-5 py-2.5 rounded-[1.5rem] shadow-xl group-hover:scale-105 transition-transform">
                           <Trophy className="h-4 w-4 fill-background/10" />
                           <span className="text-xl font-black italic tabular-nums leading-none tracking-tighter">{entry.total_points}</span>
                        </div>
