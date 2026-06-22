@@ -142,7 +142,7 @@ export function ProfileSheet() {
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="flex-1" hideScrollbar>
+          <ScrollArea className="flex-1">
             <div className="p-6 space-y-8 pb-12 overflow-visible">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative">
@@ -171,7 +171,7 @@ export function ProfileSheet() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <h3 className="text-2xl premium-gold-gradient-heading">
+                      <h3 className="premium-gold-gradient-heading text-2xl">
                         {profile?.display_name}
                       </h3>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:premium-gold-gradient-text transition-colors" onClick={() => setIsEditing(true)}>
@@ -188,17 +188,49 @@ export function ProfileSheet() {
                    <div className="rounded-[2rem] p-6 flex justify-around items-center gap-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-sm">
                       <div className="text-center space-y-0.5">
                          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Points</span>
-                         <p className="text-2xl premium-gold-gradient-number leading-none">{stats?.points || "0"}</p>
+                         <p className="premium-gold-gradient-number text-2xl leading-none">{stats?.points || "0"}</p>
                       </div>
                       <div className="h-10 w-px bg-slate-200 dark:bg-white/10" />
                       <div className="text-center space-y-0.5">
                          <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Lifelines</span>
                          <div className="flex items-center gap-1 justify-center">
                             <Zap className="h-3.5 w-3.5 text-primary fill-primary" />
-                            <p className="text-2xl premium-gold-gradient-number leading-none">{stats?.lifelines || "0"}</p>
+                            <p className="premium-gold-gradient-number text-2xl leading-none">{stats?.lifelines || "0"}</p>
                          </div>
                       </div>
                    </div>
+                </div>
+
+                <div className="w-full space-y-3 text-left">
+                   <div className="flex items-center gap-2">
+                      <Flag className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 dark:text-slate-300">Representation</span>
+                   </div>
+                   <Select value={profile?.favorite_team || ""} onValueChange={handleUpdateTeam}>
+                      <SelectTrigger className="w-full h-14 rounded-2xl border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm font-black uppercase text-xs italic tracking-tight text-foreground">
+                        <SelectValue placeholder="Select National Team" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px] rounded-2xl">
+                        {COUNTRIES.map((country) => (
+                          <SelectItem key={country} value={country} className="rounded-xl">
+                            <div className="flex items-center gap-3">
+                              <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-border/30 shadow-sm">
+                                <Image src={getTeamFlagUrl(country)!} alt="" fill className="object-cover" />
+                              </div>
+                              <span className="font-bold text-xs uppercase">{country}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                   </Select>
+                </div>
+
+                <div className="w-full space-y-4 pt-4 text-left">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 dark:text-slate-300">Arena Alerts</span>
+                  </div>
+                  <NotificationToggle />
                 </div>
 
                 <div className="w-full space-y-4 pt-4 text-left">
@@ -233,38 +265,6 @@ export function ProfileSheet() {
                         </button>
                       ))}
                    </div>
-                </div>
-
-                <div className="w-full space-y-3 text-left">
-                   <div className="flex items-center gap-2">
-                      <Flag className="h-3.5 w-3.5 text-primary" />
-                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 dark:text-slate-300">Representation</span>
-                   </div>
-                   <Select value={profile?.favorite_team || ""} onValueChange={handleUpdateTeam}>
-                      <SelectTrigger className="w-full h-14 rounded-2xl border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 shadow-sm font-black uppercase text-xs italic tracking-tight text-foreground">
-                        <SelectValue placeholder="Select National Team" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[300px] rounded-2xl">
-                        {COUNTRIES.map((country) => (
-                          <SelectItem key={country} value={country} className="rounded-xl">
-                            <div className="flex items-center gap-3">
-                              <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-border/30 shadow-sm">
-                                <Image src={getTeamFlagUrl(country)!} alt="" fill className="object-cover" />
-                              </div>
-                              <span className="font-bold text-xs uppercase">{country}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                   </Select>
-                </div>
-
-                <div className="w-full space-y-4 pt-4 text-left">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Zap className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300 dark:text-slate-300">Arena Alerts</span>
-                  </div>
-                  <NotificationToggle />
                 </div>
                 
                 <div className="flex flex-wrap justify-center gap-3 pt-6 border-t border-slate-200 dark:border-white/10 w-full">
