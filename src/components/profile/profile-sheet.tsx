@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -142,7 +143,7 @@ export function ProfileSheet() {
             </DialogTitle>
           </DialogHeader>
           
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1" hideScrollbar>
             <div className="p-6 space-y-8 pb-12">
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative">
@@ -258,6 +259,14 @@ export function ProfileSheet() {
                       </SelectContent>
                    </Select>
                 </div>
+
+                <div className="w-full space-y-4 pt-4 text-left">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Bell className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Arena Alerts</span>
+                  </div>
+                  <NotificationToggle />
+                </div>
                 
                 <div className="flex flex-wrap justify-center gap-3 pt-6 border-t border-slate-200 dark:border-white/10 w-full">
                   <Button 
@@ -276,14 +285,6 @@ export function ProfileSheet() {
                     </Link>
                   )}
                 </div>
-              </div>
-
-              <div className="space-y-4 pt-4">
-                <div className="flex items-center gap-2 mb-1">
-                   <Bell className="h-3.5 w-3.5 text-primary" />
-                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-300">Arena Alerts</span>
-                </div>
-                <NotificationToggle />
               </div>
 
               <div className="space-y-4 pt-6 border-t border-slate-200 dark:border-white/10">
