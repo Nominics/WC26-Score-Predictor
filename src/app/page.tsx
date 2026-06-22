@@ -12,6 +12,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images"
 import { useToast } from "@/hooks/use-toast"
 import { Lock, Mail, User, Loader2, Sparkles, TrendingUp, ChevronLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 
 export default function LandingPage() {
   const [email, setEmail] = useState("")
@@ -75,15 +76,9 @@ export default function LandingPage() {
     }
   }
 
+  // Use the premium loading screen instead of simple spinner
   if (loading || (user && profile?.display_name)) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">WC26</div>
-          <Loader2 className="h-6 w-6 text-gray-200 animate-spin" />
-        </div>
-      </div>
-    )
+    return <AppLoadingScreen />
   }
 
   return (

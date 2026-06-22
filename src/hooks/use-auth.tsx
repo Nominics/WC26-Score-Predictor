@@ -93,31 +93,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true
 
-    if (!isConfigured) {
-      setLoading(false)
-      return
-    }
-
-    const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return
-
-      if (session?.user) {
-        setUser(session.user)
-        await fetchProfile(session.user.id)
-      } else if (event === "SIGNED_OUT" || !session) {
-        setUser(null)
-        setProfile(null)
-        setStats(null)
+    async function initializeAuth() {
+      if (!isConfigured) {
+        setLoading(false)
+        return
       }
 
-      setLoading(false)
-    })
+      // 1. Immediate check for existing session (Crucial for first-load bug)
+      const { data: { session: initialSession } } = await supabase.auth.getSession()
+      
+      if (mounted) {
+        if (initialSession?.user) {
+          setUser(initialSession.user)
+          await fetchProfile(initialSession.user.id)
+        }
+        setLoading(false)
+      }
 
-    const subscription = data?.subscription
+      // 2. Listen for auth changes
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!mounted) return
+
+        if (session?.user) {
+          setUser(session.user)
+          await fetchProfile(session.user.id)
+        } else {
+          setUser(null)
+          setProfile(null)
+          setStats(null)
+        }
+        
+        // If event is signed out or no session, ensure loading is off
+        setLoading(false)
+      })
+
+      return subscription
+    }
+
+    const authInit = initializeAuth()
 
     return () => {
       mounted = false
-      subscription?.unsubscribe()
+      authInit.then(sub => sub?.unsubscribe())
     }
   }, [supabase, fetchProfile, isConfigured])
 

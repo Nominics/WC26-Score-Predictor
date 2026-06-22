@@ -7,17 +7,17 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Zap, Activity, ChevronRight, Loader2, Star, Radio } from "lucide-react"
+import { Zap, ChevronRight, Radio } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
-import { UserAvatar } from "@/components/user-avatar"
 import { Card } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
 import { NotificationBell } from "@/components/layout/notification-bell"
 import { useRouter } from "next/navigation"
+import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -28,7 +28,7 @@ export default function Dashboard() {
   const [predictions, setPredictions] = useState<any[]>([])
   const [supporters, setSupporters] = useState<any[]>([])
   const [activityLogs, setActivityLogs] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingData, setIsLoadingData] = useState(true)
   const [activeDate, setActiveDate] = useState<string | null>(null)
   const [hasMounted, setHasMounted] = useState(false)
   const supabase = createClient()
@@ -39,14 +39,20 @@ export default function Dashboard() {
     setHasMounted(true)
   }, [])
 
+  // Navigation Logic
   useEffect(() => {
-    if (!authLoading && authUser && profile && !profile.display_name) {
-      router.replace("/onboarding")
+    if (!authLoading) {
+      if (!authUser) {
+        router.replace("/")
+      } else if (profile && !profile.display_name) {
+        router.replace("/onboarding")
+      }
     }
   }, [authUser, profile, authLoading, router])
 
+  // Data Loading Logic
   useEffect(() => {
-    if (authUser) {
+    if (authUser && !authLoading) {
       fetchData()
       fetchActivity()
       
@@ -67,8 +73,9 @@ export default function Dashboard() {
         supabase.removeChannel(pulseChannel)
       }
     }
-  }, [authUser])
+  }, [authUser, authLoading])
 
+  // Scroll logic for date tabs
   useEffect(() => {
     if (activeDate && scrollContainerRef.current) {
       const activeTab = document.getElementById(`date-tab-${activeDate}`)
@@ -104,7 +111,7 @@ export default function Dashboard() {
     } catch (error: any) {
       console.error("Error fetching data:", error)
     } finally {
-      setIsLoading(false)
+      setIsLoadingData(false)
     }
   }
 
@@ -181,15 +188,9 @@ export default function Dashboard() {
     }
   }
 
-  if (authLoading && fixtures.length === 0) {
-    return (
-      <div className="min-h-screen bg-[var(--app-bg)] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="text-primary font-black italic animate-pulse uppercase tracking-widest text-2xl">WC26</div>
-          <Loader2 className="h-8 w-8 text-primary animate-spin" />
-        </div>
-      </div>
-    )
+  // Show premium loading screen if auth or initial data is pending
+  if (authLoading || (isLoadingData && fixtures.length === 0)) {
+    return <AppLoadingScreen />
   }
 
   return (
@@ -244,7 +245,7 @@ export default function Dashboard() {
             </Link>
           </div>
           
-          <ScrollArea className="h-[180px] bg-black/[0.02] dark:bg-white/[0.01]">
+          <ScrollArea className="h-[180px] bg-black/[0.02] dark:bg-white/[0.01]" hideScrollbar>
             <div className="p-3 py-1">
               {activityLogs.length === 0 ? (
                 <div className="py-16 text-center opacity-40">
@@ -290,7 +291,6 @@ export default function Dashboard() {
 
       {dateTabs.length > 0 && (
         <div className="py-6 sticky top-[72px] bg-white/80 dark:bg-slate-950/60 backdrop-blur-2xl z-30 border-b border-border/40 shadow-xl overflow-hidden">
-          {/* Subtle Fading Edges */}
           <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none opacity-40" />
           <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none opacity-40" />
           
@@ -327,10 +327,6 @@ export default function Dashboard() {
                   )}>
                     {d.month}
                   </span>
-                  
-                  {isActive && (
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-black rounded-full" />
-                  )}
                 </button>
               )
             })}
@@ -353,13 +349,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {isLoading && fixtures.length === 0 ? (
-          <div className="space-y-8 px-2">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-64 app-glass-card animate-pulse border-border/10 rounded-[2.5rem]" />
-            ))}
-          </div>
-        ) : displayFixtures.length === 0 ? (
+        {displayFixtures.length === 0 ? (
           <div className="text-center py-32 app-surface-panel border-dashed border-2 mx-4">
             <p className="text-muted-foreground font-black uppercase text-[11px] tracking-[0.4em]">No matches scheduled</p>
           </div>
