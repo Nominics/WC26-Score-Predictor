@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -22,6 +22,7 @@ import { UserAvatar } from "@/components/user-avatar"
 import Link from "next/link"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export function ProfileSheet() {
   const { user, profile, stats, logout, updateDisplayName, updateFavoriteTeam, updateProfileIcon, updatePassword } = useAuth()
@@ -127,220 +128,224 @@ export function ProfileSheet() {
   }
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
+    <Dialog>
+      <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full h-10 w-10 bg-background border shadow-sm hover:scale-105 transition-all">
           <UserAvatar profile={profile} className="h-8 w-8" />
         </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-[320px] sm:w-[400px] p-0 border-l-0 overflow-y-auto no-scrollbar bg-background">
-        <SheetHeader className="p-8 bg-primary text-primary-foreground">
-          <SheetTitle className="text-primary-foreground font-black italic uppercase tracking-tighter text-2xl">
-            Arena Profile
-          </SheetTitle>
-        </SheetHeader>
-        
-        <div className="p-6 space-y-8 pb-12">
-          <div className="flex flex-col items-center text-center space-y-4">
-            <div className="relative">
-              <UserAvatar profile={profile} className="h-28 w-24 border-4 border-primary/20 shadow-2xl rounded-full" fallbackClassName="text-3xl" />
-              <div className="absolute -bottom-1 -right-1 bg-primary text-black rounded-full px-2 py-0.5 text-[9px] font-black uppercase italic shadow-lg border-2 border-background">
-                #{stats?.rank || "--"}
-              </div>
-            </div>
-            
-            <div className="space-y-1 w-full flex flex-col items-center">
-              {isEditing ? (
-                <div className="flex items-center gap-2 w-full max-w-[240px]">
-                  <Input 
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="h-12 text-center font-black uppercase tracking-tight rounded-xl border-primary/20 bg-muted/30"
-                    disabled={isSaving}
-                    autoFocus
-                  />
-                  <Button size="icon" className="h-10 w-10 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white" onClick={handleUpdateName} disabled={isSaving}>
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-muted-foreground" onClick={() => setIsEditing(false)} disabled={isSaving}>
-                    <X className="h-4 w-4" />
-                  </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-[420px] w-[92vw] p-0 border-0 bg-transparent shadow-none overflow-hidden rounded-[2.5rem]">
+        <div className="app-glass-card border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <DialogHeader className="p-8 bg-primary text-primary-foreground shrink-0">
+            <DialogTitle className="text-primary-foreground font-black italic uppercase tracking-tighter text-2xl">
+              Arena Profile
+            </DialogTitle>
+          </DialogHeader>
+          
+          <ScrollArea className="flex-1">
+            <div className="p-6 space-y-8 pb-12">
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="relative">
+                  <UserAvatar profile={profile} className="h-28 w-24 border-4 border-primary/20 shadow-2xl rounded-full" fallbackClassName="text-3xl" />
+                  <div className="absolute -bottom-1 -right-1 bg-primary text-black rounded-full px-2 py-0.5 text-[9px] font-black uppercase italic shadow-lg border-2 border-background">
+                    #{stats?.rank || "--"}
+                  </div>
                 </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <h3 className="text-2xl font-black uppercase italic text-foreground tracking-tighter leading-tight">
-                    {profile?.display_name}
-                  </h3>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-40 hover:opacity-100" onClick={() => setIsEditing(true)}>
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              <p className="text-[10px] font-bold text-muted-foreground flex items-center justify-center gap-1.5 uppercase tracking-[0.2em] mt-1">
-                <Mail className="h-3 w-3 opacity-40" /> {user.email}
-              </p>
-            </div>
-
-            <div className="w-full pt-6 space-y-6">
-               <div className="app-surface-panel p-6 flex justify-around items-center gap-4 bg-muted/40">
-                  <div className="text-center space-y-0.5">
-                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Points</span>
-                     <p className="text-2xl font-black italic tracking-tighter text-foreground leading-none">{stats?.points || "0"}</p>
-                  </div>
-                  <div className="h-8 w-px bg-border/40" />
-                  <div className="text-center space-y-0.5">
-                     <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Lifelines</span>
-                     <div className="flex items-center gap-1 justify-center">
-                        <Zap className="h-3 w-3 text-primary fill-primary" />
-                        <p className="text-2xl font-black italic tracking-tighter text-foreground leading-none">{stats?.lifelines || "0"}</p>
-                     </div>
-                  </div>
-               </div>
-            </div>
-
-            <div className="w-full space-y-4 pt-4 text-left">
-               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <UserCircle className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Avatar Presets</span>
-                  </div>
-                  {profile?.profile_icon_key && (
-                    <Button 
-                      variant="ghost" 
-                      onClick={() => handleUpdateIcon(null)}
-                      className="h-7 px-3 text-[9px] font-black uppercase text-primary border border-primary/20 rounded-full hover:bg-primary/5"
-                    >
-                      Use Nation Flag
-                    </Button>
+                
+                <div className="space-y-1 w-full flex flex-col items-center">
+                  {isEditing ? (
+                    <div className="flex items-center gap-2 w-full max-w-[240px]">
+                      <Input 
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        className="h-12 text-center font-black uppercase tracking-tight rounded-xl border-primary/20 bg-muted/30"
+                        disabled={isSaving}
+                        autoFocus
+                      />
+                      <Button size="icon" className="h-10 w-10 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white" onClick={handleUpdateName} disabled={isSaving}>
+                        <Check className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl text-muted-foreground" onClick={() => setIsEditing(false)} disabled={isSaving}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-2xl font-black uppercase italic text-foreground tracking-tighter leading-tight">
+                        {profile?.display_name}
+                      </h3>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-40 hover:opacity-100" onClick={() => setIsEditing(true)}>
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   )}
-               </div>
-               <div className="grid grid-cols-5 gap-3 p-4 bg-muted/20 rounded-[2rem] border border-border/30">
-                  {PROFILE_ICON_PRESETS.map((icon) => (
-                    <button
-                      key={icon.key}
-                      onClick={() => handleUpdateIcon(icon.key)}
-                      className={cn(
-                        "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:scale-110",
-                        profile?.profile_icon_key === icon.key ? "border-primary shadow-lg shadow-primary/20 scale-105 z-10" : "border-transparent opacity-40 grayscale hover:grayscale-0 hover:opacity-100"
+                  <p className="text-[10px] font-bold text-muted-foreground flex items-center justify-center gap-1.5 uppercase tracking-[0.2em] mt-1">
+                    <Mail className="h-3 w-3 opacity-40" /> {user.email}
+                  </p>
+                </div>
+
+                <div className="w-full pt-6 space-y-6">
+                   <div className="app-surface-panel p-6 flex justify-around items-center gap-4 bg-muted/40">
+                      <div className="text-center space-y-0.5">
+                         <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Points</span>
+                         <p className="text-2xl font-black italic tracking-tighter text-foreground leading-none">{stats?.points || "0"}</p>
+                      </div>
+                      <div className="h-8 w-px bg-border/40" />
+                      <div className="text-center space-y-0.5">
+                         <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Lifelines</span>
+                         <div className="flex items-center gap-1 justify-center">
+                            <Zap className="h-3 w-3 text-primary fill-primary" />
+                            <p className="text-2xl font-black italic tracking-tighter text-foreground leading-none">{stats?.lifelines || "0"}</p>
+                         </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="w-full space-y-4 pt-4 text-left">
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <UserCircle className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Avatar Presets</span>
+                      </div>
+                      {profile?.profile_icon_key && (
+                        <Button 
+                          variant="ghost" 
+                          onClick={() => handleUpdateIcon(null)}
+                          className="h-7 px-3 text-[9px] font-black uppercase text-primary border border-primary/20 rounded-full hover:bg-primary/5"
+                        >
+                          Use Nation Flag
+                        </Button>
                       )}
-                    >
-                      <Image src={icon.imagePath} alt={icon.label} fill className="object-cover" />
-                    </button>
-                  ))}
-               </div>
-            </div>
+                   </div>
+                   <div className="grid grid-cols-5 gap-3 p-4 bg-muted/20 rounded-[2rem] border border-border/30">
+                      {PROFILE_ICON_PRESETS.map((icon) => (
+                        <button
+                          key={icon.key}
+                          onClick={() => handleUpdateIcon(icon.key)}
+                          className={cn(
+                            "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:scale-110",
+                            profile?.profile_icon_key === icon.key ? "border-primary shadow-lg shadow-primary/20 scale-105 z-10" : "border-transparent opacity-40 grayscale hover:grayscale-0 hover:opacity-100"
+                          )}
+                        >
+                          <Image src={icon.imagePath} alt={icon.label} fill className="object-cover" />
+                        </button>
+                      ))}
+                   </div>
+                </div>
 
-            <div className="w-full space-y-3 text-left">
-               <div className="flex items-center gap-2">
-                  <Flag className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Representation</span>
-               </div>
-               <Select value={profile?.favorite_team || ""} onValueChange={handleUpdateTeam}>
-                  <SelectTrigger className="w-full h-14 rounded-2xl border-border/50 bg-card shadow-sm font-black uppercase text-xs italic tracking-tight">
-                    <SelectValue placeholder="Select National Team" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px] rounded-2xl">
-                    {COUNTRIES.map((country) => (
-                      <SelectItem key={country} value={country} className="rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-border/30 shadow-sm">
-                            <Image src={getTeamFlagUrl(country)!} alt="" fill className="object-cover" />
-                          </div>
-                          <span className="font-bold text-xs uppercase">{country}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-               </Select>
-            </div>
-            
-            <div className="flex flex-wrap justify-center gap-3 pt-6 border-t border-border/30 w-full">
-              <Button 
-                variant="outline" 
-                onClick={handleShare}
-                className="rounded-full h-12 flex-1 font-black uppercase text-[10px] tracking-widest gap-2 bg-card hover:bg-muted border-border/50 shadow-sm"
-              >
-                <Share2 className="h-3.5 w-3.5 text-primary" /> Invite Friends
-              </Button>
-              
-              {isSuperadmin && (
-                <Link href="/admin" className="flex-1">
-                  <Button variant="outline" className="w-full rounded-full h-12 font-black uppercase text-[10px] tracking-widest gap-2 bg-foreground text-background border-0 shadow-lg hover:opacity-90">
-                    <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Admin Panel
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-
-          <div className="space-y-4 pt-4">
-            <div className="flex items-center gap-2 mb-1">
-               <Bell className="h-3.5 w-3.5 text-primary" />
-               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Arena Alerts</span>
-            </div>
-            <NotificationToggle />
-          </div>
-
-          <div className="space-y-4 pt-6 border-t border-border/30">
-            <div className="flex items-center gap-2">
-              <Lock className="h-3.5 w-3.5 text-primary" />
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Security</span>
-            </div>
-            {!isChangingPassword ? (
-              <Button 
-                variant="outline" 
-                onClick={() => setIsChangingPassword(true)}
-                className="w-full rounded-2xl h-14 font-black uppercase text-[10px] tracking-widest gap-2 border-border/50 bg-muted/20"
-              >
-                <Lock className="h-3.5 w-3.5 opacity-40" /> Change Password
-              </Button>
-            ) : (
-              <div className="space-y-4 p-5 app-surface-panel bg-card border-primary/20">
-                <Input 
-                  type="password" 
-                  placeholder="New Password" 
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="rounded-xl h-12 text-sm font-bold bg-muted/40 border-border/40"
-                />
-                <Input 
-                  type="password" 
-                  placeholder="Confirm New Password" 
-                  value={confirmNewPassword}
-                  onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="rounded-xl h-12 text-sm font-bold bg-muted/40 border-border/40"
-                />
-                <div className="flex gap-2">
+                <div className="w-full space-y-3 text-left">
+                   <div className="flex items-center gap-2">
+                      <Flag className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Representation</span>
+                   </div>
+                   <Select value={profile?.favorite_team || ""} onValueChange={handleUpdateTeam}>
+                      <SelectTrigger className="w-full h-14 rounded-2xl border-border/50 bg-card shadow-sm font-black uppercase text-xs italic tracking-tight">
+                        <SelectValue placeholder="Select National Team" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[300px] rounded-2xl">
+                        {COUNTRIES.map((country) => (
+                          <SelectItem key={country} value={country} className="rounded-xl">
+                            <div className="flex items-center gap-3">
+                              <div className="relative h-4 w-6 rounded-sm overflow-hidden border border-border/30 shadow-sm">
+                                <Image src={getTeamFlagUrl(country)!} alt="" fill className="object-cover" />
+                              </div>
+                              <span className="font-bold text-xs uppercase">{country}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                   </Select>
+                </div>
+                
+                <div className="flex flex-wrap justify-center gap-3 pt-6 border-t border-border/30 w-full">
                   <Button 
-                    className="flex-1 rounded-xl h-12 bg-primary text-black font-black text-[10px] uppercase tracking-widest shadow-lg"
-                    onClick={handlePasswordUpdate}
-                    disabled={isUpdatingPassword}
+                    variant="outline" 
+                    onClick={handleShare}
+                    className="rounded-full h-12 flex-1 font-black uppercase text-[10px] tracking-widest gap-2 bg-card hover:bg-muted border-border/50 shadow-sm"
                   >
-                    {isUpdatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
+                    <Share2 className="h-3.5 w-3.5 text-primary" /> Invite Friends
                   </Button>
-                  <Button 
-                    variant="ghost"
-                    className="rounded-xl h-12 text-[10px] uppercase font-black text-muted-foreground opacity-60 hover:opacity-100"
-                    onClick={() => {
-                      setIsChangingPassword(false)
-                      setNewPassword("")
-                      setConfirmNewPassword("")
-                    }}
-                  >
-                    Cancel
-                  </Button>
+                  
+                  {isSuperadmin && (
+                    <Link href="/admin" className="flex-1">
+                      <Button variant="outline" className="w-full rounded-full h-12 font-black uppercase text-[10px] tracking-widest gap-2 bg-foreground text-background border-0 shadow-lg hover:opacity-90">
+                        <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Admin Panel
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
 
-          <div className="pt-10">
-            <Button variant="destructive" onClick={() => logout()} className="w-full rounded-3xl h-16 font-black uppercase tracking-[0.2em] text-xs gap-3 shadow-xl shadow-red-500/10 active:scale-95 transition-all">
-              <LogOut className="h-4 w-4" /> Sign Out
-            </Button>
-          </div>
+              <div className="space-y-4 pt-4">
+                <div className="flex items-center gap-2 mb-1">
+                   <Bell className="h-3.5 w-3.5 text-primary" />
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Arena Alerts</span>
+                </div>
+                <NotificationToggle />
+              </div>
+
+              <div className="space-y-4 pt-6 border-t border-border/30">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60">Security</span>
+                </div>
+                {!isChangingPassword ? (
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsChangingPassword(true)}
+                    className="w-full rounded-2xl h-14 font-black uppercase text-[10px] tracking-widest gap-2 border-border/50 bg-muted/20"
+                  >
+                    <Lock className="h-3.5 w-3.5 opacity-40" /> Change Password
+                  </Button>
+                ) : (
+                  <div className="space-y-4 p-5 app-surface-panel bg-card border-primary/20">
+                    <Input 
+                      type="password" 
+                      placeholder="New Password" 
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="rounded-xl h-12 text-sm font-bold bg-muted/40 border-border/40"
+                    />
+                    <Input 
+                      type="password" 
+                      placeholder="Confirm New Password" 
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      className="rounded-xl h-12 text-sm font-bold bg-muted/40 border-border/40"
+                    />
+                    <div className="flex gap-2">
+                      <Button 
+                        className="flex-1 rounded-xl h-12 bg-primary text-black font-black text-[10px] uppercase tracking-widest shadow-lg"
+                        onClick={handlePasswordUpdate}
+                        disabled={isUpdatingPassword}
+                      >
+                        {isUpdatingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
+                      </Button>
+                      <Button 
+                        variant="ghost"
+                        className="rounded-xl h-12 text-[10px] uppercase font-black text-muted-foreground opacity-60 hover:opacity-100"
+                        onClick={() => {
+                          setIsChangingPassword(false)
+                          setNewPassword("")
+                          setConfirmNewPassword("")
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-10">
+                <Button variant="destructive" onClick={() => logout()} className="w-full rounded-3xl h-16 font-black uppercase tracking-[0.2em] text-xs gap-3 shadow-xl shadow-red-500/10 active:scale-95 transition-all">
+                  <LogOut className="h-4 w-4" /> Sign Out
+                </Button>
+              </div>
+            </div>
+          </ScrollArea>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }
