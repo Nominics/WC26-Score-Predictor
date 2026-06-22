@@ -1,10 +1,12 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
-import { Bell, BellRing, Smartphone, Info, Share } from "lucide-react"
+import { Bell, BellRing, Smartphone, Info, Share, Loader2 } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
+import { createClient } from "@/lib/supabase/client"
 import {
   Dialog,
   DialogContent,
@@ -28,20 +30,41 @@ function isStandalone() {
   )
 }
 
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
 export function NotificationToggle() {
   const { toast } = useToast()
   const [enabled, setEnabled] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [inPwa, setInPwa] = useState(false)
+  const supabase = createClient()
 
   useEffect(() => {
     setInPwa(isStandalone())
-    
-    // Check initial permission status
-    if (typeof window !== "undefined" && "Notification" in window) {
-      setEnabled(Notification.permission === "granted")
-    }
+    checkSubscription()
   }, [])
+
+  const checkSubscription = async () => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator)) return
+    
+    const registration = await navigator.serviceWorker.ready
+    const subscription = await registration.pushManager.getSubscription()
+    setEnabled(!!subscription)
+  }
 
   const handleToggle = async (checked: boolean) => {
     if (!inPwa) {
@@ -49,37 +72,59 @@ export function NotificationToggle() {
       return
     }
 
-    if (checked) {
-      if (!("Notification" in window)) {
-        toast({
-          variant: "destructive",
-          title: "Not Supported",
-          description: "This browser does not support notifications.",
-        })
-        return
-      }
+    setLoading(true)
+    try {
+      if (checked) {
+        if (!("Notification" in window)) {
+          throw new Error("Notifications not supported in this browser.")
+        }
 
-      const permission = await Notification.requestPermission()
-      if (permission === "granted") {
+        const permission = await Notification.requestPermission()
+        if (permission !== "granted") {
+          throw new Error("Permission denied. Enable notifications in settings.")
+        }
+
+        const registration = await navigator.serviceWorker.register('/sw.js')
+        await navigator.serviceWorker.ready
+
+        const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        if (!publicKey) throw new Error("VAPID public key missing.")
+
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey)
+        })
+
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error("User not authenticated.")
+
+        const { error } = await supabase.from('push_subscriptions').upsert({
+          user_id: user.id,
+          endpoint: subscription.endpoint,
+          subscription: subscription.toJSON(),
+          user_agent: navigator.userAgent,
+          enabled: true
+        }, { onConflict: 'endpoint' })
+
+        if (error) throw error
+
         setEnabled(true)
-        toast({
-          title: "Notifications Enabled!",
-          description: "You will now receive live Arena & Chat alerts.",
-        })
+        toast({ title: "Notifications Enabled!", description: "You will now receive live Arena & Chat alerts." })
       } else {
+        const registration = await navigator.serviceWorker.ready
+        const subscription = await registration.pushManager.getSubscription()
+        if (subscription) {
+          await subscription.unsubscribe()
+          await supabase.from('push_subscriptions').update({ enabled: false }).eq('endpoint', subscription.endpoint)
+        }
         setEnabled(false)
-        toast({
-          variant: "destructive",
-          title: "Permission Denied",
-          description: "Please enable notifications in your device settings.",
-        })
+        toast({ title: "Notifications Disabled", description: "You will no longer receive Arena alerts." })
       }
-    } else {
+    } catch (err: any) {
       setEnabled(false)
-      toast({
-        title: "Notifications Disabled",
-        description: "You will no longer receive Arena alerts.",
-      })
+      toast({ variant: "destructive", title: "Setup Failed", description: err.message })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -88,7 +133,9 @@ export function NotificationToggle() {
       <div className="p-5 bg-gray-50 border border-gray-100 rounded-3xl flex justify-between items-center">
         <div className="flex items-center gap-3">
           <div className="bg-white p-2 rounded-xl border border-gray-100">
-            {enabled ? (
+            {loading ? (
+              <Loader2 className="h-4 w-4 text-primary animate-spin" />
+            ) : enabled ? (
               <BellRing className="h-4 w-4 text-primary animate-pulse" />
             ) : (
               <Bell className="h-4 w-4 text-gray-400" />
@@ -102,6 +149,7 @@ export function NotificationToggle() {
         <Switch 
           checked={enabled} 
           onCheckedChange={handleToggle}
+          disabled={loading}
           className="data-[state=checked]:bg-primary"
         />
       </div>

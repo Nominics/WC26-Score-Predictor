@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, ShieldCheck, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock } from "lucide-react"
+import { RefreshCcw, ShieldCheck, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -27,7 +28,7 @@ import {
 export default function AdminPage() {
   const { user, profile, stats, loading: authLoading } = useAuth()
   const { toast } = useToast()
-  const [isSyncing, setIsSyncing] = useState(false)
+  const [isRunningCron, setIsRunningCron] = useState(false)
   const [isAwarding, setIsAwarding] = useState(false)
   const [isPromoting, setIsPromoting] = useState(false)
   const [isUpdatingTime, setIsUpdatingTime] = useState(false)
@@ -65,6 +66,34 @@ export default function AdminPage() {
     setFixtures(data || [])
   }
 
+  const handleRunCron = async () => {
+    setIsRunningCron(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error("Session expired.")
+
+      const response = await fetch("/api/admin/run-cron", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json"
+        }
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Cron failed")
+
+      toast({ 
+        title: "Cron Successful", 
+        description: `Synced ${data.syncedFixtures} matches. Sent ${data.remindersSent} reminders.` 
+      })
+      fetchFixtures()
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Cron Failed", description: error.message })
+    } finally {
+      setIsRunningCron(false)
+    }
+  }
+
   const handleUpdateTime = async () => {
     if (!selectedFixture || !newTime) return
     setIsUpdatingTime(true)
@@ -72,8 +101,6 @@ export default function AdminPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error("Session expired.")
 
-      // Construct a valid ISO string from the date-time-local input
-      // The input is local time, we should treat it as tournament time (e.g., America/New_York)
       const isoTime = DateTime.fromISO(newTime, { zone: "America/New_York" }).toUTC().toISO()
 
       const response = await fetch("/api/admin/update-fixture-time", {
@@ -99,31 +126,6 @@ export default function AdminPage() {
       toast({ variant: "destructive", title: "Update Failed", description: error.message })
     } finally {
       setIsUpdatingTime(false)
-    }
-  }
-
-  const handleSync = async () => {
-    setIsSyncing(true)
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) throw new Error("Session expired.")
-
-      const response = await fetch("/api/admin/sync-fixtures", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${session.access_token}`,
-          "Content-Type": "application/json"
-        }
-      })
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || "Failed to sync fixtures")
-
-      toast({ title: "Sync Successful", description: `Successfully synchronized ${data.count} fixtures.` })
-      fetchFixtures()
-    } catch (error: any) {
-      toast({ variant: "destructive", title: "Sync Failed", description: error.message })
-    } finally {
-      setIsSyncing(false)
     }
   }
 
@@ -183,7 +185,7 @@ export default function AdminPage() {
 
       toast({ title: "User Promoted!", description: "Superadmin access granted." })
       setSelectedUserForRole("")
-      fetchProfiles() // Refresh to show new roles
+      fetchProfiles() 
     } catch (error: any) {
       toast({ variant: "destructive", title: "Promotion Failed", description: error.message })
     } finally {
@@ -232,6 +234,26 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-2xl mx-auto p-6 space-y-6">
+        {/* System Operations */}
+        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden">
+          <CardHeader className="bg-white border-b border-gray-100 p-8">
+            <CardTitle className="text-xl font-black uppercase italic text-gray-900">System Operations</CardTitle>
+            <CardDescription className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-1">
+              Run Sync & Reminder Routines
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-8">
+            <Button 
+              onClick={handleRunCron} 
+              disabled={isRunningCron}
+              className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase text-lg tracking-tight shadow-lg"
+            >
+              {isRunningCron ? <Loader2 className="h-6 w-6 mr-2 animate-spin" /> : <Play className="h-6 w-6 mr-2" />}
+              Force Cron Sync (Sync & Reminders)
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Manual Points Section */}
         <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden">
           <CardHeader className="bg-white border-b border-gray-100 p-8">
@@ -285,7 +307,7 @@ export default function AdminPage() {
             <Button 
               onClick={() => setShowConfirmPoints(true)}
               disabled={!selectedUser || !points || points === "0" || !reason || isAwarding}
-              className="w-full h-16 rounded-2xl bg-primary hover:bg-primary/90 text-white font-black uppercase text-lg tracking-tight shadow-lg"
+              className="w-full h-16 rounded-2xl bg-gray-900 hover:bg-black text-white font-black uppercase text-lg tracking-tight shadow-lg"
             >
               {isAwarding ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <Star className="h-6 w-6 mr-2" />}
               Award Points
@@ -378,26 +400,6 @@ export default function AdminPage() {
             >
               {isPromoting ? <Loader2 className="h-6 w-6 animate-spin mr-2" /> : <UserPlus className="h-6 w-6 mr-2" />}
               Promote to Superadmin
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Sync Section */}
-        <Card className="rounded-[2.5rem] border-0 shadow-xl overflow-hidden">
-          <CardHeader className="bg-white border-b border-gray-100 p-8">
-            <CardTitle className="text-xl font-black uppercase italic text-gray-900">Data Synchronization</CardTitle>
-            <CardDescription className="text-gray-400 font-bold uppercase text-[10px] tracking-widest mt-1">
-              Manual Refresh of Tournament Data
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 space-y-6">
-            <Button 
-              onClick={handleSync} 
-              disabled={isSyncing}
-              className="w-full h-16 rounded-2xl bg-gray-900 hover:bg-black text-white font-black uppercase text-lg tracking-tight shadow-lg transition-all active:scale-95"
-            >
-              {isSyncing ? <Loader2 className="h-6 w-6 mr-2 animate-spin" /> : <RefreshCcw className="h-6 w-6 mr-2" />}
-              Sync Fixtures & Scores
             </Button>
           </CardContent>
         </Card>
