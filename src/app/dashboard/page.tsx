@@ -39,7 +39,7 @@ export default function Dashboard() {
     setHasMounted(true)
   }, [])
 
-  // Navigation Logic
+  // Navigation Logic: Wait for auth to finish loading
   useEffect(() => {
     if (!authLoading) {
       if (!authUser) {
@@ -50,9 +50,9 @@ export default function Dashboard() {
     }
   }, [authUser, profile, authLoading, router])
 
-  // Data Loading Logic
+  // Data Loading Logic: Only run when auth is ready and user exists
   useEffect(() => {
-    if (authUser && !authLoading) {
+    if (!authLoading && authUser) {
       fetchData()
       fetchActivity()
       
@@ -73,7 +73,7 @@ export default function Dashboard() {
         supabase.removeChannel(pulseChannel)
       }
     }
-  }, [authUser, authLoading])
+  }, [authUser?.id, authLoading])
 
   // Scroll logic for date tabs
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function Dashboard() {
       }
 
     } catch (error: any) {
-      console.error("Error fetching data:", error)
+      console.error("Error fetching dashboard data:", error)
     } finally {
       setIsLoadingData(false)
     }
@@ -188,8 +188,8 @@ export default function Dashboard() {
     }
   }
 
-  // Show premium loading screen if auth or initial data is pending
-  if (authLoading || (isLoadingData && fixtures.length === 0)) {
+  // Show branded loading screen if auth is pending or initial user-specific data is loading
+  if (authLoading || (authUser && isLoadingData && fixtures.length === 0)) {
     return <AppLoadingScreen />
   }
 

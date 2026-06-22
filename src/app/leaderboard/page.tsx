@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -13,12 +14,13 @@ import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 import { NotificationBell } from "@/components/layout/notification-bell"
 import { DateTime } from "luxon"
+import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import Image from "next/image"
 
 export default function Leaderboard() {
   const { user, profile, stats, loading: authLoading } = useAuth()
   const [entries, setEntries] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loadingData, setLoadingData] = useState(true)
   const supabase = createClient()
   const router = useRouter()
 
@@ -29,15 +31,17 @@ export default function Leaderboard() {
   }, [user, profile, authLoading, router])
 
   useEffect(() => {
-    fetchLeaderboard()
-    
-    const channel = supabase
-      .channel('leaderboard-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchLeaderboard())
-      .subscribe()
+    if (!authLoading) {
+      fetchLeaderboard()
+      
+      const channel = supabase
+        .channel('leaderboard-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchLeaderboard())
+        .subscribe()
 
-    return () => { supabase.removeChannel(channel) }
-  }, [])
+      return () => { supabase.removeChannel(channel) }
+    }
+  }, [authLoading])
 
   const fetchLeaderboard = async () => {
     try {
@@ -63,8 +67,12 @@ export default function Leaderboard() {
     } catch (err: any) {
       console.error("Leaderboard fetch error:", err.message)
     } finally {
-      setLoading(false)
+      setLoadingData(false)
     }
+  }
+
+  if (authLoading || (loadingData && entries.length === 0)) {
+    return <AppLoadingScreen />
   }
 
   return (
@@ -93,12 +101,7 @@ export default function Leaderboard() {
       </header>
 
       <main className="max-w-2xl mx-auto mt-10 px-4">
-        {loading ? (
-          <div className="p-32 flex flex-col items-center gap-4 opacity-50">
-            <Loader2 className="h-10 w-10 text-primary animate-spin" />
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.4em]">Syncing Rankings...</p>
-          </div>
-        ) : entries.length === 0 ? (
+        {entries.length === 0 ? (
           <div className="p-32 text-center app-surface-panel border-dashed border-2 mx-4">
             <Trophy className="h-16 w-16 text-muted-foreground mx-auto mb-6 opacity-10" />
             <p className="text-muted-foreground font-bold uppercase text-[11px] tracking-[0.3em]">Competition starts soon.</p>

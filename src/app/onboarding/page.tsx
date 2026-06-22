@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { useRouter } from "next/navigation"
 import { Loader2, User, Sparkles, ChevronRight } from "lucide-react"
+import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import Image from "next/image"
 import { PlaceHolderImages } from "@/lib/placeholder-images"
 
@@ -21,8 +22,12 @@ export default function Onboarding() {
   const bg = PlaceHolderImages.find(img => img.id === 'stadium-bg')
 
   useEffect(() => {
-    if (!authLoading && user && profile?.display_name) {
-      router.replace("/dashboard")
+    if (!authLoading) {
+      if (!user) {
+        router.replace("/")
+      } else if (profile?.display_name) {
+        router.replace("/dashboard")
+      }
     }
   }, [user, profile, authLoading, router])
 
@@ -43,17 +48,10 @@ export default function Onboarding() {
   }
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-primary animate-spin" />
-      </div>
-    )
+    return <AppLoadingScreen />
   }
 
-  if (!user) {
-    router.replace("/")
-    return null
-  }
+  if (!user) return null
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-6 bg-black overflow-hidden relative">
