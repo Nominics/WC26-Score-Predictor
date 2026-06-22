@@ -59,6 +59,7 @@ export default function Dashboard() {
         .channel('pulse-realtime')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_pulse_events' }, () => fetchActivity())
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => fetchActivity())
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'predictions' }, () => fetchActivity())
         .subscribe()
 
       return () => {
@@ -112,7 +113,7 @@ export default function Dashboard() {
       .from("match_pulse_feed")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(20)
+      .limit(30)
     setActivityLogs(data || [])
   }
 
@@ -235,34 +236,44 @@ export default function Dashboard() {
               <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-foreground/80">Arena Pulse</h3>
             </div>
             <Link href="/activity" className="group flex items-center gap-1.5">
-              <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest group-hover:text-primary transition-colors">Full Stream</span>
+              <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest group-hover:text-primary transition-colors">History</span>
               <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-0.5" />
             </Link>
           </div>
           
-          <ScrollArea className="h-[180px] bg-black/[0.02] dark:bg-white/[0.01]">
-            <div className="p-3 space-y-1">
+          <ScrollArea className="h-[200px] bg-black/[0.02] dark:bg-white/[0.01]">
+            <div className="p-3 py-1">
               {activityLogs.length === 0 ? (
-                <div className="py-12 text-center opacity-40">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Waiting for broadcast...</p>
+                <div className="py-20 text-center opacity-40">
+                  <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Waiting for match data...</p>
                 </div>
               ) : (
                 activityLogs.map((log) => {
                   // Filter redundant logs
                   if (log.event_type === 'prediction_updated' && log.metadata?.old_score === log.metadata?.new_score) return null;
                   
+                  let displayTitle = log.title;
+                  let displayEmoji = log.emoji || '⚽';
+
+                  if (log.event_type === 'prediction_created') {
+                    displayTitle = "PICK LOCKED";
+                    displayEmoji = "🔥";
+                  } else if (log.event_type === 'prediction_updated') {
+                    displayTitle = "PICK EDITED";
+                    displayEmoji = "✏️";
+                  }
+
                   return (
-                    <div key={log.id} className="flex gap-2.5 py-1.5 border-b border-border/5 last:border-0 items-start group">
-                      <span className="shrink-0 text-sm grayscale-[0.3] group-hover:grayscale-0 transition-all scale-90 group-hover:scale-100">{log.emoji || '⚽'}</span>
-                      <span className="shrink-0 font-mono text-[9px] text-muted-foreground/60 pt-1 tracking-tight">
+                    <div key={log.id} className="flex gap-3 py-2 border-b border-border/5 last:border-0 items-center group">
+                      <span className="shrink-0 text-sm grayscale-[0.3] group-hover:grayscale-0 transition-all scale-90 group-hover:scale-100">{displayEmoji}</span>
+                      <span className="shrink-0 font-mono text-[9px] text-muted-foreground/60 tabular-nums">
                         {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
                       </span>
-                      <div className="flex-1 min-w-0 flex items-baseline gap-2">
-                        <span className="font-black text-foreground/90 shrink-0 uppercase tracking-tight text-[9px] min-w-[45px]">
-                          {log.title}
+                      <div className="flex-1 min-w-0 flex items-center gap-2">
+                        <span className="font-black text-foreground/90 shrink-0 uppercase tracking-tight text-[9px] min-w-[70px]">
+                          {displayTitle}
                         </span>
-                        <span className="text-muted-foreground/20 shrink-0 text-[8px]">•</span>
-                        <span className="text-[11px] font-medium text-muted-foreground/80 truncate leading-relaxed">
+                        <span className="text-[11px] font-medium text-muted-foreground/80 truncate leading-none">
                           {log.message}
                         </span>
                       </div>

@@ -28,6 +28,7 @@ export default function ActivityFeed() {
       .channel('match-pulse-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'match_pulse_events' }, () => fetchLogs())
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'activity_logs' }, () => fetchLogs())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'predictions' }, () => fetchLogs())
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
@@ -91,7 +92,7 @@ export default function ActivityFeed() {
                 <span className="absolute inset-0 bg-red-500 rounded-full animate-ping opacity-75" />
                 <span className="relative block h-2 w-2 bg-red-500 rounded-full" />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Live Broadcast Log</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">Terminal Log</span>
             </div>
             <div className="flex items-center gap-2">
                <span className="text-[8px] font-black text-muted-foreground uppercase opacity-40 tabular-nums">AUTO-SYNC ACTIVE</span>
@@ -109,32 +110,43 @@ export default function ActivityFeed() {
                 <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Awaiting match action in the Arena</p>
               </div>
             ) : (
-              <div className="divide-y divide-border/5 p-4 sm:p-6 space-y-0.5">
+              <div className="p-4 sm:p-6 space-y-0.5">
                 {logs.map((log) => {
-                  // Filter out duplicate/noisy prediction updates
+                  // Filter out redundant prediction updates
                   if (log.event_type === 'prediction_updated' && log.metadata?.old_score === log.metadata?.new_score) return null;
 
+                  let displayTitle = log.title;
+                  let displayEmoji = log.emoji || '⚽';
+
+                  if (log.event_type === 'prediction_created') {
+                    displayTitle = "PICK LOCKED";
+                    displayEmoji = "🔥";
+                  } else if (log.event_type === 'prediction_updated') {
+                    displayTitle = "PICK EDITED";
+                    displayEmoji = "✏️";
+                  }
+
                   return (
-                    <div key={log.id} className="group flex gap-4 py-3 items-start transition-all hover:bg-primary/[0.02] -mx-4 px-4 rounded-xl">
+                    <div key={log.id} className="flex gap-4 py-2.5 items-center transition-all border-b border-border/5 last:border-0 group -mx-2 px-2 rounded-lg">
                       <span className="shrink-0 text-lg grayscale-[0.4] group-hover:grayscale-0 transition-all scale-95 group-hover:scale-105 duration-300">
-                        {log.emoji || '⚽'}
+                        {displayEmoji}
                       </span>
                       
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] text-muted-foreground/50 tabular-nums">
-                            {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
+                      <div className="flex-1 min-w-0 flex items-center gap-3">
+                        <span className="font-mono text-[10px] text-muted-foreground/50 tabular-nums shrink-0">
+                          {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
+                        </span>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 overflow-hidden">
+                          <span className="text-[9px] font-black text-foreground uppercase tracking-tight bg-muted/40 px-2 py-0.5 rounded-md min-w-[75px] text-center shrink-0">
+                            {displayTitle}
                           </span>
-                          <span className="text-[9px] font-black text-foreground uppercase tracking-tight bg-muted/40 px-2 py-0.5 rounded-md">
-                            {log.title}
-                          </span>
+                          <p className="text-[12px] font-medium text-muted-foreground leading-none truncate">
+                            {log.message}
+                          </p>
                         </div>
-                        <p className="text-[13px] font-medium text-muted-foreground leading-relaxed">
-                          {log.message}
-                        </p>
                       </div>
 
-                      <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
                          <Radio className="h-3 w-3 text-primary animate-pulse" />
                       </div>
                     </div>
@@ -145,7 +157,7 @@ export default function ActivityFeed() {
           </div>
           
           <div className="p-4 bg-muted/20 border-t border-border/40 text-center">
-             <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.4em]">End of Stream</p>
+             <p className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-[0.4em]">End of Log Stream</p>
           </div>
         </div>
       </main>
