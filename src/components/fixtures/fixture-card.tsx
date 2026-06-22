@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -23,20 +24,20 @@ interface FixtureCardProps {
 const AvatarStack = ({ supporters }: { supporters: any[] }) => {
   if (!supporters || supporters.length === 0) return null
   
-  const MAX_VISIBLE = 5
+  const MAX_VISIBLE = 4
   const visibleSupporters = supporters.slice(0, MAX_VISIBLE)
   const remainingCount = Math.max(0, supporters.length - MAX_VISIBLE)
 
   return (
-    <div className="flex -space-x-2.5 overflow-hidden py-1">
+    <div className="flex -space-x-2 overflow-hidden py-1">
       {visibleSupporters.map((s, idx) => (
-        <div key={`${s.user_id}-${idx}`} className="inline-block ring-2 ring-background rounded-full transition-transform hover:-translate-y-1 shadow-sm">
-          <UserAvatar profile={s} className="h-7 w-7 border-0" />
+        <div key={`${s.user_id}-${idx}`} className="inline-block ring-2 ring-background rounded-full transition-transform hover:-translate-y-0.5 shadow-sm">
+          <UserAvatar profile={s} className="h-6 w-6 sm:h-7 sm:w-7 border-0" />
         </div>
       ))}
       {remainingCount > 0 && (
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted ring-2 ring-background shadow-sm">
-          <span className="text-[9px] font-black premium-gold-gradient-text">+{remainingCount}</span>
+        <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-muted ring-2 ring-background shadow-sm">
+          <span className="text-[8px] sm:text-[9px] font-black premium-gold-gradient-text">+{remainingCount}</span>
         </div>
       )}
     </div>
@@ -114,7 +115,7 @@ export function FixtureCard({
 
   return (
     <Card className={cn(
-      "relative isolate overflow-hidden border-border/50 bg-card text-foreground shadow-2xl transition-all duration-500 rounded-[2.5rem]",
+      "relative isolate overflow-hidden border-border/50 bg-card text-foreground shadow-xl transition-all duration-500 rounded-[2rem]",
       isLive ? "ring-2 ring-emerald-500/50" : ""
     )}>
       {/* Dynamic Background Gradients */}
@@ -127,45 +128,28 @@ export function FixtureCard({
             : "bg-gradient-to-br from-indigo-500 via-transparent to-purple-500"
       )} />
       
-      {/* Decorative Glows */}
-      <div className={cn(
-        "absolute -left-16 -top-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000 opacity-20 pointer-events-none",
-        isLive ? "bg-emerald-500" : isFinished ? "bg-orange-500" : "bg-purple-500"
-      )} />
-      <div className={cn(
-        "absolute -right-16 -bottom-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000 opacity-20 pointer-events-none",
-        isLive ? "bg-teal-500" : isFinished ? "bg-zinc-500" : "bg-cyan-500"
-      )} />
-
       <CardContent className="p-0 relative z-10">
         {/* Top Header Pill */}
-        <div className="px-6 py-4 flex justify-between items-center border-b border-border/50 bg-background/40 backdrop-blur-md rounded-t-[inherit] overflow-hidden">
+        <div className="px-5 py-3 flex justify-between items-center border-b border-border/50 bg-background/40 backdrop-blur-md rounded-t-[inherit] overflow-hidden">
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground">
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
               {fixture.stage} • {dateStr}
             </span>
-            {(fixture.group_name || fixture.matchday) && (
-              <span className="text-[9px] font-bold uppercase text-muted-foreground/60 tracking-wider mt-0.5">
-                {fixture.group_name && `Group ${fixture.group_name}`} {fixture.group_name && fixture.matchday && '•'} {fixture.matchday && `MD ${fixture.matchday}`}
-              </span>
-            )}
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             {isFinished ? (
-              <span className="status-pill pill-final">
-                FINAL
-              </span>
+              <span className="status-pill pill-final px-2 py-0.5 text-[8px]">FINAL</span>
             ) : isLive ? (
-              <div className="status-pill pill-live">
+              <div className="status-pill pill-live px-2 py-0.5 text-[8px]">
                 <div className="h-1 w-1 rounded-full bg-black" /> LIVE
               </div>
             ) : isStandardLocked ? (
-              <span className="status-pill pill-locked">
-                <Lock className="h-2.5 w-2.5" /> LOCKED
+              <span className="status-pill pill-locked px-2 py-0.5 text-[8px]">
+                <Lock className="h-2 w-2" /> LOCKED
               </span>
             ) : (
-              <span className="status-pill pill-open">
+              <span className="status-pill pill-open px-2 py-0.5 text-[8px]">
                 {timeStr}
               </span>
             )}
@@ -173,120 +157,81 @@ export function FixtureCard({
         </div>
 
         {/* Match Action Section */}
-        <div className="p-8 pb-4 flex items-center justify-between gap-2">
+        <div className="p-4 sm:p-6 pb-2 sm:pb-4 flex items-center justify-between gap-1 sm:gap-2">
           {/* Home Team */}
-          <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-3">
+          <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-2 sm:gap-3">
             <div className="relative group/flag">
               {fixture.home_flag ? (
-                <div className="relative h-20 w-20 sm:h-24 sm:w-24 transition-transform group-hover/flag:scale-105 duration-500">
-                  <div className="absolute inset-0 rounded-full bg-background/50 backdrop-blur-sm border border-border shadow-lg" />
-                  <div className="relative h-full w-full rounded-full overflow-hidden p-1">
-                    <Image 
-                      src={fixture.home_flag} 
-                      alt={fixture.home_team} 
-                      fill
-                      className="rounded-full object-cover"
-                    />
+                <div className="relative h-16 w-16 sm:h-20 sm:w-20 transition-transform duration-500">
+                  <div className="absolute inset-0 rounded-full bg-background/50 backdrop-blur-sm border border-border shadow-md" />
+                  <div className="relative h-full w-full rounded-full overflow-hidden p-0.5 sm:p-1">
+                    <Image src={fixture.home_flag} alt={fixture.home_team} fill className="rounded-full object-cover" />
                   </div>
                 </div>
               ) : (
-                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-muted border border-border text-[10px] font-black text-muted-foreground uppercase italic">
-                  TBD
-                </div>
+                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-muted border border-border text-[8px] font-black text-muted-foreground uppercase italic">TBD</div>
               )}
             </div>
-            <div className="space-y-1.5 w-full flex flex-col items-center">
-              <span className="text-sm font-black uppercase tracking-tight text-foreground block truncate">{fixture.home_team}</span>
+            <div className="space-y-1 w-full flex flex-col items-center">
+              <span className="text-[12px] sm:text-sm font-black uppercase tracking-tight text-foreground block truncate max-w-full">{fixture.home_team}</span>
               <AvatarStack supporters={homeSupporters} />
             </div>
           </div>
 
           {/* Score Area */}
-          <div className="flex flex-col items-center justify-center min-w-[140px]">
+          <div className="flex flex-col items-center justify-center min-w-[100px] sm:min-w-[140px]">
             {editing ? (
-              <div className="flex flex-col items-center gap-4 py-2 animate-in zoom-in-95 duration-200">
-                <div className="flex items-center gap-3">
-                  <input 
-                    type="number" 
-                    value={hScore} 
-                    onChange={(e) => setHScore(e.target.value)}
-                    className="w-14 h-16 text-center text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-2xl focus:border-primary outline-none transition-all shadow-inner"
-                    autoFocus
-                  />
-                  <span className="text-3xl font-black text-muted-foreground italic">:</span>
-                  <input 
-                    type="number" 
-                    value={aScore} 
-                    onChange={(e) => setAScore(e.target.value)}
-                    className="w-14 h-16 text-center text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-2xl focus:border-primary outline-none transition-all shadow-inner"
-                  />
+              <div className="flex flex-col items-center gap-3 py-1 animate-in zoom-in-95 duration-200">
+                <div className="flex items-center gap-2">
+                  <input type="number" value={hScore} onChange={(e) => setHScore(e.target.value)} className="w-10 h-12 sm:w-14 sm:h-16 text-center text-xl sm:text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-xl sm:rounded-2xl outline-none" autoFocus />
+                  <span className="text-xl sm:text-3xl font-black text-muted-foreground italic">:</span>
+                  <input type="number" value={aScore} onChange={(e) => setAScore(e.target.value)} className="w-10 h-12 sm:w-14 sm:h-16 text-center text-xl sm:text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-xl sm:rounded-2xl outline-none" />
                 </div>
-                <Button onClick={() => handleSave(isStandardLocked)} className="soft-button h-12 px-8 premium-gold-pill border-2 border-primary/20">
-                  <Check className="h-4 w-4 mr-2" /> LOCK PICK
+                <Button onClick={() => handleSave(isStandardLocked)} className="soft-button h-10 px-5 sm:h-12 sm:px-8 premium-gold-pill text-[10px] sm:text-xs">
+                  <Check className="h-3 w-3 mr-1.5" /> LOCK PICK
                 </Button>
               </div>
             ) : (
               <div className="flex flex-col items-center">
                 <div className={cn(
-                  "flex items-center gap-4 px-6 py-4 rounded-[2rem] transition-all duration-500 border border-border/50 shadow-inner bg-background/50",
+                  "flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-2 sm:py-4 rounded-[1.5rem] sm:rounded-[2rem] border border-border/50 shadow-inner bg-background/50",
                   isLive ? "ring-1 ring-emerald-500/20" : ""
                 )}>
                   <span className={cn(
-                    "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-sm",
+                    "text-3xl sm:text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-sm",
                     isFinished || isLive ? "text-foreground" : "text-muted-foreground/30"
                   )}>
                     {isFinished || isLive ? (fixture.home_score ?? 0) : '0'}
                   </span>
-                  <span className="text-3xl font-black text-muted-foreground/30 italic">:</span>
+                  <span className="text-xl sm:text-3xl font-black text-muted-foreground/30 italic">:</span>
                   <span className={cn(
-                    "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-sm",
-                    isFinished || isLive ? "text-foreground" : "text-muted-foreground/30"
-                  )}>
-                    {isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
+                    "text-3xl sm:text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-sm",
+                    isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
                   </span>
                 </div>
                 
-                <div className="mt-4 flex flex-col items-center gap-2">
+                <div className="mt-3 flex flex-col items-center gap-1.5">
                   <AvatarStack supporters={drawSupporters} />
-                  
                   {myPrediction && (
-                    <div className="mt-1 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                      <Zap className="h-3 w-3 text-primary fill-primary" />
-                      <span className="text-[10px] font-black uppercase italic text-primary tracking-widest whitespace-nowrap">
-                        Your Pick: {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
+                    <div className="mt-0.5 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 flex items-center gap-1.5">
+                      <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
+                      <span className="text-[8px] sm:text-[9px] font-black uppercase italic text-primary tracking-widest whitespace-nowrap">
+                        {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
                       </span>
                     </div>
                   )}
 
-                  <div className="mt-2 flex flex-col items-center gap-3">
-                    {isFinished ? (
-                      <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                         Match Result
-                      </div>
-                    ) : isLive ? (
-                      <div className="flex items-center gap-2 text-[11px] font-black text-emerald-500 uppercase tracking-widest">
-                        <Timer className="h-3 w-3 animate-spin-slow" /> LIVE UPDATE
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2">
-                        {!editing && (
-                           !isStandardLocked ? (
-                              <Button 
-                                onClick={() => setEditing(true)} 
-                                className="soft-button h-10 px-6 bg-muted text-foreground border border-border/50 hover:premium-gold-gradient-bg hover:text-black group/btn"
-                              >
-                                <Edit2 className="h-3 w-3 mr-2 group-hover/btn:rotate-12" /> {myPrediction ? 'Change Pick' : 'Set Score'}
-                              </Button>
-                           ) : isLifelineAvailable ? (
-                              <Button 
-                                onClick={() => setEditing(true)} 
-                                className="soft-button h-10 px-6 premium-gold-pill flex items-center gap-2 shadow-lg animate-pulse"
-                              >
-                                <Zap className="h-3.5 w-3.5 fill-current" /> Use Lifeline
-                              </Button>
-                           ) : null
-                        )}
-                      </div>
+                  <div className="mt-1 flex flex-col items-center">
+                    {!editing && (
+                       !isStandardLocked ? (
+                          <Button onClick={() => setEditing(true)} className="soft-button h-8 px-4 sm:h-10 sm:px-6 bg-muted text-foreground border border-border/50 text-[9px] sm:text-[10px] hover:premium-gold-gradient-bg hover:text-black">
+                            <Edit2 className="h-2.5 w-2.5 mr-1.5" /> {myPrediction ? 'Edit' : 'Pick'}
+                          </Button>
+                       ) : isLifelineAvailable ? (
+                          <Button onClick={() => setEditing(true)} className="soft-button h-8 px-4 premium-gold-pill text-[9px] shadow-lg animate-pulse">
+                            <Zap className="h-3 w-3 fill-current mr-1" /> Lifeline
+                          </Button>
+                       ) : null
                     )}
                   </div>
                 </div>
@@ -295,28 +240,21 @@ export function FixtureCard({
           </div>
 
           {/* Away Team */}
-          <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-3">
+          <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-2 sm:gap-3">
             <div className="relative group/flag">
               {fixture.away_flag ? (
-                <div className="relative h-20 w-20 sm:h-24 sm:w-24 transition-transform group-hover/flag:scale-105 duration-500">
-                  <div className="absolute inset-0 rounded-full bg-background/50 backdrop-blur-sm border border-border shadow-lg" />
-                  <div className="relative h-full w-full rounded-full overflow-hidden p-1">
-                    <Image 
-                      src={fixture.away_flag} 
-                      alt={fixture.away_team} 
-                      fill
-                      className="rounded-full object-cover"
-                    />
+                <div className="relative h-16 w-16 sm:h-20 sm:w-20 transition-transform duration-500">
+                  <div className="absolute inset-0 rounded-full bg-background/50 backdrop-blur-sm border border-border shadow-md" />
+                  <div className="relative h-full w-full rounded-full overflow-hidden p-0.5 sm:p-1">
+                    <Image src={fixture.away_flag} alt={fixture.away_team} fill className="rounded-full object-cover" />
                   </div>
                 </div>
               ) : (
-                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-muted border border-border text-[10px] font-black text-muted-foreground uppercase italic">
-                  TBD
-                </div>
+                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-muted border border-border text-[8px] font-black text-muted-foreground uppercase italic">TBD</div>
               )}
             </div>
-            <div className="space-y-1.5 w-full flex flex-col items-center">
-              <span className="text-sm font-black uppercase tracking-tight text-foreground block truncate">{fixture.away_team}</span>
+            <div className="space-y-1 w-full flex flex-col items-center">
+              <span className="text-[12px] sm:text-sm font-black uppercase tracking-tight text-foreground block truncate max-w-full">{fixture.away_team}</span>
               <AvatarStack supporters={awaySupporters} />
             </div>
           </div>
@@ -324,27 +262,27 @@ export function FixtureCard({
 
         {/* Scorers Section */}
         {showScorers && (
-          <div className="px-8 pb-8">
-            <div className="p-4 bg-muted/40 rounded-3xl border border-border/40 flex flex-col gap-3 shadow-inner backdrop-blur-sm">
-               <div className="flex items-center justify-center gap-4">
+          <div className="px-5 sm:px-8 pb-5 sm:pb-8">
+            <div className="p-3 sm:p-4 bg-muted/40 rounded-2xl sm:rounded-3xl border border-border/40 flex flex-col gap-2 shadow-inner backdrop-blur-sm">
+               <div className="flex items-center justify-center gap-3">
                  <div className="h-[1px] bg-border/40 flex-1" />
-                 <div className="flex items-center gap-2">
-                    <Goal className="h-3 w-3 text-primary" />
-                    <span className="text-[9px] font-black premium-gold-gradient-text uppercase tracking-[0.3em]">Goal Events</span>
+                 <div className="flex items-center gap-1.5">
+                    <Goal className="h-2.5 w-2.5 text-primary" />
+                    <span className="text-[8px] font-black premium-gold-gradient-text uppercase tracking-[0.2em]">Goal Events</span>
                  </div>
                  <div className="h-[1px] bg-border/40 flex-1" />
                </div>
-               <div className="flex justify-between gap-6 pt-1">
+               <div className="flex justify-between gap-4 pt-0.5">
                   <div className="flex-1 min-w-0">
                     {homeScorers && (
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed italic break-words">
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase leading-tight italic break-words">
                         {homeScorers}
                       </p>
                     )}
                   </div>
                   <div className="flex-1 text-right min-w-0">
                     {awayScorers && (
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase leading-relaxed italic break-words">
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase leading-tight italic break-words">
                         {awayScorers}
                       </p>
                     )}

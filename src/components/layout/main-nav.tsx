@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -17,7 +18,7 @@ export function MainNav() {
   const pathname = usePathname()
 
   return (
-    <div className="nav-pill">
+    <div className="nav-pill w-[calc(100%-2rem)] max-w-sm h-14 sm:h-16 px-3 sm:px-4 py-1.5 sm:py-2">
       {navItems.map((item) => {
         const isActive = pathname === item.href
         return (
@@ -25,11 +26,11 @@ export function MainNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300",
+              "flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-300",
               isActive ? "active-pill" : "text-gray-400 hover:text-white"
             )}
           >
-            <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
+            <item.icon className={cn("h-4 w-4 sm:h-5 sm:w-5", isActive && "stroke-[2.5px]")} />
             <span className="sr-only">{item.label}</span>
           </Link>
         )
