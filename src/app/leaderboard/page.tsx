@@ -12,6 +12,7 @@ import { getTeamFlagUrl } from "@/lib/team-flags"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export default function Leaderboard() {
   const { user, profile, stats, loading: authLoading } = useAuth()
@@ -75,7 +76,10 @@ export default function Leaderboard() {
       <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none">
+            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none flex items-center gap-2">
+              <div className="relative h-6 w-6 shrink-0">
+                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+              </div>
               THE <span className="text-primary">LEADERBOARD</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">

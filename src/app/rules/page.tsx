@@ -1,3 +1,4 @@
+
 "use client"
 
 import { MainNav } from "@/components/layout/main-nav"
@@ -9,6 +10,7 @@ import { cn, copyToClipboard } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
+import Image from "next/image"
 
 const RULES = [
   { title: "Exact Score", points: 3, description: "Predict the exact final score of the match.", icon: Award },
@@ -38,7 +40,10 @@ export default function Rules() {
       <header className="px-6 py-4 bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none">
+            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none flex items-center gap-2">
+              <div className="relative h-6 w-6 shrink-0">
+                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+              </div>
               THE <span className="text-primary">RULES</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">

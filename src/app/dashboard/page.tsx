@@ -7,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { FixtureCard } from "@/components/fixtures/fixture-card"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@/lib/supabase/client"
-import { Trophy, Zap, Activity, ChevronRight, Loader2, Star } from "lucide-react"
+import { Zap, Activity, ChevronRight, Loader2, Star } from "lucide-react"
 import { DateTime } from "luxon"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export default function Dashboard() {
   const { user: authUser, profile, loading: authLoading, stats, useLifeline } = useAuth()
@@ -68,7 +69,6 @@ export default function Dashboard() {
     }
   }, [authUser])
 
-  // Auto-scroll the active date tab into view
   useEffect(() => {
     if (activeDate && scrollContainerRef.current) {
       const activeTab = document.getElementById(`date-tab-${activeDate}`)
@@ -202,7 +202,9 @@ export default function Dashboard() {
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
             <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900 leading-none uppercase">
-              <Trophy className="h-5 w-5 text-primary" />
+              <div className="relative h-6 w-6 shrink-0">
+                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+              </div>
               MATCH <span className="text-primary">CENTER</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">

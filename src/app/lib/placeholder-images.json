@@ -3,9 +3,9 @@
   "placeholderImages": [
     {
       "id": "fifa-logo",
-      "description": "Official FIFA World Cup 2026 Logo",
+      "description": "Arena Official Logo",
       "imageUrl": "/logo.png",
-      "imageHint": "world cup logo"
+      "imageHint": "arena logo"
     },
     {
       "id": "stadium-bg",

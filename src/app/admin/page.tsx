@@ -7,13 +7,14 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, ShieldCheck, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Play } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { DateTime } from "luxon"
+import Image from "next/image"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -208,7 +209,9 @@ export default function AdminPage() {
       <header className="px-6 py-4 bg-gray-900 text-white shadow-lg sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div className="flex items-center gap-4">
-            <ShieldCheck className="h-6 w-6 text-primary" />
+            <div className="relative h-6 w-6 shrink-0">
+              <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+            </div>
             <div>
               <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
                 CONTROL <span className="text-primary">TOWER</span>

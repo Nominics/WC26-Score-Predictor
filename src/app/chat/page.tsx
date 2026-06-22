@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 export default function ChatPage() {
   const { user, stats } = useAuth()
@@ -111,6 +112,9 @@ export default function ChatPage() {
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
             <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 text-gray-900 leading-none uppercase">
+              <div className="relative h-6 w-6 shrink-0">
+                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+              </div>
               ARENA <span className="text-primary">CHAT</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">

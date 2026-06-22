@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -11,6 +12,7 @@ import { PwaInstallButton } from "@/components/pwa-install-button"
 import { useAuth } from "@/hooks/use-auth"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 export default function Activity() {
   const { stats } = useAuth()
@@ -64,6 +66,9 @@ export default function Activity() {
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
             <h1 className="text-xl font-black italic tracking-tighter flex items-center gap-2 uppercase text-gray-900 leading-none">
+              <div className="relative h-6 w-6 shrink-0">
+                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+              </div>
               LIVE <span className="text-primary">FEED</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">

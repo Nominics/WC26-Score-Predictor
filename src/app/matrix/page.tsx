@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, Grid2X2, Trophy, Zap } from "lucide-react"
+import { Loader2, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
@@ -104,7 +104,10 @@ export default function Matrix() {
       <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase">
+            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase flex items-center gap-2">
+              <div className="relative h-6 w-6 shrink-0">
+                <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+              </div>
               STRATEGY <span className="text-primary">MATRIX</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
