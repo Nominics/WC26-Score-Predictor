@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { getTeamFlagUrl } from "@/lib/team-flags";
-import { sendNotification } from "@/lib/notifications/send-notification";
+import { sendNotification, NotificationType } from "@/lib/notifications/send-notification";
 
 type WorldCupApiGame = {
   id: string;
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
       if (response.ok) {
         const data = (await response.json()) as WorldCupApiResponse;
         
-        // Fetch existing fixtures to compare scores/scorers
+        // Fetch existing fixtures to compare scores/scorers BEFORE upserting
         const { data: existingFixtures } = await supabaseAdmin.from("fixtures").select("*");
         const fixtureMap = new Map(existingFixtures?.map(f => [f.external_id, f]) || []);
 
@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
           const existing = fixtureMap.get(game.id);
 
-          // Notify if score changed
+          // Notify if score changed (Goal Alert)
           if (existing && (existing.home_score !== homeScore || existing.away_score !== awayScore) && status !== 'scheduled') {
             const eventKey = `score:${game.id}:${homeScore}-${awayScore}`;
             broadcastNotification({
@@ -134,7 +134,6 @@ export async function POST(req: Request) {
     // 2. LEADERBOARD RANK CHANGE DETECTION
     const { data: leaderboard } = await supabaseAdmin.from("leaderboard").select("user_id, total_points");
     if (leaderboard) {
-      // Calculate current ranks
       const rankedData = leaderboard
         .sort((a, b) => b.total_points - a.total_points)
         .map((u, i) => ({ ...u, rank: i + 1 }));
@@ -160,7 +159,6 @@ export async function POST(req: Request) {
           });
         }
 
-        // Update snapshot
         await supabaseAdmin.from("leaderboard_rank_snapshots").upsert({
           user_id: entry.user_id,
           rank: entry.rank,
@@ -193,6 +191,7 @@ export async function POST(req: Request) {
       if (!upcomingFixtures?.length) continue;
 
       for (const fixture of upcomingFixtures) {
+        // RPC get_users_needing_reminders handles: user has no prediction AND user has enabled push AND user hasn't received this log yet
         const { data: usersToRemind } = await supabaseAdmin
           .rpc('get_users_needing_reminders', { 
             f_id: fixture.id, 
@@ -216,7 +215,7 @@ export async function POST(req: Request) {
             user_id: user.id,
             fixture_id: fixture.id,
             reminder_type: interval.label
-          }).catch(() => {}); // Avoid failing if duplicate log exists
+          }).catch(() => {});
           
           remindersSent++;
         }
@@ -235,18 +234,22 @@ export async function POST(req: Request) {
   }
 }
 
-async function broadcastNotification({ type, title, body, eventKey }: { type: any, title: string, body: string, eventKey: string }) {
+async function broadcastNotification({ type, title, body, eventKey }: { type: NotificationType, title: string, body: string, eventKey: string }) {
   const { data: profiles } = await supabaseAdmin.from("profiles").select("id");
   if (!profiles) return;
   
-  // Use a batch to prevent excessive processing
-  for (const profile of profiles) {
-    await sendNotification({
-      userId: profile.id,
-      type,
-      title,
-      body,
-      eventKey
-    });
+  // Send notifications in parallel batches to optimize delivery
+  const batchSize = 50;
+  for (let i = 0; i < profiles.length; i += batchSize) {
+    const batch = profiles.slice(i, i + batchSize);
+    await Promise.all(batch.map(profile => 
+      sendNotification({
+        userId: profile.id,
+        type,
+        title,
+        body,
+        eventKey
+      })
+    ));
   }
 }
