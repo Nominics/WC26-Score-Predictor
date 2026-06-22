@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit2, Check, Lock, Trophy, Zap, Timer } from "lucide-react"
+import { Edit2, Check, Lock, Trophy, Zap, Timer, Goal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DateTime } from "luxon"
 import Image from "next/image"
@@ -57,6 +57,14 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
 
   const isLive = fixture.status === 'live'
   const isFinished = fixture.status === 'finished'
+
+  const cleanScorers = (scorers: string | null) => {
+    if (!scorers || scorers === 'null') return null;
+    return scorers.split(';').map(s => s.trim()).join(' • ');
+  }
+
+  const homeScorers = cleanScorers(fixture.home_scorers);
+  const awayScorers = cleanScorers(fixture.away_scorers);
   
   return (
     <Card className={cn(
@@ -68,10 +76,17 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
       {isLive && <div className="absolute top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-20" />}
       
       <CardContent className="p-0 relative z-10">
-        <div className="px-6 py-2 bg-muted/50 border-b border-border flex justify-between items-center">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                Fixture {fixture.match_number} • {fixture.stage}
-            </span>
+        <div className="px-6 py-3 bg-muted/50 border-b border-border flex justify-between items-center">
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+                  Fixture {fixture.match_number} • {fixture.stage}
+              </span>
+              {(fixture.group_name || fixture.matchday) && (
+                <span className="text-[8px] font-bold uppercase text-muted-foreground/60 tracking-wider mt-0.5">
+                  {fixture.group_name && `Group ${fixture.group_name}`} {fixture.group_name && fixture.matchday && '•'} {fixture.matchday && `Matchday ${fixture.matchday}`}
+                </span>
+              )}
+            </div>
             {isFinished ? (
                <span className="text-[9px] font-black text-orange-600 uppercase italic tracking-widest bg-orange-500/10 px-2 py-0.5 rounded-full">Final Result</span>
             ) : isLive ? (
@@ -84,7 +99,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
             )}
         </div>
 
-        <div className="p-8 flex items-center justify-between gap-4">
+        <div className="p-8 pb-6 flex items-center justify-between gap-4">
           <div className="flex flex-col items-center flex-1 text-center min-w-0">
             <div className="mb-3 relative group/flag">
               {fixture.home_flag ? (
@@ -172,7 +187,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
               </div>
             )}
 
-            <div className="mt-6">
+            <div className="mt-6 mb-2">
                {editing ? null : (
                  !isStandardLocked ? (
                     <Button 
@@ -214,6 +229,38 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
             <span className="text-[13px] font-black uppercase tracking-tight text-foreground truncate w-full px-1 leading-tight">{fixture.away_team}</span>
           </div>
         </div>
+
+        {/* Scorers Section */}
+        {(homeScorers || awayScorers) && (
+          <div className="px-6 pb-8">
+            <div className="p-4 bg-muted/30 rounded-3xl border border-border/50 flex flex-col gap-2 shadow-inner">
+               <div className="flex items-center justify-center gap-3">
+                 <div className="h-[1px] bg-border/50 flex-1" />
+                 <div className="flex items-center gap-1.5">
+                    <Goal className="h-2.5 w-2.5 text-primary" />
+                    <span className="text-[8px] font-black text-primary uppercase tracking-[0.2em]">Match Scorers</span>
+                 </div>
+                 <div className="h-[1px] bg-border/50 flex-1" />
+               </div>
+               <div className="flex justify-between gap-6 pt-1">
+                  <div className="flex-1">
+                    {homeScorers && (
+                      <p className="text-[10px] font-bold text-foreground/70 uppercase leading-relaxed italic">
+                        {homeScorers}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex-1 text-right">
+                    {awayScorers && (
+                      <p className="text-[10px] font-bold text-foreground/70 uppercase leading-relaxed italic">
+                        {awayScorers}
+                      </p>
+                    )}
+                  </div>
+               </div>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )
