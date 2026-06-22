@@ -26,6 +26,7 @@ export default function Dashboard() {
   const { toast } = useToast()
   const [fixtures, setFixtures] = useState<any[]>([])
   const [predictions, setPredictions] = useState<any[]>([])
+  const [supporters, setSupporters] = useState<any[]>([])
   const [activityLogs, setActivityLogs] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeDate, setActiveDate] = useState<string | null>(null)
@@ -81,16 +82,19 @@ export default function Dashboard() {
   const fetchData = async () => {
     if (!authUser) return
     try {
-      const [fRes, pRes] = await Promise.all([
+      const [fRes, pRes, sRes] = await Promise.all([
         supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true }),
-        supabase.from("predictions").select("fixture_id, predicted_home_score, predicted_away_score").eq("user_id", authUser.id)
+        supabase.from("predictions").select("fixture_id, predicted_home_score, predicted_away_score").eq("user_id", authUser.id),
+        supabase.from("fixture_prediction_supporters").select("*")
       ])
       
       if (fRes.error) throw fRes.error
       if (pRes.error) throw pRes.error
+      if (sRes.error) throw sRes.error
 
       setFixtures(fRes.data || [])
       setPredictions(pRes.data || [])
+      setSupporters(sRes.data || [])
 
       if (fRes.data && fRes.data.length > 0 && !activeDate) {
         const now = DateTime.now().toISODate()
@@ -334,6 +338,7 @@ export default function Dashboard() {
           <div className="space-y-6">
             {displayFixtures.map((fixture) => {
               const pred = predictions.find(p => p.fixture_id === fixture.id)
+              const supportersForFixture = supporters.filter(s => s.fixture_id === fixture.id)
               return (
                 <FixtureCard 
                   key={fixture.id} 
@@ -343,6 +348,8 @@ export default function Dashboard() {
                   onSave={handlePredict}
                   lifelinesRemaining={stats?.lifelines || 0}
                   userProfile={profile}
+                  supporters={supportersForFixture}
+                  currentUserId={authUser?.id}
                 />
               )
             })}

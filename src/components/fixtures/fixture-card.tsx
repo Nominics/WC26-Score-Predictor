@@ -17,6 +17,31 @@ interface FixtureCardProps {
   onSave: (id: string, h: number, a: number, isLifeline: boolean) => void
   lifelinesRemaining?: number
   userProfile?: any
+  supporters?: any[]
+  currentUserId?: string
+}
+
+const AvatarStack = ({ supporters }: { supporters: any[] }) => {
+  if (!supporters || supporters.length === 0) return null
+  
+  const MAX_VISIBLE = 5
+  const visibleSupporters = supporters.slice(0, MAX_VISIBLE)
+  const remainingCount = Math.max(0, supporters.length - MAX_VISIBLE)
+
+  return (
+    <div className="flex -space-x-2.5 overflow-hidden py-1">
+      {visibleSupporters.map((s, idx) => (
+        <div key={`${s.user_id}-${idx}`} className="inline-block ring-2 ring-slate-950 rounded-full transition-transform hover:-translate-y-1">
+          <UserAvatar profile={s} className="h-7 w-7 border-0" />
+        </div>
+      ))}
+      {remainingCount > 0 && (
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-800 ring-2 ring-slate-950">
+          <span className="text-[9px] font-black text-primary">+{remainingCount}</span>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function FixtureCard({ 
@@ -25,7 +50,9 @@ export function FixtureCard({
   initialAway, 
   onSave, 
   lifelinesRemaining = 0,
-  userProfile 
+  userProfile,
+  supporters = [],
+  currentUserId
 }: FixtureCardProps) {
   const [hScore, setHScore] = useState<string>(initialHome?.toString() || "")
   const [aScore, setAScore] = useState<string>(initialAway?.toString() || "")
@@ -68,6 +95,12 @@ export function FixtureCard({
   const isLive = fixture.status === 'live'
   const isFinished = fixture.status === 'finished'
 
+  const homeSupporters = supporters.filter(s => s.prediction_side === 'home')
+  const awaySupporters = supporters.filter(s => s.prediction_side === 'away')
+  const drawSupporters = supporters.filter(s => s.prediction_side === 'draw')
+
+  const myPrediction = supporters.find(s => s.user_id === currentUserId)
+
   const cleanScorers = (scorers: string | null) => {
     if (!scorers || scorers === 'null') return null;
     let cleaned = scorers.replace(/[{}"']/g, '');
@@ -79,31 +112,6 @@ export function FixtureCard({
   const homeScorers = cleanScorers(fixture.home_scorers);
   const awayScorers = cleanScorers(fixture.away_scorers);
   const showScorers = (isLive || isFinished) && (homeScorers || awayScorers);
-
-  // Prediction side logic
-  const hasPrediction = initialHome !== undefined && initialAway !== undefined
-  const predictedSide = !hasPrediction
-    ? null
-    : initialHome! > initialAway!
-      ? "home"
-      : initialHome! < initialAway!
-        ? "away"
-        : "draw"
-
-  const YourPickMarker = ({ label }: { label?: string }) => (
-    <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
-      <div className="relative">
-        <UserAvatar 
-          profile={userProfile} 
-          className="h-8 w-8 border-2 border-white shadow-xl" 
-        />
-        <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 border border-white">
-          <Star className="h-2 w-2 text-black fill-black" />
-        </div>
-      </div>
-      <span className="text-[8px] font-black uppercase text-primary tracking-widest">{label || "Your Pick"}</span>
-    </div>
-  )
 
   return (
     <Card className={cn(
@@ -166,7 +174,7 @@ export function FixtureCard({
         </div>
 
         {/* Match Action Section */}
-        <div className="p-8 pb-6 flex items-center justify-between gap-2">
+        <div className="p-8 pb-4 flex items-center justify-between gap-2">
           {/* Home Team */}
           <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-3">
             <div className="relative group/flag">
@@ -188,9 +196,9 @@ export function FixtureCard({
                 </div>
               )}
             </div>
-            <div className="space-y-1 w-full">
+            <div className="space-y-1.5 w-full flex flex-col items-center">
               <span className="text-sm font-black uppercase tracking-tight text-white block truncate">{fixture.home_team}</span>
-              {predictedSide === "home" && <YourPickMarker />}
+              <AvatarStack supporters={homeSupporters} />
             </div>
           </div>
 
@@ -226,51 +234,62 @@ export function FixtureCard({
                 )}>
                   <span className={cn(
                     "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-lg",
-                    initialHome === undefined ? "text-white/20" : "text-white"
+                    isFinished || isLive ? "text-white" : "text-white/20"
                   )}>
-                    {isFinished || isLive ? (fixture.home_score ?? 0) : (initialHome ?? '0')}
+                    {isFinished || isLive ? (fixture.home_score ?? 0) : '0'}
                   </span>
                   <span className="text-3xl font-black text-white/20 italic">:</span>
                   <span className={cn(
                     "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-lg",
-                    initialAway === undefined ? "text-white/20" : "text-white"
+                    isFinished || isLive ? "text-white" : "text-white/20"
                   )}>
-                    {isFinished || isLive ? (fixture.away_score ?? 0) : (initialAway ?? '0')}
+                    {isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
                   </span>
                 </div>
                 
-                <div className="mt-4 flex flex-col items-center gap-3">
-                  {predictedSide === "draw" && <YourPickMarker label="Draw Pick" />}
+                <div className="mt-4 flex flex-col items-center gap-2">
+                  <AvatarStack supporters={drawSupporters} />
                   
-                  {isFinished ? (
-                    <div className="flex items-center gap-2 text-[11px] font-black text-white/50 uppercase tracking-widest">
-                       Match Result
-                    </div>
-                  ) : isLive ? (
-                    <div className="flex items-center gap-2 text-[11px] font-black text-emerald-400 uppercase tracking-widest">
-                      <Timer className="h-3 w-3 animate-spin-slow" /> LIVE UPDATE
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2">
-                       {editing ? null : (
-                         !isStandardLocked ? (
-                            <Button 
-                              onClick={() => setEditing(true)} 
-                              className="rounded-full bg-white/5 text-white border border-white/10 h-10 px-6 hover:bg-primary hover:text-black transition-all font-black uppercase text-[10px] tracking-widest group/btn"
-                            >
-                              <Edit2 className="h-3 w-3 mr-2 group-hover/btn:rotate-12" /> {hasPrediction ? 'Change Pick' : 'Set Score'}
-                            </Button>
-                         ) : isLifelineAvailable ? (
-                            <Button 
-                              onClick={() => setEditing(true)} 
-                              className="rounded-full bg-primary text-black px-6 h-10 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 shadow-2xl animate-pulse"
-                            >
-                              <Zap className="h-3.5 w-3.5 fill-black" /> Use Lifeline
-                            </Button>
-                         ) : null
-                       )}
+                  {myPrediction && (
+                    <div className="mt-1 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                      <Zap className="h-3 w-3 text-primary fill-primary" />
+                      <span className="text-[10px] font-black uppercase italic text-primary tracking-widest whitespace-nowrap">
+                        Your Pick: {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
+                      </span>
                     </div>
                   )}
+
+                  <div className="mt-2 flex flex-col items-center gap-3">
+                    {isFinished ? (
+                      <div className="flex items-center gap-2 text-[11px] font-black text-white/50 uppercase tracking-widest">
+                         Match Result
+                      </div>
+                    ) : isLive ? (
+                      <div className="flex items-center gap-2 text-[11px] font-black text-emerald-400 uppercase tracking-widest">
+                        <Timer className="h-3 w-3 animate-spin-slow" /> LIVE UPDATE
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        {!editing && (
+                           !isStandardLocked ? (
+                              <Button 
+                                onClick={() => setEditing(true)} 
+                                className="rounded-full bg-white/5 text-white border border-white/10 h-10 px-6 hover:bg-primary hover:text-black transition-all font-black uppercase text-[10px] tracking-widest group/btn"
+                              >
+                                <Edit2 className="h-3 w-3 mr-2 group-hover/btn:rotate-12" /> {myPrediction ? 'Change Pick' : 'Set Score'}
+                              </Button>
+                           ) : isLifelineAvailable ? (
+                              <Button 
+                                onClick={() => setEditing(true)} 
+                                className="rounded-full bg-primary text-black px-6 h-10 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 shadow-2xl animate-pulse"
+                              >
+                                <Zap className="h-3.5 w-3.5 fill-black" /> Use Lifeline
+                              </Button>
+                           ) : null
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -297,9 +316,9 @@ export function FixtureCard({
                 </div>
               )}
             </div>
-            <div className="space-y-1 w-full">
+            <div className="space-y-1.5 w-full flex flex-col items-center">
               <span className="text-sm font-black uppercase tracking-tight text-white block truncate">{fixture.away_team}</span>
-              {predictedSide === "away" && <YourPickMarker />}
+              <AvatarStack supporters={awaySupporters} />
             </div>
           </div>
         </div>
