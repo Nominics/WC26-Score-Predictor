@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Info, Award, Calendar, Zap, ShieldAlert, Sparkles, Flag, Share2 } from "lucide-react"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
+import { ModeToggle } from "@/components/mode-toggle"
 import { cn, copyToClipboard } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
@@ -35,26 +36,26 @@ export default function Rules() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-foreground pb-24">
+    <div className="min-h-screen bg-background text-foreground pb-24">
       <MainNav />
-      <header className="px-6 py-4 bg-white border-b border-gray-100 sticky top-0 z-40">
+      <header className="px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none flex items-center gap-2">
+            <h1 className="text-xl font-black italic tracking-tighter text-foreground uppercase leading-none flex items-center gap-2">
               <div className="relative h-6 w-6 shrink-0">
                 <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
               </div>
               THE <span className="text-primary">RULES</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
-               <p className="text-[8px] text-gray-400 uppercase font-black tracking-widest">Arena Guidelines</p>
+               <p className="text-[8px] text-muted-foreground uppercase font-black tracking-widest">Arena Guidelines</p>
                {stats && (
                  <div className="flex items-center gap-1.5">
-                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <span className="h-0.5 w-0.5 rounded-full bg-border" />
                    <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
-                   <span className="text-[9px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
-                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
-                   <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-100">
+                   <span className="text-[9px] font-black text-foreground uppercase">({stats.points} pts)</span>
+                   <span className="h-0.5 w-0.5 rounded-full bg-border" />
+                   <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20">
                       <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
                       <span className="text-[8px] font-black text-yellow-600">{stats.lifelines}</span>
                    </div>
@@ -63,6 +64,7 @@ export default function Rules() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ModeToggle />
             <PwaInstallButton />
             <ProfileSheet />
           </div>
@@ -70,52 +72,52 @@ export default function Rules() {
       </header>
 
       <main className="p-4 space-y-4 max-w-2xl mx-auto mt-6">
-        <Card className="bg-white border border-gray-100 shadow-xl rounded-3xl overflow-hidden">
-          <CardHeader className="flex flex-row items-center gap-3 bg-gray-50/50 p-6">
+        <Card className="bg-card border border-border shadow-xl rounded-3xl overflow-hidden">
+          <CardHeader className="flex flex-row items-center gap-3 bg-muted/50 p-6">
             <div className="bg-primary/10 p-2 rounded-xl">
                 <Info className="text-primary h-5 w-5"/>
             </div>
-            <CardTitle className="text-gray-900 font-black italic uppercase tracking-tight text-lg">How Scoring Works</CardTitle>
+            <CardTitle className="text-foreground font-black italic uppercase tracking-tight text-lg">How Scoring Works</CardTitle>
           </CardHeader>
-          <CardContent className="p-6 text-sm text-gray-500 font-medium leading-relaxed">
+          <CardContent className="p-6 text-sm text-muted-foreground font-medium leading-relaxed">
             Points are calculated automatically after each match is finalized. Your leaderboard rank updates live.
           </CardContent>
         </Card>
 
         <div className="grid gap-4">
           {RULES.map((rule, i) => (
-            <div key={i} className="p-6 bg-white rounded-3xl border border-gray-100 flex justify-between items-center shadow-lg transition-transform hover:scale-[1.01]">
+            <div key={i} className="p-6 bg-card rounded-3xl border border-border flex justify-between items-center shadow-lg transition-transform hover:scale-[1.01]">
               <div className="flex items-center gap-4">
-                <div className="bg-gray-50 p-3 rounded-2xl">
-                    <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : "text-gray-400")} />
+                <div className="bg-muted p-3 rounded-2xl">
+                    <rule.icon className={cn("h-5 w-5", rule.title === "Lifeline usage" ? "text-yellow-500" : "text-muted-foreground")} />
                 </div>
                 <div className="space-y-0.5">
-                    <h3 className="text-lg font-black italic text-gray-900 uppercase tracking-tight">{rule.title}</h3>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{rule.description}</p>
+                    <h3 className="text-lg font-black italic text-foreground uppercase tracking-tight">{rule.title}</h3>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{rule.description}</p>
                 </div>
               </div>
               {rule.points > 0 && (
                 <div className="text-right">
                     <span className="text-4xl font-black italic text-primary leading-none">+{rule.points}</span>
-                    <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">points</p>
+                    <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">points</p>
                 </div>
               )}
             </div>
           ))}
         </div>
 
-        <Card className="bg-white border border-gray-100 shadow-xl rounded-3xl overflow-hidden">
+        <Card className="bg-card border border-border shadow-xl rounded-3xl overflow-hidden">
           <CardHeader className="flex flex-row items-center gap-3 bg-primary/5 p-6">
             <div className="bg-primary/10 p-2 rounded-xl">
                 <Flag className="text-primary h-5 w-5"/>
             </div>
-            <CardTitle className="text-gray-900 font-black italic uppercase tracking-tight text-lg">National Representation</CardTitle>
+            <CardTitle className="text-foreground font-black italic uppercase tracking-tight text-lg">National Representation</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-3">
-            <p className="text-sm font-medium leading-relaxed text-gray-500">
+            <p className="text-sm font-medium leading-relaxed text-muted-foreground">
               Personalize your Arena profile by selecting a National Team in your profile settings. 
             </p>
-            <div className="bg-gray-50 rounded-2xl p-4 text-[11px] font-bold uppercase tracking-tight text-gray-600 leading-normal border border-gray-100">
+            <div className="bg-muted rounded-2xl p-4 text-[11px] font-bold uppercase tracking-tight text-muted-foreground leading-normal border border-border">
               Once selected, your nation's flag will serve as your official avatar on the Global Leaderboard and in the Live Activity Feed. Show your colors as you climb the ranks!
             </div>
           </CardContent>

@@ -8,6 +8,7 @@ import { Medal, Loader2, Trophy, Zap, Star, Hash } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ProfileSheet } from "@/components/profile/profile-sheet"
 import { PwaInstallButton } from "@/components/pwa-install-button"
+import { ModeToggle } from "@/components/mode-toggle"
 import { getTeamFlagUrl } from "@/lib/team-flags"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
@@ -71,26 +72,26 @@ export default function Leaderboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-foreground pb-32">
+    <div className="min-h-screen bg-background text-foreground pb-32">
       <MainNav />
-      <header className="px-6 py-4 bg-white border-b border-gray-100 shadow-sm sticky top-0 z-40">
+      <header className="px-6 py-4 bg-background/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-40">
         <div className="max-w-2xl mx-auto flex items-center justify-between h-14">
           <div>
-            <h1 className="text-xl font-black italic tracking-tighter text-gray-900 uppercase leading-none flex items-center gap-2">
+            <h1 className="text-xl font-black italic tracking-tighter text-foreground uppercase leading-none flex items-center gap-2">
               <div className="relative h-6 w-6 shrink-0">
                 <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
               </div>
               THE <span className="text-primary">LEADERBOARD</span>
             </h1>
             <div className="flex items-center gap-2 mt-1">
-               <p className="text-[8px] uppercase font-black text-gray-400 tracking-widest">Global Standings</p>
+               <p className="text-[8px] uppercase font-black text-muted-foreground tracking-widest">Global Standings</p>
                {stats && (
                  <div className="flex items-center gap-1.5">
-                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                   <span className="h-0.5 w-0.5 rounded-full bg-border" />
                    <span className="text-[9px] font-black text-primary uppercase italic">Rank #{stats.rank}</span>
-                   <span className="text-[9px] font-black text-gray-900 uppercase">({stats.points} pts)</span>
-                   <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
-                   <div className="flex items-center gap-1 bg-yellow-50 px-1.5 py-0.5 rounded-full border border-yellow-100">
+                   <span className="text-[9px] font-black text-foreground uppercase">({stats.points} pts)</span>
+                   <span className="h-0.5 w-0.5 rounded-full bg-border" />
+                   <div className="flex items-center gap-1 bg-yellow-500/10 px-1.5 py-0.5 rounded-full border border-yellow-500/20">
                       <Zap className="h-2 w-2 text-yellow-500 fill-yellow-500" />
                       <span className="text-[8px] font-black text-yellow-600">{stats.lifelines}</span>
                    </div>
@@ -99,6 +100,7 @@ export default function Leaderboard() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <ModeToggle />
             <PwaInstallButton />
             <ProfileSheet />
           </div>
@@ -109,10 +111,10 @@ export default function Leaderboard() {
         {loading ? (
           <div className="p-20 flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 text-primary animate-spin" />
-            <p className="text-[10px] font-black uppercase text-gray-400 tracking-[0.3em]">Syncing Rankings...</p>
+            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.3em]">Syncing Rankings...</p>
           </div>
         ) : entries.length === 0 ? (
-          <div className="p-20 text-center text-gray-300 font-bold uppercase text-[10px] tracking-widest bg-white rounded-[2.5rem] border-2 border-dashed">
+          <div className="p-20 text-center text-muted-foreground font-bold uppercase text-[10px] tracking-widest bg-card rounded-[2.5rem] border-2 border-dashed">
             Competition is yet to begin.
           </div>
         ) : (
@@ -126,8 +128,8 @@ export default function Leaderboard() {
                 <div 
                   key={entry.user_id} 
                   className={cn(
-                    "flex flex-col p-5 bg-white rounded-[2.5rem] border transition-all hover:scale-[1.01] hover:shadow-2xl relative overflow-hidden",
-                    isTopThree ? "border-primary/20 shadow-xl" : "border-gray-100 shadow-lg"
+                    "flex flex-col p-5 bg-card rounded-[2.5rem] border transition-all hover:scale-[1.01] hover:shadow-2xl relative overflow-hidden",
+                    isTopThree ? "border-primary/20 shadow-xl" : "border-border shadow-lg"
                   )}
                 >
                   <div className="flex items-center gap-4">
@@ -139,13 +141,13 @@ export default function Leaderboard() {
                       ) : rank === 3 ? (
                         <Medal className="h-6 w-6 text-orange-400 fill-orange-400" />
                       ) : (
-                        <span className="text-sm font-black text-gray-400">#{rank}</span>
+                        <span className="text-sm font-black text-muted-foreground">#{rank}</span>
                       )}
                     </div>
                     
                     <Avatar className={cn(
                       "h-12 w-12 border-2 shadow-md",
-                      isTopThree ? "border-primary/20" : "border-white"
+                      isTopThree ? "border-primary/20" : "border-background"
                     )}>
                       {flagUrl ? (
                         <AvatarImage src={flagUrl} className="object-cover" />
@@ -157,24 +159,24 @@ export default function Leaderboard() {
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
-                      <span className="font-black text-[13px] uppercase tracking-tight text-gray-900 truncate block">
+                      <span className="font-black text-[13px] uppercase tracking-tight text-foreground truncate block">
                         {entry.display_name}
                       </span>
                       <div className="mt-1 flex flex-wrap items-center gap-2">
-                        <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
-                            <Hash className="h-2.5 w-2.5 text-gray-400" />
-                            <span className="text-[9px] font-black text-gray-500 uppercase tracking-tighter">
-                              {entry.total_predictions} <span className="text-gray-300">Picks</span>
+                        <div className="flex items-center gap-1.5 bg-muted px-2 py-0.5 rounded-full border border-border">
+                            <Hash className="h-2.5 w-2.5 text-muted-foreground" />
+                            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter">
+                              {entry.total_predictions} <span className="opacity-50">Picks</span>
                             </span>
                         </div>
                         {entry.starting_points > 0 && (
-                          <div className="flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                          <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
                              <Zap className="h-2 w-2 text-blue-500 fill-blue-500" />
                              <span className="text-[8px] font-black text-blue-600 uppercase">Late Join Bonus (+{entry.starting_points})</span>
                           </div>
                         )}
                         {entry.manual_points !== 0 && (
-                          <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-full border border-yellow-100">
+                          <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-0.5 rounded-full border border-yellow-500/20">
                              <Star className="h-2 w-2 text-yellow-500 fill-yellow-500" />
                              <span className="text-[8px] font-black text-yellow-600 uppercase">Adjusted ({entry.manual_points > 0 ? '+' : ''}{entry.manual_points})</span>
                           </div>
@@ -184,30 +186,30 @@ export default function Leaderboard() {
 
                     <div className="flex items-center gap-4">
                       <div className="flex flex-col items-end min-w-[60px]">
-                         <div className="flex items-center gap-1 bg-primary text-white px-3 py-1.5 rounded-2xl shadow-lg shadow-primary/20">
-                            <Trophy className="h-3 w-3 fill-white/20" />
+                         <div className="flex items-center gap-1 bg-primary text-primary-foreground px-3 py-1.5 rounded-2xl shadow-lg shadow-primary/20">
+                            <Trophy className="h-3 w-3 fill-primary-foreground/20" />
                             <span className="text-sm font-black italic">{entry.total_points}</span>
                          </div>
-                         <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest mt-1 mr-1">Points</span>
+                         <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest mt-1 mr-1">Points</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="mt-3 pt-3 border-t border-gray-50 flex justify-end gap-4">
+                  <div className="mt-3 pt-3 border-t border-border flex justify-end gap-4">
                      <div className="flex items-center gap-1">
-                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Picks:</span>
-                        <span className="text-[9px] font-black text-gray-700">{entry.prediction_points}</span>
+                        <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Picks:</span>
+                        <span className="text-[9px] font-black text-foreground">{entry.prediction_points}</span>
                      </div>
                      {entry.starting_points > 0 && (
                        <div className="flex items-center gap-1">
-                          <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Bonus:</span>
-                          <span className="text-[9px] font-black text-gray-700">+{entry.starting_points}</span>
+                          <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Bonus:</span>
+                          <span className="text-[9px] font-black text-foreground">+{entry.starting_points}</span>
                        </div>
                      )}
                      {entry.manual_points !== 0 && (
                        <div className="flex items-center gap-1">
-                          <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Adjust:</span>
-                          <span className="text-[9px] font-black text-gray-700">{entry.manual_points > 0 ? '+' : ''}{entry.manual_points}</span>
+                          <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest">Adjust:</span>
+                          <span className="text-[9px] font-black text-foreground">{entry.manual_points > 0 ? '+' : ''}{entry.manual_points}</span>
                        </div>
                      )}
                   </div>

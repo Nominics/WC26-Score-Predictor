@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,6 +26,28 @@
     --ring: 45 93% 47%;
     --radius: 1.25rem;
   }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 45 93% 47%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 45 93% 47%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 45 93% 47%;
+  }
 }
 
 @layer base {
@@ -37,11 +60,11 @@
 }
 
 .glass-card {
-  @apply bg-white border border-gray-100 shadow-sm;
+  @apply bg-card border border-border shadow-sm;
 }
 
 .nav-pill {
-  @apply fixed bottom-8 left-1/2 -translate-x-1/2 bg-black/95 backdrop-blur-xl border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-50;
+  @apply fixed bottom-8 left-1/2 -translate-x-1/2 bg-black/95 dark:bg-black/80 backdrop-blur-xl border border-white/10 rounded-full px-4 py-2 flex items-center gap-2 shadow-[0_20px_50px_rgba(0,0,0,0.3)] z-50;
 }
 
 .active-pill {
