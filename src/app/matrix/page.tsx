@@ -14,7 +14,7 @@ import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import Image from "next/image"
 import { DateTime } from "luxon"
 import { useAuth } from "@/hooks/use-auth"
-import { useRouter } from "navigation"
+import { useRouter } from "next/navigation"
 
 export default function Matrix() {
   const { user, profile, stats, loading: authLoading } = useAuth()
@@ -165,7 +165,7 @@ export default function Matrix() {
                           </div>
                         </div>
                         {f.status === 'finished' ? (
-                           <span className="premium-gold-gradient-bg text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest italic shadow-lg shadow-primary/20">Final</span>
+                           <span className="premium-gold-pill px-3 py-0.5 rounded-full text-[9px] italic shadow-lg shadow-primary/20">Final</span>
                         ) : f.status === 'live' ? (
                            <span className="bg-emerald-500 text-black px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest animate-pulse">Live</span>
                         ) : (

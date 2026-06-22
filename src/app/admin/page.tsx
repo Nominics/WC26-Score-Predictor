@@ -79,11 +79,6 @@ export default function AdminPage() {
     setAllProfiles(data || [])
   }
 
-  const fetchFixtures = async () => {
-    const { data } = await supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true })
-    setFixtures(data || [])
-  }
-
   const handleRunCron = async () => {
     setIsRunningCron(true)
     try {
@@ -248,8 +243,13 @@ export default function AdminPage() {
     }
   }
 
+  const fetchFixtures = async () => {
+    const { data } = await supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true })
+    setFixtures(data || [])
+  }
+
   if (authLoading || profile?.role !== "superadmin") {
-    return <Loader2 className="h-8 w-8 text-primary animate-spin" />
+    return <AppLoadingScreen />
   }
 
   return (
@@ -290,7 +290,7 @@ export default function AdminPage() {
             <Button 
               onClick={handleRunCron} 
               disabled={isRunningCron}
-              className="w-full h-14 rounded-2xl bg-primary text-black hover:bg-primary/90 font-black uppercase text-sm tracking-[0.1em] shadow-xl shadow-primary/10 transition-all active:scale-95"
+              className="w-full h-14 rounded-2xl premium-gold-pill hover:opacity-90 transition-all active:scale-95"
             >
               {isRunningCron ? <Loader2 className="h-5 w-5 mr-2 animate-spin" /> : <RefreshCcw className="h-5 w-5 mr-2" />}
               Execute Cron Routine
@@ -373,7 +373,7 @@ export default function AdminPage() {
             <Button 
               onClick={handleSendNotification}
               disabled={!notifTitle || !notifMessage || (notifTarget === "single" && !notifSelectedUser) || isSendingNotif}
-              className="w-full h-14 rounded-2xl bg-foreground text-background hover:bg-foreground/90 font-black uppercase text-xs tracking-[0.2em] shadow-lg transition-all"
+              className="w-full h-14 rounded-2xl bg-foreground text-background hover:opacity-90 font-black uppercase text-xs tracking-[0.2em] shadow-lg transition-all"
             >
               {isSendingNotif ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Send className="h-5 w-5 mr-2" />}
               Dispatch Broadcast
@@ -420,7 +420,7 @@ export default function AdminPage() {
                     onClick={() => setSelectedIconKey(icon.key)}
                     className={cn(
                       "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:scale-105",
-                      selectedIconKey === icon.key ? "border-primary shadow-xl scale-110 z-10" : "border-transparent opacity-40 grayscale hover:grayscale-0"
+                      selectedIconKey === icon.key ? "premium-gold-ring shadow-xl scale-110 z-10" : "border-transparent opacity-40 grayscale hover:grayscale-0"
                     )}
                   >
                     <Image src={icon.imagePath} alt={icon.label} fill className="object-cover" />
@@ -560,7 +560,7 @@ export default function AdminPage() {
             </AlertDialogHeader>
             <AlertDialogFooter className="mt-6 flex gap-3">
               <AlertDialogCancel className="rounded-2xl border-border/50 font-black uppercase text-[10px] tracking-widest h-12 flex-1">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleAwardPoints} className="rounded-2xl premium-gold-gradient-bg text-black font-black uppercase text-[10px] tracking-widest h-12 flex-1 shadow-lg shadow-primary/20">Confirm Award</AlertDialogAction>
+              <AlertDialogAction onClick={handleAwardPoints} className="rounded-2xl premium-gold-pill border-0 flex-1 shadow-lg shadow-primary/20">Confirm Award</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

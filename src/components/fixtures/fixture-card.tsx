@@ -36,7 +36,7 @@ const AvatarStack = ({ supporters }: { supporters: any[] }) => {
       ))}
       {remainingCount > 0 && (
         <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted ring-2 ring-background shadow-sm">
-          <span className="text-[9px] font-black text-primary">+{remainingCount}</span>
+          <span className="text-[9px] font-black premium-gold-gradient-text">+{remainingCount}</span>
         </div>
       )}
     </div>
@@ -221,7 +221,7 @@ export function FixtureCard({
                     className="w-14 h-16 text-center text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-2xl focus:border-primary outline-none transition-all shadow-inner"
                   />
                 </div>
-                <Button onClick={() => handleSave(isStandardLocked)} className="soft-button h-12 px-8 bg-primary text-primary-foreground hover:opacity-90 shadow-lg border-2 border-primary/20">
+                <Button onClick={() => handleSave(isStandardLocked)} className="soft-button h-12 px-8 premium-gold-pill border-2 border-primary/20">
                   <Check className="h-4 w-4 mr-2" /> LOCK PICK
                 </Button>
               </div>
@@ -273,14 +273,14 @@ export function FixtureCard({
                            !isStandardLocked ? (
                               <Button 
                                 onClick={() => setEditing(true)} 
-                                className="soft-button h-10 px-6 bg-muted text-foreground border border-border/50 hover:bg-primary hover:text-primary-foreground group/btn"
+                                className="soft-button h-10 px-6 bg-muted text-foreground border border-border/50 hover:premium-gold-gradient-bg hover:text-black group/btn"
                               >
                                 <Edit2 className="h-3 w-3 mr-2 group-hover/btn:rotate-12" /> {myPrediction ? 'Change Pick' : 'Set Score'}
                               </Button>
                            ) : isLifelineAvailable ? (
                               <Button 
                                 onClick={() => setEditing(true)} 
-                                className="soft-button h-10 px-6 bg-primary text-primary-foreground flex items-center gap-2 shadow-lg animate-pulse"
+                                className="soft-button h-10 px-6 premium-gold-pill flex items-center gap-2 shadow-lg animate-pulse"
                               >
                                 <Zap className="h-3.5 w-3.5 fill-current" /> Use Lifeline
                               </Button>
@@ -330,7 +330,7 @@ export function FixtureCard({
                  <div className="h-[1px] bg-border/40 flex-1" />
                  <div className="flex items-center gap-2">
                     <Goal className="h-3 w-3 text-primary" />
-                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Goal Events</span>
+                    <span className="text-[9px] font-black premium-gold-gradient-text uppercase tracking-[0.3em]">Goal Events</span>
                  </div>
                  <div className="h-[1px] bg-border/40 flex-1" />
                </div>

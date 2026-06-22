@@ -239,7 +239,7 @@ export default function Dashboard() {
               <h3 className="text-[10px] font-black uppercase tracking-[0.25em] text-foreground/80">Arena Pulse</h3>
             </div>
             <Link href="/activity" className="group flex items-center gap-1.5">
-              <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest group-hover:text-primary transition-colors">History</span>
+              <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest group-hover:premium-gold-gradient-text transition-colors">History</span>
               <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-all group-hover:translate-x-0.5" />
             </Link>
           </div>
@@ -336,7 +336,7 @@ export default function Dashboard() {
       <main className="px-4 py-8 space-y-10 max-w-2xl mx-auto">
         <div className="flex justify-between items-center px-4">
           <div className="flex items-center gap-3">
-            <div className="h-6 w-1.5 premium-gold-gradient-bg rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+            <div className="h-6 w-1.5 premium-gold-gradient-bg rounded-full shadow-[0_0_10px_rgba(251,191,36,0.5)]" />
             <h2 className="text-sm font-black uppercase italic text-foreground tracking-widest">
               {activeDate ? DateTime.fromISO(activeDate).toFormat('MMMM dd, yyyy') : 'Schedule'}
             </h2>

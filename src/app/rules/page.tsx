@@ -138,7 +138,7 @@ export default function Rules() {
             </div>
             <Button 
               onClick={handleInvite}
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-yellow-950 font-black uppercase text-xs tracking-widest h-12 rounded-2xl gap-2 shadow-lg"
+              className="w-full premium-gold-gradient-bg text-black hover:opacity-90 font-black uppercase text-xs tracking-widest h-12 rounded-2xl gap-2 shadow-lg border-2 border-primary/20"
             >
               <Share2 className="h-4 w-4" /> Invite a Friend
             </Button>

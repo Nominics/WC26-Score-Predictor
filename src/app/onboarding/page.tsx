@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -67,7 +66,7 @@ export default function Onboarding() {
       
       <div className="relative z-10 w-full max-w-sm space-y-8 text-center">
         <div className="flex flex-col items-center space-y-6">
-          <div className="relative h-32 w-32 drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">
+          <div className="relative h-32 w-32 drop-shadow-[0_0_15px_rgba(251,191,36,0.3)]">
             {logo && (
               <Image 
                 src={logo.imageUrl} 
@@ -79,7 +78,7 @@ export default function Onboarding() {
           </div>
           <div className="space-y-1">
             <h1 className="text-3xl font-black text-white tracking-tighter leading-none uppercase">
-              Claim Your <span className="text-primary italic">Identity</span>
+              Claim Your <span className="premium-gold-gradient-text italic">Identity</span>
             </h1>
             <p className="text-gray-400 text-[10px] uppercase tracking-[0.4em] font-black mt-2">
               Arena Registration
@@ -119,7 +118,7 @@ export default function Onboarding() {
               <Button 
                 type="submit" 
                 disabled={isSubmitting || name.trim().length < 3}
-                className="w-full bg-primary text-black font-black uppercase tracking-tight text-lg h-16 rounded-2xl hover:bg-black hover:text-primary transition-all active:scale-95 shadow-xl mt-4 border-2 border-primary"
+                className="w-full premium-gold-pill h-16 rounded-2xl hover:opacity-90 transition-all active:scale-95 shadow-xl mt-4 border-2 border-primary/20"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

@@ -109,11 +109,11 @@ export default function NotificationsPage() {
         <div className="sticky top-[88px] z-30 bg-background/90 backdrop-blur-xl py-4 -mx-4 px-4 border-b border-border/50">
           <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="w-full">
             <TabsList className="grid grid-cols-5 h-14 rounded-[1.5rem] bg-muted/40 p-1.5 border border-border/40 shadow-sm">
-              <TabsTrigger value="all" className="soft-button py-2 rounded-full data-[state=active]:bg-primary data-[state=active]:text-black transition-all">All</TabsTrigger>
-              <TabsTrigger value="unread" className="soft-button py-2 rounded-full data-[state=active]:bg-primary data-[state=active]:text-black transition-all">New</TabsTrigger>
-              <TabsTrigger value="match" className="soft-button py-2 rounded-full data-[state=active]:bg-primary data-[state=active]:text-black transition-all">Match</TabsTrigger>
-              <TabsTrigger value="points" className="soft-button py-2 rounded-full data-[state=active]:bg-primary data-[state=active]:text-black transition-all">Score</TabsTrigger>
-              <TabsTrigger value="admin" className="soft-button py-2 rounded-full data-[state=active]:bg-primary data-[state=active]:text-black transition-all">System</TabsTrigger>
+              <TabsTrigger value="all" className="soft-button py-2 rounded-full data-[state=active]:premium-gold-gradient-bg data-[state=active]:text-black transition-all">All</TabsTrigger>
+              <TabsTrigger value="unread" className="soft-button py-2 rounded-full data-[state=active]:premium-gold-gradient-bg data-[state=active]:text-black transition-all">New</TabsTrigger>
+              <TabsTrigger value="match" className="soft-button py-2 rounded-full data-[state=active]:premium-gold-gradient-bg data-[state=active]:text-black transition-all">Match</TabsTrigger>
+              <TabsTrigger value="points" className="soft-button py-2 rounded-full data-[state=active]:premium-gold-gradient-bg data-[state=active]:text-black transition-all">Score</TabsTrigger>
+              <TabsTrigger value="admin" className="soft-button py-2 rounded-full data-[state=active]:premium-gold-gradient-bg data-[state=active]:text-black transition-all">System</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>

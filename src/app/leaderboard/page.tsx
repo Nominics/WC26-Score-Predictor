@@ -118,13 +118,13 @@ export default function Leaderboard() {
                   className={cn(
                     "app-glass-card p-7 group",
                     isTopThree ? "border-primary/30 ring-1 ring-primary/5" : "border-border/50",
-                    isCurrentUser && "ring-2 ring-primary/40 ring-offset-4 dark:ring-offset-slate-900"
+                    isCurrentUser && "premium-gold-ring ring-offset-4 dark:ring-offset-slate-900"
                   )}
                 >
                   <div className="flex items-center gap-5">
                     <div className="w-12 flex flex-col items-center justify-center">
                       {rank === 1 ? (
-                        <Trophy className="h-9 w-9 text-yellow-500 fill-yellow-500 animate-bounce drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+                        <Trophy className="h-9 w-9 text-yellow-500 fill-yellow-500 animate-bounce drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]" />
                       ) : rank === 2 ? (
                         <Medal className="h-8 w-8 text-slate-400 fill-slate-400" />
                       ) : rank === 3 ? (

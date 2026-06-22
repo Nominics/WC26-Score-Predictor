@@ -147,7 +147,7 @@ export function ProfileSheet() {
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="relative">
                   <UserAvatar profile={profile} className="h-28 w-24 border-4 border-primary/20 shadow-2xl rounded-full" fallbackClassName="text-3xl" />
-                  <div className="absolute -bottom-1 -right-1 premium-gold-gradient-bg text-black rounded-full px-2 py-0.5 text-[9px] font-black uppercase italic shadow-lg border-2 border-background">
+                  <div className="absolute -bottom-1 -right-1 premium-gold-pill rounded-full px-2 py-0.5 text-[9px] border-2 border-background">
                     #{stats?.rank || "--"}
                   </div>
                 </div>
@@ -174,7 +174,7 @@ export function ProfileSheet() {
                       <h3 className="text-2xl font-black uppercase italic premium-gold-gradient-text tracking-tighter leading-tight">
                         {profile?.display_name}
                       </h3>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors" onClick={() => setIsEditing(true)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:premium-gold-gradient-text transition-colors" onClick={() => setIsEditing(true)}>
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -225,7 +225,7 @@ export function ProfileSheet() {
                           className={cn(
                             "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all hover:scale-105 active:scale-95",
                             profile?.profile_icon_key === icon.key 
-                              ? "border-primary shadow-lg ring-2 ring-primary/20 scale-105 z-10 opacity-100" 
+                              ? "premium-gold-ring shadow-lg scale-105 z-10 opacity-100" 
                               : "border-transparent opacity-80 grayscale-[0.2] hover:grayscale-0 hover:opacity-100"
                           )}
                         >
@@ -317,7 +317,7 @@ export function ProfileSheet() {
                     />
                     <div className="flex gap-2">
                       <Button 
-                        className="flex-1 rounded-xl h-12 premium-gold-gradient-bg text-black font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90"
+                        className="flex-1 rounded-xl h-12 premium-gold-pill text-black font-black text-[10px] uppercase tracking-widest shadow-lg hover:opacity-90"
                         onClick={handlePasswordUpdate}
                         disabled={isUpdatingPassword}
                       >

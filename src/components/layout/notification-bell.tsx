@@ -110,7 +110,7 @@ export function NotificationBell() {
                   variant="ghost" 
                   size="sm" 
                   onClick={markAllAsRead}
-                  className="text-[9px] font-black uppercase text-primary hover:text-white hover:bg-white/10 rounded-full px-3"
+                  className="text-[9px] font-black uppercase premium-gold-gradient-text hover:text-white hover:bg-white/10 rounded-full px-3"
                 >
                   Clear All
                 </Button>

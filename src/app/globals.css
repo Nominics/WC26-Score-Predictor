@@ -10,24 +10,24 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 45 93% 47%; /* Premium Gold */
+    --primary: 38 92% 50%; /* Premium Gold/Amber base */
     --primary-foreground: 0 0% 0%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 45 93% 47%;
+    --accent: 38 92% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
-    --ring: 45 93% 47%;
+    --ring: 38 92% 50%;
     --radius: 2.5rem;
 
     /* Theme Tokens */
     --app-bg: #f8fafc;
-    --surface-glow: rgba(234, 179, 8, 0.05);
+    --surface-glow: rgba(251, 191, 36, 0.05);
   }
 
   .dark {
@@ -37,23 +37,23 @@
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 45 93% 47%;
+    --primary: 38 92% 50%;
     --primary-foreground: 0 0% 0%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 45 93% 47%;
+    --accent: 38 92% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 45 93% 47%;
+    --ring: 38 92% 50%;
 
     /* Theme Tokens Dark */
     --app-bg: #020617;
-    --surface-glow: rgba(234, 179, 8, 0.08);
+    --surface-glow: rgba(251, 191, 36, 0.08);
   }
 }
 
@@ -104,7 +104,7 @@
   }
 
   .active-pill {
-    @apply premium-gold-gradient-bg text-black shadow-[0_4px_15px_rgba(234,179,8,0.5)];
+    @apply premium-gold-gradient-bg text-black shadow-[0_4px_15px_rgba(251,191,36,0.5)];
   }
 
   .premium-header {
@@ -122,6 +122,14 @@
 
   .premium-gold-gradient-bg {
     @apply bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-500;
+  }
+
+  .premium-gold-ring {
+    @apply ring-2 ring-amber-400/50 border-amber-400;
+  }
+
+  .premium-gold-pill {
+    @apply premium-gold-gradient-bg text-black font-black uppercase italic shadow-lg;
   }
 }
 

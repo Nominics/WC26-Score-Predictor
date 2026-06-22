@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -100,7 +99,7 @@ export default function LandingPage() {
 
       <div className="relative z-10 w-full max-w-sm space-y-8 text-center">
         <div className="flex flex-col items-center space-y-6">
-          <div className="relative h-44 w-44 drop-shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+          <div className="relative h-44 w-44 drop-shadow-[0_0_20px_rgba(251,191,36,0.3)]">
             {logo && (
               <Image 
                 src={logo.imageUrl} 
@@ -114,7 +113,7 @@ export default function LandingPage() {
           </div>
           <div className="space-y-1">
             <h1 className="text-5xl font-black text-white tracking-tighter leading-none">
-              WC26<br/><span className="text-primary italic">PREDICTOR</span>
+              WC26<br/><span className="premium-gold-gradient-text italic">PREDICTOR</span>
             </h1>
             <div className="flex items-center justify-center gap-2 mt-2">
                 <Sparkles className="h-3 w-3 text-primary" />
@@ -220,7 +219,7 @@ export default function LandingPage() {
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="w-full bg-primary text-black font-black uppercase tracking-tight text-xl h-16 rounded-2xl hover:bg-black hover:text-primary transition-all active:scale-95 shadow-2xl mt-4 border-2 border-primary"
+                className="w-full premium-gold-gradient-bg text-black font-black uppercase tracking-tight text-xl h-16 rounded-2xl hover:opacity-90 transition-all active:scale-95 shadow-2xl mt-4 border-2 border-primary/20"
               >
                 {isSubmitting ? (
                     <div className="flex items-center gap-3">
