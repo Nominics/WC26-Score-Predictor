@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -118,7 +119,7 @@ export default function LandingPage() {
             <div className="flex items-center justify-center gap-2 mt-2">
                 <Sparkles className="h-3 w-3 text-primary" />
                 <p className="text-gray-400 text-[10px] uppercase tracking-[0.5em] font-black">
-                Zikura Recreation Club
+                Eos
                 </p>
                 <Sparkles className="h-3 w-3 text-primary" />
             </div>
@@ -233,7 +234,7 @@ export default function LandingPage() {
         </Card>
         
         <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.3em] opacity-80">
-            Powered by EOS
+            Powered by Eos
         </p>
       </div>
     </div>

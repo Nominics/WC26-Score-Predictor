@@ -45,7 +45,7 @@ export function AppLoadingScreen() {
       
       {/* Footer Branding */}
       <div className="absolute bottom-12 text-center opacity-30">
-         <p className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground">Powered by Zikura Recreation Club</p>
+         <p className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground">Powered by Eos</p>
       </div>
     </div>
   )
