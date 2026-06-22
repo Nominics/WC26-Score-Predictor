@@ -19,9 +19,11 @@ export default function Activity() {
   const { stats } = useAuth()
   const [logs, setLogs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasMounted, setHasMounted] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
+    setHasMounted(true)
     fetchLogs()
     
     const channel = supabase
@@ -166,7 +168,7 @@ export default function Activity() {
                       )}
                     </div>
                     <span className="text-[9px] text-muted-foreground font-black uppercase bg-muted px-2 py-1 rounded-full whitespace-nowrap shadow-inner">
-                      {DateTime.fromISO(log.created_at).toRelative()}
+                      {hasMounted ? DateTime.fromISO(log.created_at).toRelative() : '...'}
                     </span>
                   </div>
                 </div>

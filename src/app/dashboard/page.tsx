@@ -28,9 +28,14 @@ export default function Dashboard() {
   const [activityLogs, setActivityLogs] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeDate, setActiveDate] = useState<string | null>(null)
+  const [hasMounted, setHasMounted] = useState(false)
   const supabase = createClient()
   const router = useRouter()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
 
   useEffect(() => {
     if (!authLoading && authUser && profile && !profile.display_name) {
@@ -293,7 +298,7 @@ export default function Dashboard() {
                       </div>
                       <div className="text-right flex flex-col items-end">
                          <span className="text-[8px] text-muted-foreground font-black uppercase block">
-                          {DateTime.fromISO(log.created_at).toRelative()}
+                          {hasMounted ? DateTime.fromISO(log.created_at).toRelative() : '...'}
                         </span>
                         {isManual ? <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 mt-1" /> : <ChevronRight className="h-3 w-3 text-muted-foreground mt-1" />}
                       </div>
