@@ -83,7 +83,7 @@ export default function Dashboard() {
     try {
       const [fRes, pRes] = await Promise.all([
         supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true }),
-        supabase.from("predictions").select("*").eq("user_id", authUser.id)
+        supabase.from("predictions").select("fixture_id, predicted_home_score, predicted_away_score").eq("user_id", authUser.id)
       ])
       
       if (fRes.error) throw fRes.error
@@ -342,6 +342,7 @@ export default function Dashboard() {
                   initialAway={pred?.predicted_away_score}
                   onSave={handlePredict}
                   lifelinesRemaining={stats?.lifelines || 0}
+                  userProfile={profile}
                 />
               )
             })}

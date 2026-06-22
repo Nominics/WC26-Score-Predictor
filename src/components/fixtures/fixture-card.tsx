@@ -4,10 +4,11 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit2, Check, Lock, Trophy, Zap, Timer, Goal } from "lucide-react"
+import { Edit2, Check, Lock, Trophy, Zap, Timer, Goal, Star } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DateTime } from "luxon"
 import Image from "next/image"
+import { UserAvatar } from "@/components/user-avatar"
 
 interface FixtureCardProps {
   fixture: any
@@ -15,9 +16,17 @@ interface FixtureCardProps {
   initialAway?: number
   onSave: (id: string, h: number, a: number, isLifeline: boolean) => void
   lifelinesRemaining?: number
+  userProfile?: any
 }
 
-export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelinesRemaining = 0 }: FixtureCardProps) {
+export function FixtureCard({ 
+  fixture, 
+  initialHome, 
+  initialAway, 
+  onSave, 
+  lifelinesRemaining = 0,
+  userProfile 
+}: FixtureCardProps) {
   const [hScore, setHScore] = useState<string>(initialHome?.toString() || "")
   const [aScore, setAScore] = useState<string>(initialAway?.toString() || "")
   const [editing, setEditing] = useState(false)
@@ -27,6 +36,7 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
 
   const kickoff = DateTime.fromISO(fixture.kickoff_at)
   const timeStr = kickoff.isValid ? kickoff.toFormat('HH:mm') : 'TBD'
+  const dateStr = kickoff.isValid ? kickoff.toFormat('LLL dd') : ''
 
   useEffect(() => {
     const checkLock = () => {
@@ -60,7 +70,6 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
 
   const cleanScorers = (scorers: string | null) => {
     if (!scorers || scorers === 'null') return null;
-    // Strip braces, quotes, and normalize separators
     let cleaned = scorers.replace(/[{}"']/g, '');
     const parts = cleaned.split(/[;,]/).map(s => s.trim()).filter(Boolean);
     if (parts.length === 0) return null;
@@ -70,194 +79,254 @@ export function FixtureCard({ fixture, initialHome, initialAway, onSave, lifelin
   const homeScorers = cleanScorers(fixture.home_scorers);
   const awayScorers = cleanScorers(fixture.away_scorers);
   const showScorers = (isLive || isFinished) && (homeScorers || awayScorers);
-  
+
+  // Prediction side logic
+  const hasPrediction = initialHome !== undefined && initialAway !== undefined
+  const predictedSide = !hasPrediction
+    ? null
+    : initialHome! > initialAway!
+      ? "home"
+      : initialHome! < initialAway!
+        ? "away"
+        : "draw"
+
+  const YourPickMarker = ({ label }: { label?: string }) => (
+    <div className="flex flex-col items-center gap-1 animate-in fade-in zoom-in duration-300">
+      <div className="relative">
+        <UserAvatar 
+          profile={userProfile} 
+          className="h-8 w-8 border-2 border-white shadow-xl" 
+        />
+        <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 border border-white">
+          <Star className="h-2 w-2 text-black fill-black" />
+        </div>
+      </div>
+      <span className="text-[8px] font-black uppercase text-primary tracking-widest">{label || "Your Pick"}</span>
+    </div>
+  )
+
   return (
     <Card className={cn(
-      "relative overflow-hidden border-0 rounded-[2.5rem] transition-all duration-500 group shadow-2xl hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]",
-      isLive ? "bg-card ring-2 ring-green-500" : 
-      isFinished ? "bg-card opacity-95" : 
-      "bg-card"
+      "relative overflow-hidden border-white/10 bg-slate-950 text-white shadow-2xl transition-all duration-500 rounded-[28px]",
+      isLive ? "ring-2 ring-emerald-500/50" : ""
     )}>
-      {isLive && <div className="absolute top-0 left-0 w-full h-1 bg-green-500 animate-pulse z-20" />}
+      {/* Dynamic Background Gradients */}
+      <div className={cn(
+        "absolute inset-0 transition-opacity duration-1000",
+        isLive 
+          ? "bg-gradient-to-br from-emerald-950 via-slate-950 to-teal-900/60 opacity-100" 
+          : isFinished
+            ? "bg-gradient-to-br from-zinc-900 via-slate-950 to-orange-900/40 opacity-100"
+            : "bg-gradient-to-br from-indigo-950 via-slate-950 to-purple-900/60 opacity-100"
+      )} />
       
+      {/* Decorative Blur Spheres */}
+      <div className={cn(
+        "absolute -left-16 -top-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000",
+        isLive ? "bg-emerald-500/20" : isFinished ? "bg-orange-500/10" : "bg-purple-500/20"
+      )} />
+      <div className={cn(
+        "absolute -right-16 -bottom-16 h-48 w-48 rounded-full blur-3xl transition-colors duration-1000",
+        isLive ? "bg-teal-500/20" : isFinished ? "bg-zinc-500/20" : "bg-cyan-500/20"
+      )} />
+
       <CardContent className="p-0 relative z-10">
-        <div className="px-6 py-3 bg-muted/50 border-b border-border flex justify-between items-center">
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-                  Fixture {fixture.match_number} • {fixture.stage}
+        {/* Top Header Pill */}
+        <div className="px-6 py-4 flex justify-between items-center border-b border-white/5 bg-white/5 backdrop-blur-md">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50">
+              {fixture.stage} • {dateStr}
+            </span>
+            {(fixture.group_name || fixture.matchday) && (
+              <span className="text-[9px] font-bold uppercase text-white/30 tracking-wider mt-0.5">
+                {fixture.group_name && `Group ${fixture.group_name}`} {fixture.group_name && fixture.matchday && '•'} {fixture.matchday && `MD ${fixture.matchday}`}
               </span>
-              {(fixture.group_name || fixture.matchday) && (
-                <span className="text-[8px] font-bold uppercase text-muted-foreground/60 tracking-wider mt-0.5">
-                  {fixture.group_name && `Group ${fixture.group_name}`} {fixture.group_name && fixture.matchday && '•'} {fixture.matchday && `Matchday ${fixture.matchday}`}
-                </span>
-              )}
-            </div>
-            {isFinished ? (
-               <span className="text-[9px] font-black text-orange-600 uppercase italic tracking-widest bg-orange-500/10 px-2 py-0.5 rounded-full">Final Result</span>
-            ) : isLive ? (
-               <div className="flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[9px] font-black text-green-600 uppercase tracking-widest">In Progress</span>
-               </div>
-            ) : (
-               <span className="text-[9px] font-black text-primary uppercase tracking-widest">{timeStr} Local</span>
             )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {isFinished ? (
+              <span className="text-[9px] font-black text-orange-400 uppercase italic tracking-widest bg-orange-400/10 px-3 py-1 rounded-full border border-orange-400/20">
+                FINAL
+              </span>
+            ) : isLive ? (
+              <div className="flex items-center gap-2 bg-emerald-500 text-black px-3 py-1 rounded-full text-[9px] font-black uppercase italic animate-pulse shadow-lg shadow-emerald-500/20">
+                <div className="h-1 w-1 rounded-full bg-black" /> LIVE
+              </div>
+            ) : isStandardLocked ? (
+              <span className="text-[9px] font-black text-white/40 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
+                <Lock className="h-2.5 w-2.5" /> LOCKED
+              </span>
+            ) : (
+              <span className="text-[9px] font-black text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                {timeStr}
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="p-8 pb-6 flex items-center justify-between gap-4">
-          <div className="flex flex-col items-center flex-1 text-center min-w-0">
-            <div className="mb-3 relative group/flag">
+        {/* Match Action Section */}
+        <div className="p-8 pb-6 flex items-center justify-between gap-2">
+          {/* Home Team */}
+          <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-3">
+            <div className="relative group/flag">
               {fixture.home_flag ? (
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 transition-transform group-hover/flag:scale-105 duration-300">
-                  <Image 
-                    src={fixture.home_flag} 
-                    alt={`${fixture.home_team} flag`} 
-                    fill
-                    className="rounded-full object-cover ring-8 ring-muted shadow-xl"
-                  />
-                  <div className="absolute inset-0 rounded-full border border-black/5" />
+                <div className="relative h-20 w-20 sm:h-24 sm:w-24 transition-transform group-hover/flag:scale-105 duration-500">
+                  <div className="absolute inset-0 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 shadow-2xl" />
+                  <div className="relative h-full w-full rounded-full overflow-hidden p-1">
+                    <Image 
+                      src={fixture.home_flag} 
+                      alt={fixture.home_team} 
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-muted border-2 border-dashed border-border text-[11px] font-black text-muted-foreground uppercase italic">
+                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-white/30 uppercase italic">
                   TBD
                 </div>
               )}
             </div>
-            <span className="text-[13px] font-black uppercase tracking-tight text-foreground truncate w-full px-1 leading-tight">{fixture.home_team}</span>
+            <div className="space-y-1 w-full">
+              <span className="text-sm font-black uppercase tracking-tight text-white block truncate">{fixture.home_team}</span>
+              {predictedSide === "home" && <YourPickMarker />}
+            </div>
           </div>
 
-          <div className="flex flex-col items-center justify-center min-w-[150px]">
+          {/* Score Area */}
+          <div className="flex flex-col items-center justify-center min-w-[140px]">
             {editing ? (
-              <div className="flex flex-col items-center gap-4 py-2">
+              <div className="flex flex-col items-center gap-4 py-2 animate-in zoom-in-95 duration-200">
                 <div className="flex items-center gap-3">
                   <input 
                     type="number" 
                     value={hScore} 
                     onChange={(e) => setHScore(e.target.value)}
-                    className="w-14 h-14 text-center text-2xl font-black bg-muted border-2 border-primary rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-inner"
+                    className="w-14 h-16 text-center text-3xl font-black bg-white/10 border-2 border-primary/50 text-white rounded-2xl focus:border-primary outline-none transition-all shadow-2xl"
                     autoFocus
                   />
-                  <span className="text-2xl font-black text-muted italic">:</span>
+                  <span className="text-3xl font-black text-white/30 italic">:</span>
                   <input 
                     type="number" 
                     value={aScore} 
                     onChange={(e) => setAScore(e.target.value)}
-                    className="w-14 h-14 text-center text-2xl font-black bg-muted border-2 border-primary rounded-2xl focus:ring-4 focus:ring-primary/20 focus:border-primary outline-none transition-all shadow-inner"
+                    className="w-14 h-16 text-center text-3xl font-black bg-white/10 border-2 border-primary/50 text-white rounded-2xl focus:border-primary outline-none transition-all shadow-2xl"
                   />
                 </div>
-                <Button onClick={() => handleSave(isStandardLocked)} className="rounded-full bg-primary hover:bg-black hover:text-primary px-8 h-11 font-black uppercase text-[11px] tracking-widest shadow-xl active:scale-95 transition-all text-primary-foreground border-2 border-primary">
-                  <Check className="h-4 w-4 mr-2" /> {isStandardLocked ? 'Use Lifeline' : 'Lock Prediction'}
+                <Button onClick={() => handleSave(isStandardLocked)} className="rounded-full bg-primary text-black hover:bg-white transition-all px-8 h-12 font-black uppercase text-[10px] tracking-[0.2em] shadow-2xl border-2 border-primary">
+                  <Check className="h-4 w-4 mr-2" /> LOCK PICK
                 </Button>
               </div>
             ) : (
               <div className="flex flex-col items-center">
                 <div className={cn(
-                  "flex items-center gap-6 px-8 py-3 rounded-3xl transition-all duration-300 shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] border border-border",
-                  isLive ? "bg-green-500/5" : "bg-muted/50"
+                  "flex items-center gap-4 px-6 py-4 rounded-[2rem] transition-all duration-500 border border-white/10 shadow-inner",
+                  isLive ? "bg-emerald-500/10" : "bg-white/5"
                 )}>
                   <span className={cn(
-                    "text-5xl font-black italic tracking-tighter tabular-nums",
-                    initialHome === undefined ? "text-muted" : "text-foreground"
+                    "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-lg",
+                    initialHome === undefined ? "text-white/20" : "text-white"
                   )}>
-                    {initialHome ?? '0'}
+                    {isFinished || isLive ? (fixture.home_score ?? 0) : (initialHome ?? '0')}
                   </span>
-                  <span className="text-3xl font-black text-muted italic">:</span>
+                  <span className="text-3xl font-black text-white/20 italic">:</span>
                   <span className={cn(
-                    "text-5xl font-black italic tracking-tighter tabular-nums",
-                    initialAway === undefined ? "text-muted" : "text-foreground"
+                    "text-5xl font-black italic tracking-tighter tabular-nums drop-shadow-lg",
+                    initialAway === undefined ? "text-white/20" : "text-white"
                   )}>
-                    {initialAway ?? '0'}
+                    {isFinished || isLive ? (fixture.away_score ?? 0) : (initialAway ?? '0')}
                   </span>
                 </div>
                 
-                <div className="mt-4 flex flex-col items-center gap-2">
+                <div className="mt-4 flex flex-col items-center gap-3">
+                  {predictedSide === "draw" && <YourPickMarker label="Draw Pick" />}
+                  
                   {isFinished ? (
-                    <div className="flex items-center gap-2 text-[12px] font-black text-orange-600 uppercase tracking-widest bg-orange-500/10 px-4 py-1 rounded-full shadow-sm">
-                      <Trophy className="h-3 w-3" /> Result: {fixture.home_score} - {fixture.away_score}
+                    <div className="flex items-center gap-2 text-[11px] font-black text-white/50 uppercase tracking-widest">
+                       Match Result
                     </div>
                   ) : isLive ? (
-                    <div className="flex items-center gap-2 text-[12px] font-black text-green-600 uppercase tracking-widest bg-green-500/10 px-4 py-1 rounded-full shadow-sm">
-                      <Timer className="h-3 w-3" /> Live: {fixture.home_score ?? 0} - {fixture.away_score ?? 0}
-                    </div>
-                  ) : isStandardLocked ? (
-                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted px-4 py-1 rounded-full">
-                      <Lock className="h-2.5 w-2.5" /> Predictions Locked
+                    <div className="flex items-center gap-2 text-[11px] font-black text-emerald-400 uppercase tracking-widest">
+                      <Timer className="h-3 w-3 animate-spin-slow" /> LIVE UPDATE
                     </div>
                   ) : (
-                    <div className="text-[10px] font-black text-primary uppercase tracking-widest px-4 py-1">
-                      Pick Your Score
+                    <div className="flex flex-col items-center gap-2">
+                       {editing ? null : (
+                         !isStandardLocked ? (
+                            <Button 
+                              onClick={() => setEditing(true)} 
+                              className="rounded-full bg-white/5 text-white border border-white/10 h-10 px-6 hover:bg-primary hover:text-black transition-all font-black uppercase text-[10px] tracking-widest group/btn"
+                            >
+                              <Edit2 className="h-3 w-3 mr-2 group-hover/btn:rotate-12" /> {hasPrediction ? 'Change Pick' : 'Set Score'}
+                            </Button>
+                         ) : isLifelineAvailable ? (
+                            <Button 
+                              onClick={() => setEditing(true)} 
+                              className="rounded-full bg-primary text-black px-6 h-10 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 shadow-2xl animate-pulse"
+                            >
+                              <Zap className="h-3.5 w-3.5 fill-black" /> Use Lifeline
+                            </Button>
+                         ) : null
+                       )}
                     </div>
                   )}
                 </div>
               </div>
             )}
-
-            <div className="mt-6 mb-2">
-               {editing ? null : (
-                 !isStandardLocked ? (
-                    <Button 
-                      onClick={() => setEditing(true)} 
-                      className="rounded-full bg-primary text-primary-foreground border-2 border-primary h-12 px-8 hover:bg-black hover:text-primary transition-all shadow-xl font-black uppercase text-[11px] tracking-widest group/btn"
-                    >
-                      <Edit2 className="h-4 w-4 mr-2 group-hover/btn:rotate-12 transition-transform" /> {initialHome !== undefined ? 'Change Pick' : 'Set Prediction'}
-                    </Button>
-                 ) : isLifelineAvailable ? (
-                    <Button 
-                      onClick={() => setEditing(true)} 
-                      className="rounded-full bg-yellow-400 hover:bg-yellow-500 text-yellow-950 px-6 h-12 font-black uppercase text-[10px] tracking-widest flex items-center gap-2 shadow-xl animate-bounce hover:animate-none transition-all"
-                    >
-                      <Zap className="h-3.5 w-3.5 fill-yellow-950" /> Use Lifeline ({lifelinesRemaining})
-                    </Button>
-                 ) : null
-               )}
-            </div>
           </div>
 
-          <div className="flex flex-col items-center flex-1 text-center min-w-0">
-            <div className="mb-3 relative group/flag">
+          {/* Away Team */}
+          <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-3">
+            <div className="relative group/flag">
               {fixture.away_flag ? (
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 transition-transform group-hover/flag:scale-105 duration-300">
-                  <Image 
-                    src={fixture.away_flag} 
-                    alt={`${fixture.away_team} flag`} 
-                    fill
-                    className="rounded-full object-cover ring-8 ring-muted shadow-xl"
-                  />
-                  <div className="absolute inset-0 rounded-full border border-black/5" />
+                <div className="relative h-20 w-20 sm:h-24 sm:w-24 transition-transform group-hover/flag:scale-105 duration-500">
+                  <div className="absolute inset-0 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 shadow-2xl" />
+                  <div className="relative h-full w-full rounded-full overflow-hidden p-1">
+                    <Image 
+                      src={fixture.away_flag} 
+                      alt={fixture.away_team} 
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  </div>
                 </div>
               ) : (
-                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-muted border-2 border-dashed border-border text-[11px] font-black text-muted-foreground uppercase italic">
+                <div className="flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-white/30 uppercase italic">
                   TBD
                 </div>
               )}
             </div>
-            <span className="text-[13px] font-black uppercase tracking-tight text-foreground truncate w-full px-1 leading-tight">{fixture.away_team}</span>
+            <div className="space-y-1 w-full">
+              <span className="text-sm font-black uppercase tracking-tight text-white block truncate">{fixture.away_team}</span>
+              {predictedSide === "away" && <YourPickMarker />}
+            </div>
           </div>
         </div>
 
         {/* Scorers Section */}
         {showScorers && (
-          <div className="px-6 pb-8 animate-in fade-in slide-in-from-bottom-1 duration-500">
-            <div className="p-4 bg-muted/30 rounded-3xl border border-border/50 flex flex-col gap-2 shadow-inner">
-               <div className="flex items-center justify-center gap-3">
-                 <div className="h-[1px] bg-border/50 flex-1" />
-                 <div className="flex items-center gap-1.5">
-                    <Goal className="h-2.5 w-2.5 text-primary" />
-                    <span className="text-[8px] font-black text-primary uppercase tracking-[0.2em]">Match Scorers</span>
+          <div className="px-8 pb-8">
+            <div className="p-4 bg-white/5 rounded-3xl border border-white/10 flex flex-col gap-3 shadow-inner backdrop-blur-sm">
+               <div className="flex items-center justify-center gap-4">
+                 <div className="h-[1px] bg-white/5 flex-1" />
+                 <div className="flex items-center gap-2">
+                    <Goal className="h-3 w-3 text-primary" />
+                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Goal Events</span>
                  </div>
-                 <div className="h-[1px] bg-border/50 flex-1" />
+                 <div className="h-[1px] bg-white/5 flex-1" />
                </div>
                <div className="flex justify-between gap-6 pt-1">
                   <div className="flex-1 min-w-0">
                     {homeScorers && (
-                      <p className="text-[10px] font-bold text-foreground/70 uppercase leading-relaxed italic break-words">
+                      <p className="text-[10px] font-bold text-white/40 uppercase leading-relaxed italic break-words">
                         {homeScorers}
                       </p>
                     )}
                   </div>
                   <div className="flex-1 text-right min-w-0">
                     {awayScorers && (
-                      <p className="text-[10px] font-bold text-foreground/70 uppercase leading-relaxed italic break-words">
+                      <p className="text-[10px] font-bold text-white/40 uppercase leading-relaxed italic break-words">
                         {awayScorers}
                       </p>
                     )}
