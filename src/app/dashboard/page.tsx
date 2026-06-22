@@ -139,6 +139,19 @@ export default function Dashboard() {
   }, [fixtures, activeDate])
 
   const handlePredict = async (fixtureId: string, h: number, a: number, isLifeline: boolean) => {
+    const newH = Number(h)
+    const newA = Number(a)
+
+    // 1. Guard against redundant updates to prevent activity log spam
+    // This ensures that we only update the DB and trigger a log entry if the score actually changed.
+    // It also prevents wasting a lifeline if the user didn't actually change their pick.
+    const existing = predictions.find(p => p.fixture_id === fixtureId)
+    if (existing && 
+        existing.predicted_home_score === newH && 
+        existing.predicted_away_score === newA) {
+      return
+    }
+
     try {
       if (isLifeline) {
         try {
@@ -154,8 +167,8 @@ export default function Dashboard() {
         .upsert({
           user_id: authUser?.id,
           fixture_id: fixtureId,
-          predicted_home_score: Number(h),
-          predicted_away_score: Number(a),
+          predicted_home_score: newH,
+          predicted_away_score: newA,
         }, { onConflict: 'user_id,fixture_id' })
 
       if (error) throw error
