@@ -63,7 +63,7 @@ export function FixtureCard({
   const [isLifelineAvailable, setIsLifelineAvailable] = useState(false)
   const [isTotalLocked, setIsTotalLocked] = useState(false)
 
-  // Use APP_ZONE strictly for display
+  // Strictly use kickoff_at as the source of truth for display in the app zone
   const kickoff = DateTime.fromISO(fixture.kickoff_at).setZone(APP_ZONE)
   const timeStr = kickoff.isValid ? kickoff.toFormat('HH:mm') : 'TBD'
   const dateStr = kickoff.isValid ? kickoff.toFormat('LLL dd') : ''
@@ -209,7 +209,7 @@ export function FixtureCard({
                   </span>
                 </div>
                 
-                <div className="mt-3 flex flex-col items-center gap-1.5 overflow-visible">
+                <div className="mt-3 flex flex-col items-center overflow-visible">
                   <AvatarStack supporters={drawSupporters} />
                   {myPrediction && (
                     <div className="mt-0.5 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 flex items-center gap-1.5 overflow-visible">

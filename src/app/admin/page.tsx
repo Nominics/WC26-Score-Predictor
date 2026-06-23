@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
-import { MainNav } from "@/components/layout/main-nav"
+import { MainNav } from "@/components/layout/nav/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
@@ -528,7 +528,7 @@ export default function AdminPage() {
                 <Calendar className="h-3 w-3" /> Select Match
               </label>
               <Select value={selectedFixture} onValueChange={setSelectedFixture}>
-                <SelectTrigger className="h-14 rounded-2xl border-border/50 bg-muted/30 font-black uppercase text-[11px] italic tracking-tight">
+                <SelectTrigger className="h-14 rounded-2xl border-border/50 bg-muted/30 font-black uppercase text-[11px] italic tracking-tight" id="fixture-selector">
                   <SelectValue placeholder="Choose a fixture..." />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl max-h-[300px]">

@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // 1. Update the fixture
+    // 1. Update the fixture source of truth kickoff_at
     const { data: fixture, error: updateError } = await supabaseAdmin
       .from("fixtures")
       .update({ kickoff_at: newKickoffAt })
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    // 2. Log the activity (Safe patterns, no .catch() on query builder)
+    // 2. Log the activity securely
     try {
       const { error: logError } = await supabaseAdmin.from("activity_logs").insert({
         user_id: user.id,
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
       console.error("Log exception:", logErr);
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, fixture });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
