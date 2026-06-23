@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -14,8 +13,7 @@ const APP_ZONE = "Indian/Maldives"
 
 interface FixtureCardProps {
   fixture: any
-  initialHome?: number
-  initialAway?: number
+  myPrediction?: any
   onSave: (id: string, h: number, a: number, isLifeline: boolean) => void
   lifelinesRemaining?: number
   userProfile?: any
@@ -34,11 +32,11 @@ const AvatarStack = ({ supporters }: { supporters: any[] }) => {
     <div className="flex -space-x-1.5 overflow-visible py-1">
       {visibleSupporters.map((s, idx) => (
         <div key={`${s.user_id}-${idx}`} className="inline-block ring-1.5 ring-background rounded-full transition-transform hover:-translate-y-0.5 shadow-sm overflow-visible">
-          <UserAvatar profile={s} className="h-5 w-5 sm:h-6 sm:w-6 border-0" />
+          <UserAvatar profile={s} className="h-5 w-5 sm:h-5 sm:w-5 border-0" />
         </div>
       ))}
       {remainingCount > 0 && (
-        <div className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-muted ring-1.5 ring-background shadow-sm overflow-visible">
+        <div className="flex h-5 w-5 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-muted ring-1.5 ring-background shadow-sm overflow-visible">
           <span className="premium-gold-gradient-number text-[7px] sm:text-[8px]">+{remainingCount}</span>
         </div>
       )}
@@ -48,22 +46,31 @@ const AvatarStack = ({ supporters }: { supporters: any[] }) => {
 
 export function FixtureCard({ 
   fixture, 
-  initialHome, 
-  initialAway, 
+  myPrediction,
   onSave, 
   lifelinesRemaining = 0,
   userProfile,
   supporters = [],
   currentUserId
 }: FixtureCardProps) {
-  const [hScore, setHScore] = useState<string>(initialHome?.toString() || "")
-  const [aScore, setAScore] = useState<string>(initialAway?.toString() || "")
+  const [hScore, setHScore] = useState<string>("")
+  const [aScore, setAScore] = useState<string>("")
   const [editing, setEditing] = useState(false)
   const [isStandardLocked, setIsStandardLocked] = useState(false)
   const [isLifelineAvailable, setIsLifelineAvailable] = useState(false)
   const [isTotalLocked, setIsTotalLocked] = useState(false)
 
-  // Strictly use kickoff_at as the source of truth for display in the app zone
+  // Strictly sync state with props when props change
+  useEffect(() => {
+    if (myPrediction) {
+      setHScore(myPrediction.predicted_home_score?.toString() || "0")
+      setAScore(myPrediction.predicted_away_score?.toString() || "0")
+    } else {
+      setHScore("")
+      setAScore("")
+    }
+  }, [myPrediction])
+
   const kickoff = DateTime.fromISO(fixture.kickoff_at).setZone(APP_ZONE)
   const timeStr = kickoff.isValid ? kickoff.toFormat('HH:mm') : 'TBD'
   const dateStr = kickoff.isValid ? kickoff.toFormat('LLL dd') : ''
@@ -102,8 +109,6 @@ export function FixtureCard({
   const awaySupporters = supporters.filter(s => s.prediction_side === 'away')
   const drawSupporters = supporters.filter(s => s.prediction_side === 'draw')
 
-  const myPrediction = supporters.find(s => s.user_id === currentUserId)
-
   const cleanScorers = (scorers: string | null) => {
     if (!scorers || scorers === 'null') return null;
     let cleaned = scorers.replace(/[{}"']/g, '');
@@ -121,7 +126,6 @@ export function FixtureCard({
       "relative isolate overflow-visible border-border/50 bg-card text-foreground shadow-xl transition-all duration-500 rounded-[2rem]",
       isLive ? "ring-2 ring-emerald-500/50" : ""
     )}>
-      {/* Dynamic Background Gradients */}
       <div className={cn(
         "absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-1000 opacity-20 dark:opacity-40",
         isLive 
@@ -132,7 +136,6 @@ export function FixtureCard({
       )} />
       
       <CardContent className="p-0 relative z-10 overflow-visible">
-        {/* Top Header Pill */}
         <div className="px-5 py-3 flex justify-between items-center border-b border-border/50 bg-background/40 backdrop-blur-md rounded-t-[inherit] overflow-visible">
           <div className="flex flex-col overflow-visible">
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground overflow-visible">
@@ -159,9 +162,7 @@ export function FixtureCard({
           </div>
         </div>
 
-        {/* Match Action Section */}
         <div className="p-4 sm:p-6 pb-2 sm:pb-4 flex items-center justify-between gap-1 sm:gap-2 overflow-visible">
-          {/* Home Team */}
           <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-2 sm:gap-3 overflow-visible">
             <div className="relative group/flag overflow-visible">
               {fixture.home_flag ? (
@@ -181,7 +182,6 @@ export function FixtureCard({
             </div>
           </div>
 
-          {/* Score Area */}
           <div className="flex flex-col items-center justify-center min-w-[100px] sm:min-w-[140px] overflow-visible">
             {editing ? (
               <div className="flex flex-col items-center gap-3 py-1 animate-in zoom-in-95 duration-200 overflow-visible">
@@ -244,7 +244,6 @@ export function FixtureCard({
             )}
           </div>
 
-          {/* Away Team */}
           <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-2 sm:gap-3 overflow-visible">
             <div className="relative group/flag overflow-visible">
               {fixture.away_flag ? (
@@ -265,7 +264,6 @@ export function FixtureCard({
           </div>
         </div>
 
-        {/* Scorers Section */}
         {showScorers && (
           <div className="px-5 sm:px-8 pb-5 sm:pb-8 overflow-visible">
             <div className="p-3 sm:p-4 bg-muted/40 rounded-2xl sm:rounded-3xl border border-border/40 flex flex-col gap-2 shadow-inner backdrop-blur-sm overflow-visible">
@@ -285,7 +283,7 @@ export function FixtureCard({
                       </p>
                     )}
                   </div>
-                  <div className="flex-1 text-right min-w-0 overflow-visible">
+                  <div className="text-right flex-1 min-w-0 overflow-visible">
                     {awayScorers && (
                       <p className="text-[9px] font-bold text-muted-foreground uppercase leading-tight italic break-words overflow-visible">
                         {awayScorers}

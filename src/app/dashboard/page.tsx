@@ -57,6 +57,7 @@ export default function Dashboard() {
       const fixturesChannel = supabase
         .channel('fixtures-realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'fixtures' }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'predictions', filter: `user_id=eq.${authUser.id}` }, () => fetchData())
         .subscribe()
 
       const pulseChannel = supabase
@@ -66,7 +67,6 @@ export default function Dashboard() {
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'predictions' }, () => fetchActivity())
         .subscribe()
 
-      // Refetch on window focus to handle stale data
       const handleFocus = () => fetchData()
       window.addEventListener('focus', handleFocus)
 
@@ -104,11 +104,9 @@ export default function Dashboard() {
       setPredictions(pRes.data || [])
       setSupporters(sRes.data || [])
 
-      // Intelligent date selection logic
       if (fRes.data && fRes.data.length > 0) {
         const now = DateTime.now().setZone(APP_ZONE).toISODate()
         
-        // Find nearest match today or in the future
         const nearestMatch = fRes.data.find((f: any) => 
           DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() >= now
         )
@@ -117,7 +115,6 @@ export default function Dashboard() {
           ? DateTime.fromISO(nearestMatch.kickoff_at).setZone(APP_ZONE).toISODate() 
           : DateTime.fromISO(fRes.data[fRes.data.length - 1].kickoff_at).setZone(APP_ZONE).toISODate()
 
-        // Only auto-switch if no date is selected or if current selection has no matches anymore (admin change)
         const currentMatches = fRes.data.filter((f: any) => 
           DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() === activeDate
         )
@@ -377,14 +374,13 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-6 sm:space-y-8">
             {displayFixtures.map((fixture) => {
-              const pred = predictions.find(p => p.fixture_id === fixture.id)
+              const myPrediction = predictions.find(p => p.fixture_id === fixture.id)
               const supportersForFixture = supporters.filter(s => s.fixture_id === fixture.id)
               return (
                 <FixtureCard 
                   key={fixture.id} 
                   fixture={fixture} 
-                  initialHome={pred?.predicted_home_score}
-                  initialAway={pred?.predicted_away_score}
+                  myPrediction={myPrediction}
                   onSave={handlePredict}
                   lifelinesRemaining={stats?.lifelines || 0}
                   userProfile={profile}
