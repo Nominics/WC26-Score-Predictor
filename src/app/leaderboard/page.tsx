@@ -104,7 +104,7 @@ export default function Leaderboard() {
             <p className="text-muted-foreground font-bold uppercase text-[10px] tracking-[0.3em]">Competition starts soon.</p>
           </div>
         ) : (
-          <div className="space-y-3.5 px-0.5">
+          <div className="space-y-4 px-0.5">
             {entries.map((entry, i) => {
               const rank = i + 1
               const isTopThree = rank <= 3
@@ -114,28 +114,31 @@ export default function Leaderboard() {
                 <div 
                   key={entry.user_id} 
                   className={cn(
-                    "app-glass-card p-4 group overflow-visible relative transition-all duration-300",
-                    isTopThree ? "border-primary/20 shadow-lg shadow-primary/5" : "border-border/40",
-                    isCurrentUser && "ring-2 ring-primary ring-offset-2 dark:ring-offset-background"
+                    "app-glass-card p-5 group overflow-visible relative transition-all duration-300",
+                    isTopThree ? "border-primary/25 shadow-xl shadow-primary/5" : "border-amber-200/60 dark:border-border/40",
+                    isCurrentUser && "ring-2 ring-primary ring-offset-4 dark:ring-offset-background shadow-2xl shadow-primary/10"
                   )}
                 >
+                  {/* Premium Gradient Overlay */}
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,180,40,0.08),transparent_40%),radial-gradient(circle_at_bottom_left,rgba(120,80,30,0.04),transparent_40%)] pointer-events-none rounded-[inherit]" />
+
                   {isCurrentUser && (
-                    <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 premium-gold-pill px-3 py-0.5 text-[8px] rounded-full shadow-lg z-10 border border-background">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 premium-gold-pill px-4 py-1 text-[9px] rounded-full shadow-2xl z-10 border-2 border-background">
                       YOU
                     </div>
                   )}
 
-                  <div className="flex items-center gap-3 sm:gap-4 overflow-visible">
+                  <div className="flex items-center gap-3 sm:gap-4 overflow-visible relative z-10">
                     {/* Rank Badge */}
                     <div className="w-8 shrink-0 flex flex-col items-center justify-center">
                       {rank === 1 ? (
-                        <Trophy className="h-7 w-7 text-yellow-500 fill-yellow-500 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]" />
+                        <Trophy className="h-8 w-8 text-yellow-500 fill-yellow-500 drop-shadow-[0_0_10px_rgba(251,191,36,0.6)]" />
                       ) : rank === 2 ? (
-                        <Medal className="h-6 w-6 text-slate-400 fill-slate-400" />
+                        <Medal className="h-7 w-7 text-slate-400 fill-slate-400" />
                       ) : rank === 3 ? (
-                        <Medal className="h-6 w-6 text-orange-400 fill-orange-400" />
+                        <Medal className="h-7 w-7 text-orange-400 fill-orange-400" />
                       ) : (
-                        <span className="text-sm font-black text-muted-foreground opacity-30 italic">#{rank}</span>
+                        <span className="text-sm font-black text-muted-foreground/40 italic">#{rank}</span>
                       )}
                     </div>
                     
@@ -143,20 +146,20 @@ export default function Leaderboard() {
                     <UserAvatar 
                       profile={entry} 
                       className={cn(
-                        "h-12 w-12 sm:h-14 sm:w-14 shrink-0 shadow-lg border-2 border-background",
-                        isTopThree && "ring-1 ring-primary/20"
+                        "h-14 w-14 shrink-0 shadow-2xl border-4 border-background",
+                        isTopThree && "ring-1 ring-primary/30"
                       )} 
                     />
 
                     {/* Name & Metadata */}
                     <div className="flex-1 min-w-0 flex flex-col gap-0.5 overflow-visible">
                       <span className={cn(
-                        "font-black text-base uppercase tracking-tight truncate block leading-tight",
+                        "font-black text-lg uppercase tracking-tight truncate block leading-tight",
                         isCurrentUser ? "premium-gold-gradient-heading" : "text-foreground"
                       )}>
                         {entry.display_name}
                       </span>
-                      <div className="flex items-center gap-1.5 opacity-60">
+                      <div className="flex items-center gap-1.5 opacity-70">
                         <Hash className="h-2.5 w-2.5 text-muted-foreground" />
                         <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none">
                           {entry.total_predictions} Picks
@@ -165,49 +168,49 @@ export default function Leaderboard() {
                     </div>
 
                     {/* Points Pill */}
-                    <div className="shrink-0 flex flex-col items-end gap-0.5">
-                       <div className="flex items-center gap-1.5 bg-foreground text-background px-3 py-1.5 rounded-2xl shadow-xl transition-transform group-hover:scale-105">
-                          <Trophy className="h-3 w-3 fill-background/10 text-primary" />
-                          <span className="text-lg font-black italic tabular-nums leading-none tracking-tighter">{entry.total_points}</span>
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                       <div className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-2xl shadow-2xl transition-transform group-hover:scale-105 active:scale-95">
+                          <Trophy className="h-3 w-3 fill-background/20 text-primary" />
+                          <span className="text-xl font-black italic tabular-nums leading-none tracking-tighter">{entry.total_points}</span>
                        </div>
-                       <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em] mr-1 opacity-50">PTS</span>
+                       <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.25em] mr-1 opacity-60">PTS</span>
                     </div>
                   </div>
                   
                   {/* Detailed Stats Grid */}
-                  <div className="mt-4 pt-4 border-t border-border/10 grid grid-cols-2 gap-y-3 gap-x-4 px-1 overflow-visible">
-                     <div className="flex items-center gap-2.5 overflow-visible">
-                        <div className="h-7 w-7 rounded-lg bg-primary/5 flex items-center justify-center shrink-0 border border-primary/10">
-                           <Target className="h-3.5 w-3.5 text-primary opacity-60" />
+                  <div className="mt-5 pt-5 border-t border-amber-100/50 dark:border-border/10 grid grid-cols-2 gap-y-4 gap-x-5 px-1 overflow-visible relative z-10">
+                     <div className="flex items-center gap-3 overflow-visible">
+                        <div className="h-8 w-8 rounded-xl bg-primary/5 flex items-center justify-center shrink-0 border border-primary/10">
+                           <Target className="h-4 w-4 text-primary opacity-70" />
                         </div>
                         <div className="flex flex-col min-w-0 overflow-visible">
-                            <span className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none">Accuracy</span>
-                            <span className="premium-gold-gradient-number text-[11px] leading-tight mt-0.5">{entry.prediction_points} <span className="text-[8px] not-italic opacity-40 uppercase ml-0.5">pts</span></span>
+                            <span className="text-[9px] font-black text-slate-500 dark:text-muted-foreground/60 uppercase tracking-widest leading-none">Accuracy</span>
+                            <span className="premium-gold-gradient-number text-[12px] leading-tight mt-1">{entry.prediction_points} <span className="text-[9px] not-italic opacity-50 uppercase ml-0.5">pts</span></span>
                         </div>
                      </div>
 
-                     <div className="flex items-center gap-2.5 overflow-visible">
-                        <div className="h-7 w-7 rounded-lg bg-primary/5 flex items-center justify-center shrink-0 border border-primary/10">
-                           <Zap className="h-3.5 w-3.5 text-primary opacity-60" />
+                     <div className="flex items-center gap-3 overflow-visible">
+                        <div className="h-8 w-8 rounded-xl bg-primary/5 flex items-center justify-center shrink-0 border border-primary/10">
+                           <Zap className="h-4 w-4 text-primary opacity-70" />
                         </div>
                         <div className="flex flex-col min-w-0 overflow-visible">
-                            <span className="text-[8px] font-black text-muted-foreground/60 uppercase tracking-widest leading-none">Modifiers</span>
+                            <span className="text-[9px] font-black text-slate-500 dark:text-muted-foreground/60 uppercase tracking-widest leading-none">Modifiers</span>
                             <span className={cn(
-                              "text-[11px] font-black italic leading-tight mt-0.5",
-                              (entry.manual_points + (entry.starting_points || 0)) > 0 ? "text-emerald-500" : (entry.manual_points + (entry.starting_points || 0)) < 0 ? "text-red-500" : "text-muted-foreground/40"
+                              "text-[12px] font-black italic leading-tight mt-1",
+                              (entry.manual_points + (entry.starting_points || 0)) > 0 ? "text-emerald-500" : (entry.manual_points + (entry.starting_points || 0)) < 0 ? "text-red-500" : "text-slate-400 dark:text-muted-foreground/40"
                             )}>
-                              { (entry.manual_points + (entry.starting_points || 0)) > 0 ? '+' : '' }{entry.manual_points + (entry.starting_points || 0)} <span className="text-[8px] not-italic opacity-40 uppercase ml-0.5">pts</span>
+                              { (entry.manual_points + (entry.starting_points || 0)) > 0 ? '+' : '' }{entry.manual_points + (entry.starting_points || 0)} <span className="text-[9px] not-italic opacity-50 uppercase ml-0.5">pts</span>
                             </span>
                         </div>
                      </div>
 
-                     <div className="flex items-center gap-2.5 overflow-visible col-span-2">
-                        <div className="h-7 w-7 rounded-lg bg-muted/50 flex items-center justify-center shrink-0 border border-border/40">
-                           <History className="h-3.5 w-3.5 text-muted-foreground/60" />
+                     <div className="flex items-center gap-3 overflow-visible col-span-2">
+                        <div className="h-8 w-8 rounded-xl bg-muted/40 dark:bg-muted/20 flex items-center justify-center shrink-0 border border-slate-200 dark:border-border/40">
+                           <History className="h-4 w-4 text-muted-foreground/60" />
                         </div>
                         <div className="flex flex-col min-w-0 overflow-visible">
-                           <span className="text-[8px] font-black text-muted-foreground/40 uppercase tracking-widest leading-none">Last Activity</span>
-                           <span className="text-[10px] font-bold text-muted-foreground/80 italic mt-0.5">
+                           <span className="text-[9px] font-black text-slate-400 dark:text-muted-foreground/40 uppercase tracking-widest leading-none">Last Pulse</span>
+                           <span className="text-[11px] font-bold text-slate-600 dark:text-muted-foreground/80 italic mt-1">
                              {entry.last_prediction_at ? DateTime.fromISO(entry.last_prediction_at).toRelative() : 'Awaiting Debut'}
                            </span>
                         </div>
