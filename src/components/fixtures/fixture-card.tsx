@@ -140,7 +140,7 @@ export function FixtureCard({
       isLive ? "ring-2 ring-emerald-500/50" : "shadow-xl shadow-amber-900/5 dark:shadow-none"
     )}>
       <div className={cn(
-        "absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-1000 opacity-[0.03] dark:opacity-40",
+        "absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-1000 opacity-10 dark:opacity-40",
         isLive 
           ? "bg-gradient-to-br from-emerald-500 via-transparent to-teal-500 opacity-10" 
           : isFinished
@@ -210,13 +210,13 @@ export function FixtureCard({
             ) : (
               <div className="flex flex-col items-center overflow-visible">
                 <div className={cn(
-                  "relative flex items-center justify-center min-w-[110px] sm:min-w-[160px] min-h-[70px] sm:min-h-[76px] px-6 sm:px-8 py-3 rounded-[1.8rem] sm:rounded-[2rem] border border-black/5 dark:border-white/10 shadow-inner bg-black/5 dark:bg-black/40 overflow-visible",
+                  "relative flex items-center justify-center min-w-[110px] sm:min-w-[160px] min-h-[70px] sm:min-h-[76px] px-6 sm:px-8 py-3 rounded-[1.8rem] sm:rounded-[2rem] border border-amber-200/60 dark:border-white/10 shadow-[0_12px_30px_rgba(120,80,20,0.12)] dark:shadow-inner bg-white/90 dark:bg-black/45 overflow-visible",
                   isLive ? "ring-1 ring-emerald-500/20" : ""
                 )}>
                   <span className="inline-block premium-gold-gradient-number text-[54px] sm:text-6xl font-black italic tracking-tighter tabular-nums leading-[1.18] pt-1 pb-1 overflow-visible">
                     {isFinished || isLive ? (fixture.home_score ?? 0) : '0'}
                   </span>
-                  <span className="inline-block mx-2 text-[42px] sm:text-5xl font-black leading-[1.18] text-black/10 dark:text-white/25 pt-1 pb-1">:</span>
+                  <span className="inline-block mx-2 text-[42px] sm:text-5xl font-black leading-[1.18] text-slate-400/60 dark:text-white/25 pt-1 pb-1">:</span>
                   <span className="inline-block premium-gold-gradient-number text-[54px] sm:text-6xl font-black italic tracking-tighter tabular-nums leading-[1.18] pt-1 pb-1 overflow-visible">
                     {isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
                   </span>
