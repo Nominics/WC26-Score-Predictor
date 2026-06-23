@@ -89,44 +89,101 @@ export default function Dashboard() {
   }, [activeDate])
 
   const fetchData = async () => {
-    if (!authUser) return
+    if (!authUser?.id) return
+
+    setIsLoadingData(true)
+
     try {
       const [fRes, pRes, sRes] = await Promise.all([
-        supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true }),
-        supabase.from("predictions")
-          .select("id, user_id, fixture_id, predicted_home_score, predicted_away_score, points, created_at, updated_at")
+        supabase
+          .from("fixtures")
+          .select("*")
+          .order("kickoff_at", { ascending: true }),
+
+        supabase
+          .from("predictions")
+          .select(
+            "id, user_id, fixture_id, predicted_home_score, predicted_away_score, points, created_at, updated_at"
+          )
           .eq("user_id", authUser.id),
-        supabase.from("fixture_prediction_supporters").select("*").order("updated_at", { ascending: false })
+
+        supabase
+          .from("fixture_prediction_supporters")
+          .select("*")
+          .order("updated_at", { ascending: false }),
       ])
-      
+
       if (fRes.error) throw fRes.error
       if (pRes.error) throw pRes.error
       if (sRes.error) throw sRes.error
 
-      setFixtures(fRes.data || [])
-      setPredictions(pRes.data || [])
-      setSupporters(sRes.data || [])
+      const fixturesData = fRes.data || []
+      const directMyPredictions = pRes.data || []
+      const supportersData = sRes.data || []
 
-      if (fRes.data && fRes.data.length > 0) {
+      /**
+       * Safety fallback:
+       * View All Picks already proves fixture_prediction_supporters has prediction data.
+       * So we also extract the logged-in user's rows from supporters and merge them
+       * into the my predictions list.
+       */
+      const mySupporterPredictions = supportersData
+        .filter((s: any) => String(s.user_id) === String(authUser.id))
+        .map((s: any) => ({
+          id: s.id ?? `${s.fixture_id}-${s.user_id}`,
+          user_id: s.user_id,
+          fixture_id: s.fixture_id,
+          predicted_home_score: s.predicted_home_score,
+          predicted_away_score: s.predicted_away_score,
+          points: s.points ?? 0,
+          created_at: s.created_at ?? s.updated_at,
+          updated_at: s.updated_at,
+        }))
+
+      /**
+       * Merge direct predictions + supporter fallback by fixture_id.
+       * Direct predictions win if both exist.
+       */
+      const mergedPredictionMap = new Map<string, any>()
+
+      mySupporterPredictions.forEach((p: any) => {
+        mergedPredictionMap.set(String(p.fixture_id), p)
+      })
+
+      directMyPredictions.forEach((p: any) => {
+        mergedPredictionMap.set(String(p.fixture_id), p)
+      })
+
+      const mergedMyPredictions = Array.from(mergedPredictionMap.values())
+
+      setFixtures(fixturesData)
+      setPredictions(mergedMyPredictions)
+      setSupporters(supportersData)
+
+      if (fixturesData.length > 0) {
         const now = DateTime.now().setZone(APP_ZONE).toISODate()
-        
-        const nearestMatch = fRes.data.find((f: any) => 
-          DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() >= now
-        )
 
-        const calculatedDate = nearestMatch 
-          ? DateTime.fromISO(nearestMatch.kickoff_at).setZone(APP_ZONE).toISODate() 
-          : DateTime.fromISO(fRes.data[fRes.data.length - 1].kickoff_at).setZone(APP_ZONE).toISODate()
+        const nearestMatch = fixturesData.find((f: any) => {
+          return DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() >= now
+        })
 
-        const currentMatches = fRes.data.filter((f: any) => 
-          DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() === activeDate
-        )
+        const calculatedDate = nearestMatch
+          ? DateTime.fromISO(nearestMatch.kickoff_at).setZone(APP_ZONE).toISODate()
+          : DateTime.fromISO(fixturesData[fixturesData.length - 1].kickoff_at)
+              .setZone(APP_ZONE)
+              .toISODate()
 
-        if (!activeDate || (currentMatches.length === 0)) {
+        const currentMatches = fixturesData.filter((f: any) => {
+          return (
+            DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toISODate() ===
+            activeDate
+          )
+        })
+
+        if (!activeDate || currentMatches.length === 0) {
           setActiveDate(calculatedDate)
         }
       }
-
     } catch (error: any) {
       console.error("Error fetching dashboard data:", error)
     } finally {
@@ -238,6 +295,7 @@ export default function Dashboard() {
     return <AppLoadingScreen />
   }
 
+  // Debugging logs as requested
   console.log("my predictions count", predictions.length)
   console.log("supporters count", supporters.length)
 
@@ -408,8 +466,6 @@ export default function Dashboard() {
               
               const myPrediction = predictionsByFixtureId.get(fixtureId) ?? 
                 supportersForFixture.find((s: any) => String(s.user_id) === String(authUser?.id))
-
-              console.log("fixture", fixture.id, "myPrediction", myPrediction)
 
               return (
                 <FixtureCard 
