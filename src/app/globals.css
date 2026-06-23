@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 240 25% 98%;
+    --background: 45 25% 96%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -12,22 +12,22 @@
     --popover-foreground: 240 10% 3.9%;
     --primary: 38 92% 50%; /* Premium Gold/Amber base */
     --primary-foreground: 0 0% 0%;
-    --secondary: 240 4.8% 95.9%;
+    --secondary: 45 20% 90%;
     --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
+    --muted: 45 20% 92%;
     --muted-foreground: 240 3.8% 46.1%;
     --accent: 38 92% 50%;
     --accent-foreground: 0 0% 0%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    --border: 38 40% 90%;
+    --input: 38 40% 90%;
     --ring: 38 92% 50%;
     --radius: 2.5rem;
 
     /* Theme Tokens */
-    --app-bg: #f8fafc;
-    --surface-glow: rgba(251, 191, 36, 0.05);
+    --app-bg: #f6f2e8;
+    --surface-glow: rgba(251, 191, 36, 0.04);
   }
 
   .dark {
@@ -97,11 +97,17 @@
 
   /* Reusable Design Components */
   .app-glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-border/50 shadow-xl rounded-[2.5rem] overflow-hidden transition-all duration-300;
+    @apply bg-white/95 dark:bg-card/60 backdrop-blur-xl border border-amber-200/50 dark:border-border/50 rounded-[2.5rem] overflow-hidden transition-all duration-300;
+    box-shadow: 0 18px 45px rgba(120, 80, 20, 0.1);
+  }
+  
+  .dark .app-glass-card {
+    @apply bg-card/60 border-white/5;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   }
   
   .app-surface-panel {
-    @apply bg-muted/30 backdrop-blur-md border border-border/40 rounded-[2rem] p-6 shadow-sm;
+    @apply bg-white/90 dark:bg-muted/30 backdrop-blur-md border border-amber-100 dark:border-border/40 rounded-[2rem] p-6 shadow-sm;
   }
 
   .status-pill {
@@ -133,7 +139,7 @@
   }
 
   .premium-header {
-    @apply px-6 py-4 bg-background/80 backdrop-blur-2xl border-b border-border shadow-sm sticky top-0 z-40;
+    @apply px-6 py-4 bg-white/80 dark:bg-background/80 backdrop-blur-2xl border-b border-amber-200/30 dark:border-border shadow-sm sticky top-0 z-40;
   }
 
   .soft-button {

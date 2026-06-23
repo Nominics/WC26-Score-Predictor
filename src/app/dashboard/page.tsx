@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -319,10 +318,6 @@ export default function Dashboard() {
     return <AppLoadingScreen />
   }
 
-  // Debugging logs as requested
-  console.log("my predictions count", predictions.length)
-  console.log("supporters count", supporters.length)
-
   return (
     <div className="min-h-screen pb-32 flex flex-col items-center">
       <MainNav />
@@ -359,8 +354,8 @@ export default function Dashboard() {
       </header>
 
       <div className="max-w-md w-full px-4 pt-4 sm:pt-6 mb-2">
-        <Card className="app-glass-card border-primary/5 overflow-visible">
-          <div className="px-4 py-2 bg-muted/20 backdrop-blur-md flex items-center justify-between border-b border-border/40 overflow-visible">
+        <Card className="app-glass-card border-amber-200/50 dark:border-primary/5 overflow-visible">
+          <div className="px-4 py-2 bg-amber-50/40 dark:bg-muted/20 backdrop-blur-md flex items-center justify-between border-b border-amber-100/50 dark:border-border/40 overflow-visible">
             <div className="flex items-center gap-2 overflow-visible">
               <div className="relative flex items-center justify-center overflow-visible">
                 <Radio className="h-2.5 w-2.5 text-red-500 animate-pulse relative z-10" />
@@ -374,7 +369,7 @@ export default function Dashboard() {
             </Link>
           </div>
           
-          <ScrollArea className="h-[120px] sm:h-[150px] bg-black/[0.02] dark:bg-white/[0.01]" hideScrollbar>
+          <ScrollArea className="h-[120px] sm:h-[150px] bg-white/[0.2] dark:bg-white/[0.01]" hideScrollbar>
             <div className="p-2 py-1">
               {activityLogs.length === 0 ? (
                 <div className="py-10 text-center opacity-40">
@@ -396,7 +391,7 @@ export default function Dashboard() {
                   }
 
                   return (
-                    <div key={log.id} className="flex gap-2 py-1.5 border-b border-border/50 last:border-0 items-center group overflow-visible">
+                    <div key={log.id} className="flex gap-2 py-1.5 border-b border-amber-100/30 dark:border-border/50 last:border-0 items-center group overflow-visible">
                       <span className="shrink-0 text-xs sm:text-sm grayscale-[0.3] group-hover:grayscale-0 transition-all">{displayEmoji}</span>
                       <span className="shrink-0 font-mono text-[8px] text-muted-foreground/60 tabular-nums">
                         {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
@@ -419,7 +414,7 @@ export default function Dashboard() {
       </div>
 
       {dateTabs.length > 0 && (
-        <div className="w-full flex justify-center py-3 sm:py-5 sticky top-[48px] bg-white/80 dark:bg-slate-950/60 backdrop-blur-2xl z-30 border-b border-border/40 shadow-xl overflow-hidden">
+        <div className="w-full flex justify-center py-3 sm:py-5 sticky top-[48px] bg-white/85 dark:bg-slate-950/60 backdrop-blur-2xl z-30 border-y border-amber-100 dark:border-border/40 shadow-md overflow-hidden">
           <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none opacity-40" />
           <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none opacity-40" />
           
@@ -435,7 +430,7 @@ export default function Dashboard() {
                     "flex flex-col items-center min-w-[3.8rem] h-20 rounded-[1.4rem] transition-all duration-500 border-2 relative isolate",
                     isActive 
                       ? "premium-gold-gradient-bg border-yellow-300 text-black shadow-2xl scale-[1.03] z-20 ring-4 ring-yellow-400/20" 
-                      : "bg-white/80 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 shadow-sm"
+                      : "bg-white/90 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 shadow-sm"
                   )}
                 >
                   <span className={cn(
@@ -479,7 +474,7 @@ export default function Dashboard() {
         </div>
 
         {displayFixtures.length === 0 ? (
-          <div className="text-center py-20 app-surface-panel border-dashed border-2 mx-2">
+          <div className="text-center py-20 app-surface-panel border-dashed border-2 mx-2 border-amber-200/50">
             <p className="text-muted-foreground font-black uppercase text-[10px] tracking-[0.3em]">No matches scheduled</p>
           </div>
         ) : (

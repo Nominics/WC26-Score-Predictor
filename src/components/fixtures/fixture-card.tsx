@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -137,20 +136,20 @@ export function FixtureCard({
 
   return (
     <Card className={cn(
-      "relative isolate overflow-visible border-border/50 bg-card text-foreground shadow-xl transition-all duration-500 rounded-[2rem]",
-      isLive ? "ring-2 ring-emerald-500/50" : ""
+      "relative isolate overflow-visible border-amber-200/60 dark:border-border/50 bg-white dark:bg-card text-foreground transition-all duration-500 rounded-[2rem]",
+      isLive ? "ring-2 ring-emerald-500/50" : "shadow-xl shadow-amber-900/5 dark:shadow-none"
     )}>
       <div className={cn(
-        "absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-1000 opacity-20 dark:opacity-40",
+        "absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-1000 opacity-[0.03] dark:opacity-40",
         isLive 
-          ? "bg-gradient-to-br from-emerald-500 via-transparent to-teal-500" 
+          ? "bg-gradient-to-br from-emerald-500 via-transparent to-teal-500 opacity-10" 
           : isFinished
             ? "bg-gradient-to-br from-zinc-500 via-transparent to-orange-500"
             : "bg-gradient-to-br from-indigo-500 via-transparent to-purple-500"
       )} />
       
       <CardContent className="p-0 relative z-10 overflow-visible">
-        <div className="px-5 py-3 flex justify-between items-center border-b border-border/50 bg-background/40 backdrop-blur-md rounded-t-[inherit] overflow-visible">
+        <div className="px-5 py-3 flex justify-between items-center border-b border-amber-100 dark:border-border/50 bg-amber-50/40 dark:bg-background/40 backdrop-blur-md rounded-t-[inherit] overflow-visible">
           <div className="flex flex-col overflow-visible">
             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground overflow-visible">
               {fixture.stage} • {dateStr}
@@ -211,13 +210,13 @@ export function FixtureCard({
             ) : (
               <div className="flex flex-col items-center overflow-visible">
                 <div className={cn(
-                  "relative flex items-center justify-center min-w-[110px] sm:min-w-[160px] min-h-[70px] sm:min-h-[76px] px-6 sm:px-8 py-3 rounded-[1.8rem] sm:rounded-[2rem] border border-white/10 shadow-inner bg-black/40 overflow-visible",
+                  "relative flex items-center justify-center min-w-[110px] sm:min-w-[160px] min-h-[70px] sm:min-h-[76px] px-6 sm:px-8 py-3 rounded-[1.8rem] sm:rounded-[2rem] border border-black/5 dark:border-white/10 shadow-inner bg-black/5 dark:bg-black/40 overflow-visible",
                   isLive ? "ring-1 ring-emerald-500/20" : ""
                 )}>
                   <span className="inline-block premium-gold-gradient-number text-[54px] sm:text-6xl font-black italic tracking-tighter tabular-nums leading-[1.18] pt-1 pb-1 overflow-visible">
                     {isFinished || isLive ? (fixture.home_score ?? 0) : '0'}
                   </span>
-                  <span className="inline-block mx-2 text-[42px] sm:text-5xl font-black leading-[1.18] text-white/25 pt-1 pb-1">:</span>
+                  <span className="inline-block mx-2 text-[42px] sm:text-5xl font-black leading-[1.18] text-black/10 dark:text-white/25 pt-1 pb-1">:</span>
                   <span className="inline-block premium-gold-gradient-number text-[54px] sm:text-6xl font-black italic tracking-tighter tabular-nums leading-[1.18] pt-1 pb-1 overflow-visible">
                     {isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
                   </span>
@@ -243,7 +242,7 @@ export function FixtureCard({
                   <div className="mt-2 flex flex-col items-center overflow-visible">
                     {!editing && (
                        !isStandardLocked ? (
-                          <Button onClick={() => setEditing(true)} className="soft-button h-8 px-4 sm:h-10 sm:px-6 bg-muted text-foreground border border-border/50 text-[9px] sm:text-[10px] hover:premium-gold-gradient-bg hover:text-black">
+                          <Button onClick={() => setEditing(true)} className="soft-button h-8 px-4 sm:h-10 sm:px-6 bg-muted dark:bg-muted text-foreground border border-border/50 text-[9px] sm:text-[10px] hover:premium-gold-gradient-bg hover:text-black transition-all">
                             <Edit2 className="h-2.5 w-2.5 mr-1.5" /> {myPrediction ? 'Edit Pick' : 'Make Pick'}
                           </Button>
                        ) : isLifelineAvailable ? (
@@ -280,14 +279,14 @@ export function FixtureCard({
 
         {showScorers && (
           <div className="px-5 sm:px-8 pb-3 sm:pb-4 overflow-visible">
-            <div className="p-3 sm:p-4 bg-muted/40 rounded-2xl sm:rounded-3xl border border-border/40 flex flex-col gap-2 shadow-inner backdrop-blur-sm overflow-visible">
+            <div className="p-3 sm:p-4 bg-amber-50/30 dark:bg-muted/40 rounded-2xl sm:rounded-3xl border border-amber-100/50 dark:border-border/40 flex flex-col gap-2 shadow-inner backdrop-blur-sm overflow-visible">
                <div className="flex items-center justify-center gap-3 overflow-visible">
-                 <div className="h-[1px] bg-border/40 flex-1" />
+                 <div className="h-[1px] bg-amber-200/30 dark:bg-border/40 flex-1" />
                  <div className="flex items-center gap-1.5 overflow-visible">
                     <Goal className="h-2.5 w-2.5 text-primary" />
                     <span className="premium-gold-gradient-text text-[8px] uppercase tracking-[0.2em]">Goal Events</span>
                  </div>
-                 <div className="h-[1px] bg-border/40 flex-1" />
+                 <div className="h-[1px] bg-amber-200/30 dark:bg-border/40 flex-1" />
                </div>
                <div className="flex justify-between gap-4 pt-0.5 overflow-visible">
                   <div className="flex-1 min-w-0 overflow-visible">
@@ -316,7 +315,7 @@ export function FixtureCard({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="h-8 px-4 rounded-full bg-muted/50 hover:bg-muted text-[9px] font-black uppercase tracking-widest flex items-center gap-2 group transition-all"
+                  className="h-8 px-4 rounded-full bg-amber-50/50 dark:bg-muted/50 hover:bg-amber-100/50 dark:hover:bg-muted text-[9px] font-black uppercase tracking-widest flex items-center gap-2 group transition-all border border-amber-100/30 dark:border-transparent"
                 >
                   <Users className="h-3 w-3 text-primary" />
                   <span>{isExpanded ? 'Hide Picks' : `View All Picks (${supporters.length})`}</span>
@@ -326,7 +325,7 @@ export function FixtureCard({
 
              <CollapsibleContent className="w-full mt-6 space-y-6 overflow-visible animate-in slide-in-from-top-2 duration-300">
                 {!canSeeScores ? (
-                  <div className="py-12 px-6 rounded-[2rem] bg-muted/30 border-2 border-dashed border-primary/20 flex flex-col items-center text-center gap-4">
+                  <div className="py-12 px-6 rounded-[2rem] bg-amber-50/20 dark:bg-muted/30 border-2 border-dashed border-amber-200/50 dark:border-primary/20 flex flex-col items-center text-center gap-4">
                      <ShieldAlert className="h-8 w-8 text-primary opacity-50" />
                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground leading-relaxed">
                        Submit your pick to reveal<br/>how others are voting
@@ -343,7 +342,7 @@ export function FixtureCard({
                       <div className="space-y-3 overflow-visible">
                         <div className="flex items-center gap-3 px-1 overflow-visible">
                           <span className="premium-gold-gradient-heading text-[10px] uppercase">{fixture.home_team} Win</span>
-                          <div className="h-[1px] bg-border/40 flex-1" />
+                          <div className="h-[1px] bg-amber-200/20 dark:bg-border/40 flex-1" />
                           <span className="text-[9px] font-black text-muted-foreground opacity-40 uppercase tracking-tighter">{groupedPredictions.home.length} Fan{groupedPredictions.home.length !== 1 ? 's' : ''}</span>
                         </div>
                         <div className="grid gap-2 overflow-visible">
@@ -359,7 +358,7 @@ export function FixtureCard({
                       <div className="space-y-3 overflow-visible">
                         <div className="flex items-center gap-3 px-1 overflow-visible">
                           <span className="premium-gold-gradient-heading text-[10px] uppercase italic">The Draw</span>
-                          <div className="h-[1px] bg-border/40 flex-1" />
+                          <div className="h-[1px] bg-amber-200/20 dark:bg-border/40 flex-1" />
                           <span className="text-[9px] font-black text-muted-foreground opacity-40 uppercase tracking-tighter">{groupedPredictions.draw.length} Fan{groupedPredictions.draw.length !== 1 ? 's' : ''}</span>
                         </div>
                         <div className="grid gap-2 overflow-visible">
@@ -375,7 +374,7 @@ export function FixtureCard({
                       <div className="space-y-3 overflow-visible">
                         <div className="flex items-center gap-3 px-1 overflow-visible">
                           <span className="premium-gold-gradient-heading text-[10px] uppercase">{fixture.away_team} Win</span>
-                          <div className="h-[1px] bg-border/40 flex-1" />
+                          <div className="h-[1px] bg-amber-200/20 dark:bg-border/40 flex-1" />
                           <span className="text-[9px] font-black text-muted-foreground opacity-40 uppercase tracking-tighter">{groupedPredictions.away.length} Fan{groupedPredictions.away.length !== 1 ? 's' : ''}</span>
                         </div>
                         <div className="grid gap-2 overflow-visible">
@@ -401,7 +400,7 @@ function PredictionRow({ supporter, isOwn, isFinished }: { supporter: any, isOwn
       "flex items-center justify-between p-3 rounded-2xl border transition-all overflow-visible",
       isOwn 
         ? "bg-primary/10 border-primary/30 premium-gold-ring shadow-lg scale-[1.02]" 
-        : "bg-muted/30 border-border/40"
+        : "bg-white/40 dark:bg-muted/30 border-amber-100/50 dark:border-border/40"
     )}>
       <div className="flex items-center gap-3 overflow-visible">
         <UserAvatar profile={supporter} className="h-7 w-7 border-0 shadow-sm" />
@@ -424,7 +423,7 @@ function PredictionRow({ supporter, isOwn, isFinished }: { supporter: any, isOwn
       </div>
       
       <div className="flex items-center gap-2 overflow-visible">
-        <div className="px-3 py-1 rounded-full bg-background/50 border border-border/50 shadow-inner overflow-visible">
+        <div className="px-3 py-1 rounded-full bg-white/60 dark:bg-background/50 border border-amber-100/50 dark:border-border/50 shadow-inner overflow-visible">
            <span className="premium-gold-gradient-number text-[12px] tabular-nums whitespace-nowrap overflow-visible">
              {supporter.predicted_home_score} - {supporter.predicted_away_score}
            </span>
