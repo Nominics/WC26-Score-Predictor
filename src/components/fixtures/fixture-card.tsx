@@ -31,15 +31,15 @@ const AvatarStack = ({ supporters }: { supporters: any[] }) => {
   const remainingCount = Math.max(0, supporters.length - MAX_VISIBLE)
 
   return (
-    <div className="flex -space-x-2 overflow-visible py-1">
+    <div className="flex -space-x-1.5 overflow-visible py-1">
       {visibleSupporters.map((s, idx) => (
-        <div key={`${s.user_id}-${idx}`} className="inline-block ring-2 ring-background rounded-full transition-transform hover:-translate-y-0.5 shadow-sm overflow-visible">
-          <UserAvatar profile={s} className="h-6 w-6 sm:h-7 sm:w-7 border-0" />
+        <div key={`${s.user_id}-${idx}`} className="inline-block ring-1.5 ring-background rounded-full transition-transform hover:-translate-y-0.5 shadow-sm overflow-visible">
+          <UserAvatar profile={s} className="h-5 w-5 sm:h-6 sm:w-6 border-0" />
         </div>
       ))}
       {remainingCount > 0 && (
-        <div className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full bg-muted ring-2 ring-background shadow-sm overflow-visible">
-          <span className="premium-gold-gradient-number text-[8px] sm:text-[9px]">+{remainingCount}</span>
+        <div className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-full bg-muted ring-1.5 ring-background shadow-sm overflow-visible">
+          <span className="premium-gold-gradient-number text-[7px] sm:text-[8px]">+{remainingCount}</span>
         </div>
       )}
     </div>
@@ -165,18 +165,18 @@ export function FixtureCard({
           <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-2 sm:gap-3 overflow-visible">
             <div className="relative group/flag overflow-visible">
               {fixture.home_flag ? (
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 transition-transform duration-500 overflow-visible">
+                <div className="relative h-14 w-14 sm:h-20 sm:w-20 transition-transform duration-500 overflow-visible">
                   <div className="absolute inset-0 rounded-full bg-background/50 backdrop-blur-sm border border-border shadow-md" />
                   <div className="relative h-full w-full rounded-full overflow-hidden p-0.5 sm:p-1">
                     <Image src={fixture.home_flag} alt={fixture.home_team} fill className="rounded-full object-cover" />
                   </div>
                 </div>
               ) : (
-                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-muted border border-border text-[8px] font-black text-muted-foreground uppercase italic">TBD</div>
+                <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-muted border border-border text-[8px] font-black text-muted-foreground uppercase italic">TBD</div>
               )}
             </div>
             <div className="space-y-1 w-full flex flex-col items-center overflow-visible">
-              <span className="text-[12px] sm:text-sm font-black uppercase tracking-tight text-foreground block truncate max-w-full overflow-visible">{fixture.home_team}</span>
+              <span className="text-[11px] sm:text-sm font-black uppercase tracking-tight text-foreground block truncate max-w-full overflow-visible">{fixture.home_team}</span>
               <AvatarStack supporters={homeSupporters} />
             </div>
           </div>
@@ -209,26 +209,32 @@ export function FixtureCard({
                   </span>
                 </div>
                 
-                <div className="mt-3 flex flex-col items-center overflow-visible">
-                  <AvatarStack supporters={drawSupporters} />
-                  {myPrediction && (
-                    <div className="mt-0.5 rounded-full bg-primary/10 border border-primary/20 px-2.5 py-0.5 flex items-center gap-1.5 overflow-visible">
-                      <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
-                      <span className="premium-gold-gradient-number text-[8px] sm:text-[9px] whitespace-nowrap">
-                        {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
-                      </span>
-                    </div>
-                  )}
+                <div className="mt-2 flex flex-col items-center overflow-visible w-full">
+                  <div className="flex flex-col items-center gap-1.5 w-full overflow-visible">
+                    <AvatarStack supporters={drawSupporters} />
+                    
+                    {myPrediction && (
+                      <div className="rounded-full bg-primary/5 dark:bg-primary/10 border border-primary/20 px-3 py-1 flex items-center gap-1.5 shadow-sm overflow-visible animate-in fade-in slide-in-from-top-1 duration-300">
+                        <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
+                        <div className="flex items-center gap-1 overflow-visible">
+                           <span className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-tighter">Your Pick:</span>
+                           <span className="premium-gold-gradient-number text-[10px] sm:text-[11px] whitespace-nowrap">
+                             {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
+                           </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                  <div className="mt-1 flex flex-col items-center overflow-visible">
+                  <div className="mt-2 flex flex-col items-center overflow-visible">
                     {!editing && (
                        !isStandardLocked ? (
                           <Button onClick={() => setEditing(true)} className="soft-button h-8 px-4 sm:h-10 sm:px-6 bg-muted text-foreground border border-border/50 text-[9px] sm:text-[10px] hover:premium-gold-gradient-bg hover:text-black">
-                            <Edit2 className="h-2.5 w-2.5 mr-1.5" /> {myPrediction ? 'Edit' : 'Pick'}
+                            <Edit2 className="h-2.5 w-2.5 mr-1.5" /> {myPrediction ? 'Edit Pick' : 'Make Pick'}
                           </Button>
                        ) : isLifelineAvailable ? (
                           <Button onClick={() => setEditing(true)} className="soft-button h-8 px-4 premium-gold-pill text-[9px] shadow-lg animate-pulse">
-                            <Zap className="h-3 w-3 fill-current mr-1" /> Lifeline
+                            <Zap className="h-3 w-3 fill-current mr-1" /> Use Lifeline
                           </Button>
                        ) : null
                     )}
@@ -242,18 +248,18 @@ export function FixtureCard({
           <div className="flex flex-col items-center flex-1 text-center min-w-0 gap-2 sm:gap-3 overflow-visible">
             <div className="relative group/flag overflow-visible">
               {fixture.away_flag ? (
-                <div className="relative h-16 w-16 sm:h-20 sm:w-20 transition-transform duration-500 overflow-visible">
+                <div className="relative h-14 w-14 sm:h-20 sm:w-20 transition-transform duration-500 overflow-visible">
                   <div className="absolute inset-0 rounded-full bg-background/50 backdrop-blur-sm border border-border shadow-md" />
                   <div className="relative h-full w-full rounded-full overflow-hidden p-0.5 sm:p-1">
                     <Image src={fixture.away_flag} alt={fixture.away_team} fill className="rounded-full object-cover" />
                   </div>
                 </div>
               ) : (
-                <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-muted border border-border text-[8px] font-black text-muted-foreground uppercase italic">TBD</div>
+                <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-muted border border-border text-[8px] font-black text-muted-foreground uppercase italic">TBD</div>
               )}
             </div>
             <div className="space-y-1 w-full flex flex-col items-center overflow-visible">
-              <span className="text-[12px] sm:text-sm font-black uppercase tracking-tight text-foreground block truncate max-w-full overflow-visible">{fixture.away_team}</span>
+              <span className="text-[11px] sm:text-sm font-black uppercase tracking-tight text-foreground block truncate max-w-full overflow-visible">{fixture.away_team}</span>
               <AvatarStack supporters={awaySupporters} />
             </div>
           </div>
