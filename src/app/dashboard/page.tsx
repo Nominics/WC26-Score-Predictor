@@ -414,7 +414,7 @@ export default function Dashboard() {
       </div>
 
       {dateTabs.length > 0 && (
-        <div className="w-full flex justify-center py-3 sm:py-5 sticky top-[48px] bg-white/85 dark:bg-slate-950/60 backdrop-blur-2xl z-30 border-y border-amber-100 dark:border-border/40 shadow-md overflow-hidden">
+        <div className="w-full flex justify-center py-3 sm:py-4 sticky top-[48px] bg-white/85 dark:bg-slate-950/60 backdrop-blur-2xl z-30 border-y border-amber-100 dark:border-border/40 shadow-md overflow-hidden">
           <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none opacity-40" />
           <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none opacity-40" />
           
@@ -427,26 +427,26 @@ export default function Dashboard() {
                   key={d.iso}
                   onClick={() => setActiveDate(d.iso)}
                   className={cn(
-                    "flex flex-col items-center min-w-[3.8rem] h-20 rounded-[1.4rem] transition-all duration-500 border-2 relative isolate",
+                    "flex flex-col items-center min-w-[3.4rem] h-16 rounded-[1.2rem] transition-all duration-500 border-2 relative isolate py-1.5",
                     isActive 
                       ? "premium-gold-gradient-bg border-yellow-300 text-black shadow-2xl scale-[1.03] z-20 ring-4 ring-yellow-400/20" 
                       : "bg-white/90 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 shadow-sm"
                   )}
                 >
                   <span className={cn(
-                    "text-[6px] font-black uppercase mb-0.5 tracking-[0.2em] transition-colors", 
+                    "text-[7px] font-black uppercase mb-0 tracking-[0.2em] transition-colors leading-none", 
                     isActive ? "text-black/60" : "text-muted-foreground/60"
                   )}>
                     {d.day}
                   </span>
                   <span className={cn(
-                    "text-lg font-black leading-tight tracking-tighter transition-transform duration-500",
+                    "text-xl font-black leading-none tracking-tighter transition-transform duration-500 my-0.5",
                     isActive && "scale-110 drop-shadow-sm"
                   )}>
                     {d.date}
                   </span>
                   <span className={cn(
-                    "text-[7px] font-black uppercase mt-0.5 tracking-tighter transition-colors", 
+                    "text-[8px] font-black uppercase tracking-tighter transition-colors leading-none", 
                     isActive ? "text-black/60" : "text-muted-foreground/60"
                   )}>
                     {d.month}
