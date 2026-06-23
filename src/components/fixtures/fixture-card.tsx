@@ -210,14 +210,14 @@ export function FixtureCard({
             ) : (
               <div className="flex flex-col items-center overflow-visible">
                 <div className={cn(
-                  "flex items-center justify-center min-w-[110px] sm:min-w-[160px] min-h-[64px] sm:min-h-[72px] px-6 sm:px-8 py-3 rounded-[1.5rem] sm:rounded-[2rem] border border-border/50 shadow-inner bg-background/50 overflow-visible",
+                  "relative flex items-center justify-center min-w-[110px] sm:min-w-[160px] min-h-[70px] sm:min-h-[76px] px-6 sm:px-8 py-3 rounded-[1.8rem] sm:rounded-[2rem] border border-white/10 shadow-inner bg-black/40 overflow-visible",
                   isLive ? "ring-1 ring-emerald-500/20" : ""
                 )}>
-                  <span className="premium-gold-gradient-number text-[44px] sm:text-6xl leading-[1.15] pt-1 pb-1 tabular-nums">
+                  <span className="inline-block premium-gold-gradient-number text-[44px] sm:text-6xl leading-[1.18] pt-1 pb-1 tabular-nums overflow-visible">
                     {isFinished || isLive ? (fixture.home_score ?? 0) : '0'}
                   </span>
-                  <span className="mx-2 text-[32px] sm:text-5xl font-black leading-[1.15] text-muted-foreground/30">:</span>
-                  <span className="premium-gold-gradient-number text-[44px] sm:text-6xl leading-[1.15] pt-1 pb-1 tabular-nums">
+                  <span className="inline-block mx-2 text-[32px] sm:text-5xl font-black leading-[1.18] text-white/20 pt-1 pb-1">:</span>
+                  <span className="inline-block premium-gold-gradient-number text-[44px] sm:text-6xl leading-[1.18] pt-1 pb-1 tabular-nums overflow-visible">
                     {isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
                   </span>
                 </div>
@@ -231,7 +231,7 @@ export function FixtureCard({
                         <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
                         <div className="flex items-center gap-1 overflow-visible">
                            <span className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-tighter">Your Pick:</span>
-                           <span className="premium-gold-gradient-number text-[10px] sm:text-[11px] whitespace-nowrap">
+                           <span className="premium-gold-gradient-number text-[10px] sm:text-[11px] whitespace-nowrap overflow-visible">
                              {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
                            </span>
                         </div>
@@ -423,8 +423,8 @@ function PredictionRow({ supporter, isOwn, isFinished }: { supporter: any, isOwn
       </div>
       
       <div className="flex items-center gap-2 overflow-visible">
-        <div className="px-3 py-1 rounded-full bg-background/50 border border-border/50 shadow-inner">
-           <span className="premium-gold-gradient-number text-[12px] tabular-nums whitespace-nowrap">
+        <div className="px-3 py-1 rounded-full bg-background/50 border border-border/50 shadow-inner overflow-visible">
+           <span className="premium-gold-gradient-number text-[12px] tabular-nums whitespace-nowrap overflow-visible">
              {supporter.predicted_home_score} - {supporter.predicted_away_score}
            </span>
         </div>
