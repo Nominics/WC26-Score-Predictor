@@ -18,7 +18,7 @@ import { NotificationBell } from "@/components/layout/notification-bell"
 import { useRouter } from "next/navigation"
 import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import Image from "next/image"
-import Link from "link"
+import Link from "next/link"
 
 const APP_ZONE = "Indian/Maldives"
 
@@ -279,20 +279,28 @@ export default function Dashboard() {
 
       const { data: savedPrediction, error } = await supabase
         .from("predictions")
-        .upsert({
-          user_id: authUser?.id,
-          fixture_id: fixtureId,
-          predicted_home_score: newH,
-          predicted_away_score: newA,
-        }, { onConflict: 'user_id,fixture_id' })
-        .select("id, user_id, fixture_id, predicted_home_score, predicted_away_score, points, created_at, updated_at")
+        .upsert(
+          {
+            user_id: authUser?.id,
+            fixture_id: fixtureId,
+            predicted_home_score: newH,
+            predicted_away_score: newA,
+          },
+          { onConflict: "user_id,fixture_id" }
+        )
+        .select(
+          "id, user_id, fixture_id, predicted_home_score, predicted_away_score, points, created_at, updated_at"
+        )
         .single()
 
       if (error) throw error
 
       if (savedPrediction) {
         setPredictions((prev) => {
-          const others = prev.filter((p) => String(p.fixture_id) !== String(savedPrediction.fixture_id))
+          const others = prev.filter(
+            (p: any) => String(p.fixture_id) !== String(savedPrediction.fixture_id)
+          )
+
           return [...others, savedPrediction]
         })
       }
