@@ -227,16 +227,32 @@ export default function Dashboard() {
   }, [fixtures, activeDate])
 
   const predictionsByFixtureId = useMemo(() => {
-    return new Map(predictions.map((p) => [String(p.fixture_id), p]))
+    const map = new Map<string, any>()
+
+    predictions.forEach((prediction: any) => {
+      if (prediction?.fixture_id) {
+        map.set(String(prediction.fixture_id), prediction)
+      }
+    })
+
+    return map
   }, [predictions])
 
   const supportersByFixtureId = useMemo(() => {
-    const map = new Map()
-    supporters.forEach((s) => {
-      const key = String(s.fixture_id)
-      if (!map.has(key)) map.set(key, [])
-      map.get(key).push(s)
+    const map = new Map<string, any[]>()
+
+    supporters.forEach((supporter: any) => {
+      if (!supporter?.fixture_id) return
+
+      const key = String(supporter.fixture_id)
+
+      if (!map.has(key)) {
+        map.set(key, [])
+      }
+
+      map.get(key)?.push(supporter)
     })
+
     return map
   }, [supporters])
 
@@ -303,19 +319,19 @@ export default function Dashboard() {
     <div className="min-h-screen pb-32 flex flex-col items-center">
       <MainNav />
       <header className="premium-header w-full flex justify-center sticky top-0 z-40">
-        <div className="max-w-md w-full flex justify-between items-center h-12 sm:h-14 px-4">
+        <div className="max-w-md w-full flex justify-between items-center h-12 px-4">
           <div className="flex items-center gap-2.5 overflow-visible">
-            <div className="relative h-9 w-9 sm:h-10 sm:w-10 shrink-0 drop-shadow-xl">
-              <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" />
+            <div className="relative h-9 w-9 shrink-0 drop-shadow-xl">
+              <Image src="/logo.png" alt="Arena Logo" fill className="object-contain" priority />
             </div>
             <div className="overflow-visible">
-              <h1 className="text-lg sm:text-xl leading-none flex items-center gap-1 overflow-visible">
+              <h1 className="text-lg leading-none flex items-center gap-1 uppercase overflow-visible">
                 <span className="premium-gold-gradient-heading">ARENA</span> <span className="text-foreground font-black italic tracking-tighter">CENTER</span>
               </h1>
               <div className="flex items-center gap-1.5 mt-0.5 overflow-visible">
                  {stats && (
                    <div className="flex items-center gap-1.5 overflow-visible">
-                     <span className="premium-gold-gradient-heading text-[8px] sm:text-[9px] uppercase italic">Rank #{stats.rank}</span>
+                     <span className="premium-gold-gradient-heading text-[8px] uppercase italic">Rank #{stats.rank}</span>
                      <span className="h-0.5 w-0.5 rounded-full bg-border" />
                      <div className="flex items-center gap-1 bg-primary/10 px-1 py-0.5 rounded-full border border-primary/20">
                         <Zap className="h-2 w-2 text-primary fill-primary" />
@@ -395,7 +411,7 @@ export default function Dashboard() {
       </div>
 
       {dateTabs.length > 0 && (
-        <div className="w-full flex justify-center py-3 sm:py-5 sticky top-[48px] sm:top-[56px] bg-white/80 dark:bg-slate-950/60 backdrop-blur-2xl z-30 border-b border-border/40 shadow-xl overflow-hidden">
+        <div className="w-full flex justify-center py-3 sm:py-5 sticky top-[48px] bg-white/80 dark:bg-slate-950/60 backdrop-blur-2xl z-30 border-b border-border/40 shadow-xl overflow-hidden">
           <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none opacity-40" />
           <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none opacity-40" />
           
@@ -408,7 +424,7 @@ export default function Dashboard() {
                   key={d.iso}
                   onClick={() => setActiveDate(d.iso)}
                   className={cn(
-                    "flex flex-col items-center min-w-[3.8rem] h-20 rounded-[1.4rem] sm:rounded-[1.8rem] transition-all duration-500 border-2 relative isolate",
+                    "flex flex-col items-center min-w-[3.8rem] h-20 rounded-[1.4rem] transition-all duration-500 border-2 relative isolate",
                     isActive 
                       ? "premium-gold-gradient-bg border-yellow-300 text-black shadow-2xl scale-[1.03] z-20 ring-4 ring-yellow-400/20" 
                       : "bg-white/80 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 shadow-sm"
