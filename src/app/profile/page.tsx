@@ -6,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Zap, UserCircle, Lock, Loader2 } from "lucide-react"
+import { LogOut, Mail, Share2, ShieldCheck, Edit2, Check, X, Flag, Zap, UserCircle, Lock, Loader2, Trophy } from "lucide-react"
 import { copyToClipboard, cn } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { getTeamFlagUrl, COUNTRIES } from "@/lib/team-flags"
@@ -182,19 +182,19 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <div className="w-full pt-6">
-               <div className="rounded-[2.5rem] p-8 flex justify-around items-center gap-4 bg-muted/30 border border-border/40 shadow-inner">
-                  <div className="text-center space-y-0.5 overflow-visible">
-                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Total Points</span>
-                     <p className="premium-gold-gradient-number text-3xl leading-none">{stats?.points || "0"}</p>
+            {/* Optimized Stat Pills */}
+            <div className="w-full pt-6 overflow-visible">
+               <div className="grid grid-cols-2 gap-3 w-full overflow-visible">
+                  <div className="flex items-center justify-center gap-2 rounded-2xl bg-white/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-4 py-3 shadow-sm overflow-visible">
+                     <Trophy className="h-4 w-4 text-primary" />
+                     <span className="text-xl font-black premium-gold-gradient-number inline-block">{stats?.points || "0"}</span>
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Pts</span>
                   </div>
-                  <div className="h-10 w-px bg-border/40" />
-                  <div className="text-center space-y-0.5 overflow-visible">
-                     <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-60">Lifelines</span>
-                     <div className="flex items-center gap-1.5 justify-center overflow-visible">
-                        <Zap className="h-4 w-4 text-primary fill-primary" />
-                        <p className="premium-gold-gradient-number text-3xl leading-none">{stats?.lifelines || "0"}</p>
-                     </div>
+
+                  <div className="flex items-center justify-center gap-2 rounded-2xl bg-white/90 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-4 py-3 shadow-sm overflow-visible">
+                     <Zap className="h-4 w-4 text-primary fill-primary" />
+                     <span className="text-xl font-black premium-gold-gradient-number inline-block">{stats?.lifelines || "0"}</span>
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Lives</span>
                   </div>
                </div>
             </div>
