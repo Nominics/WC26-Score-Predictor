@@ -2,16 +2,16 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Grid2X2, Trophy, MessageSquare } from "lucide-react"
+import { Home, Trophy, MessageSquare, BookOpen } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 import { UserAvatar } from "@/components/user-avatar"
 
 const navItems = [
   { href: "/dashboard", icon: Home, label: "Home" },
-  { href: "/matrix", icon: Grid2X2, label: "Matrix" },
   { href: "/leaderboard", icon: Trophy, label: "Ranking" },
   { href: "/chat", icon: MessageSquare, label: "Chat" },
+  { href: "/rules", icon: BookOpen, label: "Rules" },
 ]
 
 export function MainNav() {
@@ -19,7 +19,7 @@ export function MainNav() {
   const { profile } = useAuth()
 
   return (
-    <div className="nav-pill w-[calc(100%-2rem)] max-w-sm h-14 sm:h-16 px-2 sm:px-4 py-1.5 sm:py-2 flex justify-between items-center">
+    <div className="nav-pill w-[calc(100%-2rem)] max-w-md h-[72px] px-3 sm:px-6 py-2 flex justify-between items-center">
       {navItems.map((item) => {
         const isActive = pathname === item.href
         return (
@@ -27,26 +27,38 @@ export function MainNav() {
             key={item.href}
             href={item.href}
             className={cn(
-              "flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full transition-all duration-300",
-              isActive ? "active-pill" : "text-gray-400 hover:text-white"
+              "flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full transition-all duration-300 relative",
+              isActive ? "active-pill" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <item.icon className={cn("h-4 w-4 sm:h-5 sm:w-5", isActive && "stroke-[2.5px]")} />
+            <item.icon className={cn("h-[22px] w-[22px] sm:h-6 sm:w-6", isActive && "stroke-[2.5px]")} />
             <span className="sr-only">{item.label}</span>
+            {isActive && (
+              <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-black shadow-[0_0_8px_rgba(0,0,0,0.5)]" />
+            )}
           </Link>
         )
       })}
       
-      {/* Profile item integrated into navigation */}
+      {/* Profile item */}
       <Link
         href="/profile"
         className={cn(
-          "flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-full transition-all duration-300",
-          pathname === "/profile" ? "active-pill" : "text-gray-400"
+          "flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full transition-all duration-300 relative",
+          pathname === "/profile" ? "active-pill" : "text-muted-foreground"
         )}
       >
-        <UserAvatar profile={profile} className={cn("h-6 w-6 sm:h-7 sm:w-7 border-0", pathname === "/profile" ? "opacity-100" : "opacity-60")} />
+        <UserAvatar 
+          profile={profile} 
+          className={cn(
+            "h-7 w-7 sm:h-8 sm:w-8 border-0 shadow-none transition-all", 
+            pathname === "/profile" ? "opacity-100 scale-110" : "opacity-60"
+          )} 
+        />
         <span className="sr-only">Profile</span>
+        {pathname === "/profile" && (
+          <span className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-black shadow-[0_0_8px_rgba(0,0,0,0.5)]" />
+        )}
       </Link>
     </div>
   )
