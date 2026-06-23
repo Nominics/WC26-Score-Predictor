@@ -10,7 +10,17 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
-export type NotificationType = 'prediction_reminder' | 'team_scored' | 'scorer_updated' | 'rank_changed' | 'bonus_points' | 'manual_admin' | 'app_update' | 'fixture_time_updated';
+export type NotificationType = 
+  | 'prediction_reminder' 
+  | 'team_scored' 
+  | 'scorer_updated' 
+  | 'rank_changed' 
+  | 'bonus_points' 
+  | 'manual_admin' 
+  | 'app_update' 
+  | 'fixture_time_updated'
+  | 'match_started'
+  | 'match_finished';
 
 interface SendNotificationParams {
   userId: string;
@@ -23,7 +33,7 @@ interface SendNotificationParams {
 
 /**
  * Sends a notification by inserting it into the database and optionally sending a Web Push.
- * Uses eventKey to prevent duplicate notifications for the same event.
+ * Uses eventKey to prevent duplicate notifications for the same event per user.
  */
 export async function sendNotification({
   userId,
@@ -46,7 +56,7 @@ export async function sendNotification({
       if (existing) return;
     }
 
-    // 2. Insert into DB for in-app bell
+    // 2. Insert into DB for in-app bell (This is the source of truth for Arena Alerts)
     const { error: dbError } = await supabaseAdmin.from("notifications").insert({
       user_id: userId,
       type,
