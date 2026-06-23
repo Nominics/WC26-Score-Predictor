@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo, useRef } from "react"
@@ -92,7 +93,9 @@ export default function Dashboard() {
     try {
       const [fRes, pRes, sRes] = await Promise.all([
         supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true }),
-        supabase.from("predictions").select("fixture_id, predicted_home_score, predicted_away_score").eq("user_id", authUser.id),
+        supabase.from("predictions")
+          .select("id, user_id, fixture_id, predicted_home_score, predicted_away_score, points, created_at, updated_at")
+          .eq("user_id", authUser.id),
         supabase.from("fixture_prediction_supporters").select("*").order("updated_at", { ascending: false })
       ])
       
@@ -166,11 +169,25 @@ export default function Dashboard() {
     )
   }, [fixtures, activeDate])
 
+  const predictionsByFixtureId = useMemo(() => {
+    return new Map(predictions.map((p) => [String(p.fixture_id), p]))
+  }, [predictions])
+
+  const supportersByFixtureId = useMemo(() => {
+    const map = new Map()
+    supporters.forEach((s) => {
+      const key = String(s.fixture_id)
+      if (!map.has(key)) map.set(key, [])
+      map.get(key).push(s)
+    })
+    return map
+  }, [supporters])
+
   const handlePredict = async (fixtureId: string, h: number, a: number, isLifeline: boolean) => {
     const newH = Number(h)
     const newA = Number(a)
 
-    const existing = predictions.find(p => p.fixture_id === fixtureId)
+    const existing = predictions.find(p => String(p.fixture_id) === String(fixtureId))
     if (existing && 
         existing.predicted_home_score === newH && 
         existing.predicted_away_score === newA) {
@@ -187,7 +204,7 @@ export default function Dashboard() {
         }
       }
 
-      const { error } = await supabase
+      const { data: savedPrediction, error } = await supabase
         .from("predictions")
         .upsert({
           user_id: authUser?.id,
@@ -195,8 +212,17 @@ export default function Dashboard() {
           predicted_home_score: newH,
           predicted_away_score: newA,
         }, { onConflict: 'user_id,fixture_id' })
+        .select("id, user_id, fixture_id, predicted_home_score, predicted_away_score, points, created_at, updated_at")
+        .single()
 
       if (error) throw error
+
+      if (savedPrediction) {
+        setPredictions((prev) => {
+          const others = prev.filter((p) => String(p.fixture_id) !== String(savedPrediction.fixture_id))
+          return [...others, savedPrediction]
+        })
+      }
 
       toast({ 
         title: isLifeline ? "Lifeline Used!" : "Success", 
@@ -211,6 +237,9 @@ export default function Dashboard() {
   if (authLoading || (authUser && isLoadingData && fixtures.length === 0)) {
     return <AppLoadingScreen />
   }
+
+  console.log("my predictions count", predictions.length)
+  console.log("supporters count", supporters.length)
 
   return (
     <div className="min-h-screen pb-32 flex flex-col items-center">
@@ -321,26 +350,26 @@ export default function Dashboard() {
                   key={d.iso}
                   onClick={() => setActiveDate(d.iso)}
                   className={cn(
-                    "flex flex-col items-center min-w-[3.8rem] h-20 sm:h-24 py-2 sm:py-3 rounded-[1.4rem] sm:rounded-[1.8rem] transition-all duration-500 border-2 relative isolate",
+                    "flex flex-col items-center min-w-[3.8rem] h-20 rounded-[1.4rem] sm:rounded-[1.8rem] transition-all duration-500 border-2 relative isolate",
                     isActive 
                       ? "premium-gold-gradient-bg border-yellow-300 text-black shadow-2xl scale-[1.03] z-20 ring-4 ring-yellow-400/20" 
                       : "bg-white/80 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-white/10 shadow-sm"
                   )}
                 >
                   <span className={cn(
-                    "text-[6px] sm:text-[8px] font-black uppercase mb-0.5 tracking-[0.2em] transition-colors", 
+                    "text-[6px] font-black uppercase mb-0.5 tracking-[0.2em] transition-colors", 
                     isActive ? "text-black/60" : "text-muted-foreground/60"
                   )}>
                     {d.day}
                   </span>
                   <span className={cn(
-                    "text-lg sm:text-2xl font-black leading-tight tracking-tighter transition-transform duration-500",
+                    "text-lg font-black leading-tight tracking-tighter transition-transform duration-500",
                     isActive && "scale-110 drop-shadow-sm"
                   )}>
                     {d.date}
                   </span>
                   <span className={cn(
-                    "text-[7px] sm:text-[9px] font-black uppercase mt-0.5 tracking-tighter transition-colors", 
+                    "text-[7px] font-black uppercase mt-0.5 tracking-tighter transition-colors", 
                     isActive ? "text-black/60" : "text-muted-foreground/60"
                   )}>
                     {d.month}
@@ -374,8 +403,14 @@ export default function Dashboard() {
         ) : (
           <div className="space-y-6 sm:space-y-8">
             {displayFixtures.map((fixture) => {
-              const myPrediction = predictions.find(p => p.fixture_id === fixture.id)
-              const supportersForFixture = supporters.filter(s => s.fixture_id === fixture.id)
+              const fixtureId = String(fixture.id)
+              const supportersForFixture = supportersByFixtureId.get(fixtureId) ?? []
+              
+              const myPrediction = predictionsByFixtureId.get(fixtureId) ?? 
+                supportersForFixture.find((s: any) => String(s.user_id) === String(authUser?.id))
+
+              console.log("fixture", fixture.id, "myPrediction", myPrediction)
+
               return (
                 <FixtureCard 
                   key={fixture.id} 
