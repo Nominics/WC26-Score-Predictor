@@ -285,7 +285,7 @@ export default function Dashboard() {
                   }
 
                   return (
-                    <div key={log.id} className="flex gap-2 py-1.5 border-b border-border/5 last:border-0 items-center group overflow-visible">
+                    <div key={log.id} className="flex gap-2 py-1.5 border-b border-border/50 last:border-0 items-center group overflow-visible">
                       <span className="shrink-0 text-xs sm:text-sm grayscale-[0.3] group-hover:grayscale-0 transition-all">{displayEmoji}</span>
                       <span className="shrink-0 font-mono text-[8px] text-muted-foreground/60 tabular-nums">
                         {hasMounted ? DateTime.fromISO(log.created_at).toLocal().toFormat('HH:mm') : '--:--'}
