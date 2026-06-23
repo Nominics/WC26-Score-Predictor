@@ -32,10 +32,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // 1. Update the fixture source of truth kickoff_at
+    // 1. Update the fixture source of truth kickoff_at and set manual flag
     const { data: fixture, error: updateError } = await supabaseAdmin
       .from("fixtures")
-      .update({ kickoff_at: newKickoffAt })
+      .update({ 
+        kickoff_at: newKickoffAt,
+        manually_updated_kickoff_at: true 
+      })
       .eq("id", fixtureId)
       .select()
       .single();
