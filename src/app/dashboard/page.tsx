@@ -18,7 +18,7 @@ import { NotificationBell } from "@/components/layout/notification-bell"
 import { useRouter } from "next/navigation"
 import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
 import Image from "next/image"
-import Link from "next/link"
+import Link from "link"
 
 const APP_ZONE = "Indian/Maldives"
 
