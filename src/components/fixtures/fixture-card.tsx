@@ -197,14 +197,14 @@ export function FixtureCard({
             ) : (
               <div className="flex flex-col items-center overflow-visible">
                 <div className={cn(
-                  "flex items-center gap-2 sm:gap-4 px-4 sm:px-6 py-2 sm:py-4 rounded-[1.5rem] sm:rounded-[2rem] border border-border/50 shadow-inner bg-background/50 overflow-visible",
+                  "flex items-center justify-center min-w-[110px] sm:min-w-[160px] min-h-[64px] sm:min-h-[72px] px-6 sm:px-8 py-3 rounded-[1.5rem] sm:rounded-[2rem] border border-border/50 shadow-inner bg-background/50 overflow-visible",
                   isLive ? "ring-1 ring-emerald-500/20" : ""
                 )}>
-                  <span className="premium-gold-gradient-number text-3xl sm:text-5xl">
+                  <span className="premium-gold-gradient-number text-[44px] sm:text-6xl leading-[1.15] pt-1 pb-1 tabular-nums">
                     {isFinished || isLive ? (fixture.home_score ?? 0) : '0'}
                   </span>
-                  <span className="text-xl sm:text-3xl font-black text-muted-foreground/30 italic">:</span>
-                  <span className="premium-gold-gradient-number text-3xl sm:text-5xl">
+                  <span className="mx-2 text-[32px] sm:text-5xl font-black leading-[1.15] text-muted-foreground/30">:</span>
+                  <span className="premium-gold-gradient-number text-[44px] sm:text-6xl leading-[1.15] pt-1 pb-1 tabular-nums">
                     {isFinished || isLive ? (fixture.away_score ?? 0) : '0'}
                   </span>
                 </div>
