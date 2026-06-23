@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit2, Check, Lock, Trophy, Zap, Timer, Goal, Star } from "lucide-react"
+import { Edit2, Check, Lock, Trophy, Zap, Timer, Goal, Star, ChevronDown, ChevronUp, Users, ShieldAlert } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DateTime } from "luxon"
 import Image from "next/image"
 import { UserAvatar } from "@/components/user-avatar"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 
 const APP_ZONE = "Indian/Maldives"
 
@@ -59,6 +60,7 @@ export function FixtureCard({
   const [isStandardLocked, setIsStandardLocked] = useState(false)
   const [isLifelineAvailable, setIsLifelineAvailable] = useState(false)
   const [isTotalLocked, setIsTotalLocked] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   // Strictly sync state with props when props change
   useEffect(() => {
@@ -108,6 +110,17 @@ export function FixtureCard({
   const homeSupporters = supporters.filter(s => s.prediction_side === 'home')
   const awaySupporters = supporters.filter(s => s.prediction_side === 'away')
   const drawSupporters = supporters.filter(s => s.prediction_side === 'draw')
+
+  // Fairness rule: Only see scores if you predicted OR the match is locked
+  const canSeeScores = isStandardLocked || !!myPrediction;
+
+  const groupedPredictions = useMemo(() => {
+    return {
+      home: supporters.filter(s => s.predicted_home_score > s.predicted_away_score),
+      draw: supporters.filter(s => s.predicted_home_score === s.predicted_away_score),
+      away: supporters.filter(s => s.predicted_home_score < s.predicted_away_score),
+    }
+  }, [supporters])
 
   const cleanScorers = (scorers: string | null) => {
     if (!scorers || scorers === 'null') return null;
@@ -265,7 +278,7 @@ export function FixtureCard({
         </div>
 
         {showScorers && (
-          <div className="px-5 sm:px-8 pb-5 sm:pb-8 overflow-visible">
+          <div className="px-5 sm:px-8 pb-3 sm:pb-4 overflow-visible">
             <div className="p-3 sm:p-4 bg-muted/40 rounded-2xl sm:rounded-3xl border border-border/40 flex flex-col gap-2 shadow-inner backdrop-blur-sm overflow-visible">
                <div className="flex items-center justify-center gap-3 overflow-visible">
                  <div className="h-[1px] bg-border/40 flex-1" />
@@ -294,7 +307,128 @@ export function FixtureCard({
             </div>
           </div>
         )}
+
+        {/* Expandable Community Predictions */}
+        <Collapsible open={isExpanded} onOpenChange={setIsExpanded} className="overflow-visible">
+          <div className="px-5 pb-5 pt-2 flex flex-col items-center overflow-visible">
+             <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-4 rounded-full bg-muted/50 hover:bg-muted text-[9px] font-black uppercase tracking-widest flex items-center gap-2 group transition-all"
+                >
+                  <Users className="h-3 w-3 text-primary" />
+                  <span>{isExpanded ? 'Hide Picks' : `View All Picks (${supporters.length})`}</span>
+                  {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3 group-hover:translate-y-0.5 transition-transform" />}
+                </Button>
+             </CollapsibleTrigger>
+
+             <CollapsibleContent className="w-full mt-6 space-y-6 overflow-visible animate-in slide-in-from-top-2 duration-300">
+                {!canSeeScores ? (
+                  <div className="py-12 px-6 rounded-[2rem] bg-muted/30 border-2 border-dashed border-primary/20 flex flex-col items-center text-center gap-4">
+                     <ShieldAlert className="h-8 w-8 text-primary opacity-50" />
+                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground leading-relaxed">
+                       Submit your pick to reveal<br/>how others are voting
+                     </p>
+                  </div>
+                ) : supporters.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <p className="text-[10px] font-black uppercase text-muted-foreground/40 tracking-widest">No picks submitted yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-8 overflow-visible">
+                    {/* Home Win Group */}
+                    {groupedPredictions.home.length > 0 && (
+                      <div className="space-y-3 overflow-visible">
+                        <div className="flex items-center gap-3 px-1 overflow-visible">
+                          <span className="premium-gold-gradient-heading text-[10px] uppercase">{fixture.home_team} Win</span>
+                          <div className="h-[1px] bg-border/40 flex-1" />
+                          <span className="text-[9px] font-black text-muted-foreground opacity-40 uppercase tracking-tighter">{groupedPredictions.home.length} Fan{groupedPredictions.home.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="grid gap-2 overflow-visible">
+                          {groupedPredictions.home.map((s) => (
+                            <PredictionRow key={s.user_id} supporter={s} isOwn={s.user_id === currentUserId} isFinished={isFinished} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Draw Group */}
+                    {groupedPredictions.draw.length > 0 && (
+                      <div className="space-y-3 overflow-visible">
+                        <div className="flex items-center gap-3 px-1 overflow-visible">
+                          <span className="premium-gold-gradient-heading text-[10px] uppercase italic">The Draw</span>
+                          <div className="h-[1px] bg-border/40 flex-1" />
+                          <span className="text-[9px] font-black text-muted-foreground opacity-40 uppercase tracking-tighter">{groupedPredictions.draw.length} Fan{groupedPredictions.draw.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="grid gap-2 overflow-visible">
+                          {groupedPredictions.draw.map((s) => (
+                            <PredictionRow key={s.user_id} supporter={s} isOwn={s.user_id === currentUserId} isFinished={isFinished} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Away Win Group */}
+                    {groupedPredictions.away.length > 0 && (
+                      <div className="space-y-3 overflow-visible">
+                        <div className="flex items-center gap-3 px-1 overflow-visible">
+                          <span className="premium-gold-gradient-heading text-[10px] uppercase">{fixture.away_team} Win</span>
+                          <div className="h-[1px] bg-border/40 flex-1" />
+                          <span className="text-[9px] font-black text-muted-foreground opacity-40 uppercase tracking-tighter">{groupedPredictions.away.length} Fan{groupedPredictions.away.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="grid gap-2 overflow-visible">
+                          {groupedPredictions.away.map((s) => (
+                            <PredictionRow key={s.user_id} supporter={s} isOwn={s.user_id === currentUserId} isFinished={isFinished} />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+             </CollapsibleContent>
+          </div>
+        </Collapsible>
       </CardContent>
     </Card>
+  )
+}
+
+function PredictionRow({ supporter, isOwn, isFinished }: { supporter: any, isOwn: boolean, isFinished: boolean }) {
+  return (
+    <div className={cn(
+      "flex items-center justify-between p-3 rounded-2xl border transition-all overflow-visible",
+      isOwn 
+        ? "bg-primary/10 border-primary/30 premium-gold-ring shadow-lg scale-[1.02]" 
+        : "bg-muted/30 border-border/40"
+    )}>
+      <div className="flex items-center gap-3 overflow-visible">
+        <UserAvatar profile={supporter} className="h-7 w-7 border-0 shadow-sm" />
+        <div className="flex flex-col overflow-visible">
+           <span className={cn(
+             "text-[11px] font-black uppercase tracking-tight leading-none",
+             isOwn ? "premium-gold-gradient-heading" : "text-foreground/80"
+           )}>
+             {supporter.display_name} {isOwn && <span className="text-[8px] italic opacity-60">(YOU)</span>}
+           </span>
+           {isFinished && supporter.points !== undefined && (
+             <span className={cn(
+               "text-[8px] font-bold uppercase mt-0.5",
+               supporter.points > 0 ? "text-emerald-500" : "text-muted-foreground/40"
+             )}>
+               {supporter.points > 0 ? `+${supporter.points} points earned` : '0 points'}
+             </span>
+           )}
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-2 overflow-visible">
+        <div className="px-3 py-1 rounded-full bg-background/50 border border-border/50 shadow-inner">
+           <span className="premium-gold-gradient-number text-[12px] tabular-nums whitespace-nowrap">
+             {supporter.predicted_home_score} - {supporter.predicted_away_score}
+           </span>
+        </div>
+      </div>
+    </div>
   )
 }

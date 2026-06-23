@@ -57,7 +57,7 @@ export default function Dashboard() {
       const fixturesChannel = supabase
         .channel('fixtures-realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'fixtures' }, () => fetchData())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'predictions', filter: `user_id=eq.${authUser.id}` }, () => fetchData())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'predictions' }, () => fetchData())
         .subscribe()
 
       const pulseChannel = supabase
@@ -93,7 +93,7 @@ export default function Dashboard() {
       const [fRes, pRes, sRes] = await Promise.all([
         supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true }),
         supabase.from("predictions").select("fixture_id, predicted_home_score, predicted_away_score").eq("user_id", authUser.id),
-        supabase.from("fixture_prediction_supporters").select("*")
+        supabase.from("fixture_prediction_supporters").select("*").order("updated_at", { ascending: false })
       ])
       
       if (fRes.error) throw fRes.error
