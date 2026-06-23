@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -85,14 +86,14 @@ export function NotificationBell() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full border bg-background shadow-sm hover:scale-105 transition-all">
+        <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-full border bg-background shadow-sm hover:scale-105 transition-all">
           {unreadCount > 0 ? (
             <BellRing className="h-4 w-4 text-primary animate-pulse" />
           ) : (
             <Bell className="h-4 w-4 text-muted-foreground opacity-40" />
           )}
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full premium-gold-gradient-bg text-[8px] font-black text-black ring-2 ring-background shadow-lg">
+            <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full premium-gold-gradient-bg text-[8px] font-black text-black ring-2 ring-background shadow-lg">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}

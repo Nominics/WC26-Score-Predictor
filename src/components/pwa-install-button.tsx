@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState } from "react"
@@ -85,7 +86,7 @@ export function PwaInstallButton() {
         variant="ghost"
         size="icon"
         onClick={handleInstallClick}
-        className="h-10 w-10 rounded-full border bg-white shadow-sm"
+        className="h-9 w-9 rounded-full border bg-background shadow-sm"
         aria-label="Install app"
       >
         <Download className="h-4 w-4 text-primary" />
