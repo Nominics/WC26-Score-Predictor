@@ -1,48 +1,56 @@
 
-self.addEventListener("push", function (event) {
-  let payload = {
-    title: "WC26 Predictor",
-    body: "You have a new update.",
-    url: "/dashboard",
-  };
+/**
+ * Arena WC26 Service Worker
+ * Handles background push notifications and deep linking
+ */
 
+self.addEventListener('push', function (event) {
   if (event.data) {
     try {
-      payload = event.data.json();
-    } catch {
-      payload.body = event.data.text();
+      const data = event.data.json();
+      const options = {
+        body: data.body,
+        icon: '/logo.png',
+        badge: '/logo.png',
+        vibrate: [100, 50, 100],
+        data: {
+          url: data.url || '/dashboard'
+        },
+        actions: [
+          { action: 'open', title: 'View Arena' }
+        ]
+      };
+
+      event.waitUntil(
+        self.registration.showNotification(data.title, options)
+      );
+    } catch (e) {
+      console.error('Error parsing push data:', e);
     }
   }
-
-  event.waitUntil(
-    self.registration.showNotification(payload.title || "WC26 Predictor", {
-      body: payload.body,
-      icon: "/logo.png",
-      badge: "/logo.png",
-      data: {
-        url: payload.url || "/dashboard",
-      },
-    })
-  );
 });
 
-self.addEventListener("notificationclick", function (event) {
+self.addEventListener('notificationclick', function (event) {
   event.notification.close();
 
-  const url = event.notification.data?.url || "/dashboard";
+  // URL to navigate to
+  const urlToOpen = event.notification.data && event.notification.data.url 
+    ? event.notification.data.url 
+    : '/dashboard';
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if ("focus" in client) {
-          client.focus();
-          client.navigate(url);
-          return;
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+      // 1. If a window is already open, focus it and navigate
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          if (urlToOpen) client.navigate(urlToOpen);
+          return client.focus();
         }
       }
-
+      // 2. If no window is open, open a new one
       if (clients.openWindow) {
-        return clients.openWindow(url);
+        return clients.openWindow(urlToOpen);
       }
     })
   );

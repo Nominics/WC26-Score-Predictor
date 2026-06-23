@@ -198,7 +198,7 @@ export async function POST(req: Request) {
               title: "Prediction Reminder",
               body: `${fixture.home_team} vs ${fixture.away_team} starts soon. Lock your pick.`,
               eventKey: `reminder:${window.label}:${fixture.id}:${user.id}`,
-              data: { fixtureId: fixture.id, window: window.label }
+              data: { url: "/dashboard", fixtureId: fixture.id, window: window.label }
             });
             remindersSent++;
           }
@@ -228,7 +228,7 @@ export async function POST(req: Request) {
             title: "Rank Changed",
             body: `You moved from Rank #${oldRank} to Rank #${currentRank}.`,
             eventKey: `rank:${profile.id}:${Date.now()}`,
-            data: { old_rank: oldRank, new_rank: currentRank }
+            data: { url: "/leaderboard", old_rank: oldRank, new_rank: currentRank }
           });
           rankChangesDetected++;
         }
@@ -253,13 +253,15 @@ async function createPulseEvent({
   fixtureId: string, type: string, emoji: string, title: string, message: string, eventKey: string, metadata?: any 
 }) {
   try {
-    const { data: existing } = await supabaseAdmin.from("match_pulse_events").select("id").eq("event_key", eventKey).maybeSingle();
-    if (existing) return;
+    // Pulse feed (Public)
+    const { data: existingPulse } = await supabaseAdmin.from("match_pulse_events").select("id").eq("event_key", eventKey).maybeSingle();
+    if (!existingPulse) {
+      await supabaseAdmin.from("match_pulse_events").insert({
+        fixture_id: fixtureId, event_type: type, emoji, title, message, event_key: eventKey, metadata
+      });
+    }
 
-    await supabaseAdmin.from("match_pulse_events").insert({
-      fixture_id: fixtureId, event_type: type, emoji, title, message, event_key: eventKey, metadata
-    });
-
+    // Individual Notifications (Private + Push)
     const { data: profiles } = await supabaseAdmin.from("profiles").select("id");
     if (profiles) {
       const batchSize = 50;
@@ -271,7 +273,8 @@ async function createPulseEvent({
             type: type as NotificationType,
             title: `${emoji} ${title}`,
             body: message,
-            eventKey: `pulse:${eventKey}:${profile.id}`
+            eventKey: `pulse:${eventKey}:${profile.id}`,
+            data: { url: "/dashboard" }
           })
         ));
       }

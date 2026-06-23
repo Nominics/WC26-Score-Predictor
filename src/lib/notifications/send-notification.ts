@@ -2,6 +2,7 @@
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import webpush from "web-push";
 
+// Initialize web-push with VAPID keys if present
 if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
     process.env.VAPID_SUBJECT || "mailto:admin@zikura.com",
@@ -56,7 +57,7 @@ export async function sendNotification({
       if (existing) return;
     }
 
-    // 2. Insert into DB for in-app bell (This is the source of truth for Arena Alerts)
+    // 2. Insert into DB for in-app bell (Primary source of truth)
     const { error: dbError } = await supabaseAdmin.from("notifications").insert({
       user_id: userId,
       type,
@@ -67,10 +68,13 @@ export async function sendNotification({
     });
 
     if (dbError) {
-      console.error(`DB Notification error for ${userId}:`, dbError.message);
+      console.error(`[Notification] DB insert error for ${userId}:`, dbError.message);
     }
 
-    // 3. Send Web Push if enabled for this user
+    // 3. Send Web Push if configured and enabled for this user
+    const hasVapid = !!(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
+    if (!hasVapid) return;
+
     const { data: subs } = await supabaseAdmin
       .from("push_subscriptions")
       .select("*")
@@ -82,20 +86,26 @@ export async function sendNotification({
         title,
         body,
         url: data.url || "/dashboard",
+        type,
       });
 
       for (const sub of subs) {
         try {
           await webpush.sendNotification(sub.subscription, payload);
         } catch (err: any) {
-          // If subscription is expired or gone, disable it
+          // If subscription is expired or gone (404/410), disable it
           if (err.statusCode === 404 || err.statusCode === 410) {
-            await supabaseAdmin.from("push_subscriptions").update({ enabled: false }).eq("id", sub.id);
+            await supabaseAdmin
+              .from("push_subscriptions")
+              .update({ enabled: false })
+              .eq("id", sub.id);
+          } else {
+            console.error(`[Push] Delivery failed for ${sub.id}:`, err.message);
           }
         }
       }
     }
   } catch (err) {
-    console.error("Critical error in sendNotification:", err);
+    console.error("[Notification] Critical error in sendNotification:", err);
   }
 }
