@@ -81,7 +81,7 @@ export async function GET(req: Request) {
     const homeTeam = game.home_team_name_en || game.home_team_label || "TBD";
     const awayTeam = game.away_team_name_en || game.away_team_label || "TBD";
 
-    // Respect manual kickoff override
+    // Rule: Protect manually corrected kickoff times
     const finalKickoff = (existing?.manually_updated_kickoff_at) 
       ? existing.kickoff_at 
       : apiKickoff;
@@ -98,6 +98,7 @@ export async function GET(req: Request) {
       away_flag: getTeamFlagUrl(awayTeam),
       kickoff_at: finalKickoff,
       api_kickoff_at: apiKickoff,
+      manually_updated_kickoff_at: existing?.manually_updated_kickoff_at ?? false,
       status,
       home_score: parseScore(game.home_score, status),
       away_score: parseScore(game.away_score, status),

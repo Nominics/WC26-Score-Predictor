@@ -61,7 +61,7 @@ export async function GET() {
   // Fetch fixtures that are due for a result check
   const { data: dueFixtures, error: dueError } = await supabaseAdmin
     .from("fixtures")
-    .select("id, external_id, home_team, away_team, kickoff_at, result_sync_due_at")
+    .select("*")
     .lte("result_sync_due_at", nowIso)
     .is("result_synced_at", null)
     .order("kickoff_at", { ascending: true })
@@ -104,14 +104,20 @@ export async function GET() {
   }
 
   const data = (await response.json()) as WorldCupApiResponse;
-  const dueExternalIds = new Set(dueFixtures.map((fixture) => fixture.external_id));
-  const apiGamesDue = data.games.filter((game) => dueExternalIds.has(game.id));
+  const fixtureMap = new Map(dueFixtures.map(f => [f.external_id, f]));
+  const apiGamesDue = data.games.filter((game) => fixtureMap.has(game.id));
 
   const updates = apiGamesDue.map((game) => {
     const status = mapStatus(game);
-    const kickoffUtc = parseKickoffToUtc(game.local_date);
+    const apiKickoff = parseKickoffToUtc(game.local_date);
     const homeTeam = game.home_team_name_en || game.home_team_label || "TBD";
     const awayTeam = game.away_team_name_en || game.away_team_label || "TBD";
+    const existing = fixtureMap.get(game.id);
+
+    // Rule: Protect manually corrected kickoff times
+    const finalKickoff = (existing?.manually_updated_kickoff_at) 
+      ? existing.kickoff_at 
+      : apiKickoff;
 
     return {
       external_id: game.id,
@@ -123,16 +129,18 @@ export async function GET() {
       away_team: awayTeam,
       home_flag: getTeamFlagUrl(homeTeam),
       away_flag: getTeamFlagUrl(awayTeam),
-      kickoff_at: kickoffUtc,
+      kickoff_at: finalKickoff,
+      api_kickoff_at: apiKickoff,
+      manually_updated_kickoff_at: existing?.manually_updated_kickoff_at ?? false,
       status,
       home_score: parseScore(game.home_score, status),
       away_score: parseScore(game.away_score, status),
-      result_sync_due_at: DateTime.fromISO(kickoffUtc!)
+      result_sync_due_at: DateTime.fromISO(finalKickoff!)
         .plus({ minutes: 110 })
         .toUTC()
         .toISO(),
-      result_synced_at: new Date().toISOString(),
-      result_sync_attempts: 1,
+      result_synced_at: status === 'finished' ? new Date().toISOString() : null,
+      result_sync_attempts: (existing?.result_sync_attempts || 0) + 1,
     };
   });
 

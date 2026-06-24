@@ -76,6 +76,8 @@ export async function POST(req: Request) {
           const awayScorers = cleanScorers(game.away_scorers);
 
           const existing = fixtureMap.get(game.id);
+          
+          // Rule: Protect manually corrected kickoff times
           const finalKickoff = (existing?.manually_updated_kickoff_at) ? existing.kickoff_at : apiKickoff;
 
           if (existing) {
@@ -146,6 +148,7 @@ export async function POST(req: Request) {
             away_flag: getTeamFlagUrl(awayTeam),
             kickoff_at: finalKickoff,
             api_kickoff_at: apiKickoff,
+            manually_updated_kickoff_at: existing?.manually_updated_kickoff_at ?? false,
             status,
             home_score: homeScore,
             away_score: awayScore,
