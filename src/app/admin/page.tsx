@@ -6,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck, RotateCcw } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -38,6 +38,7 @@ export default function AdminPage() {
   const [isRunningCron, setIsRunningCron] = useState(false)
   const [isAwarding, setIsAwarding] = useState(false)
   const [isUpdatingTime, setIsUpdatingTime] = useState(false)
+  const [isResettingTime, setIsResettingTime] = useState(false)
   const [isSendingNotif, setIsSendingNotif] = useState(false)
   const [isAssigningIcon, setIsAssigningIcon] = useState(false)
   
@@ -63,6 +64,7 @@ export default function AdminPage() {
   const [notifType, setNotifType] = useState("manual_admin")
 
   const [showConfirmPoints, setShowConfirmPoints] = useState(false)
+  const [showConfirmReset, setShowConfirmReset] = useState(false)
   
   const router = useRouter()
   const supabase = createClient()
@@ -180,6 +182,39 @@ export default function AdminPage() {
     }
   }
 
+  const handleResetTime = async () => {
+    if (!selectedFixture) return
+    setIsResettingTime(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error("Session expired.")
+
+      const response = await fetch("/api/admin/reset-fixture-time", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          fixtureId: selectedFixture
+        })
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Reset failed")
+
+      toast({ title: "Time Reset!", description: "The match has been reverted to API time." })
+      setSelectedFixture("")
+      setNewTime("")
+      fetchFixtures()
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Reset Failed", description: error.message })
+    } finally {
+      setIsResettingTime(false)
+      setShowConfirmReset(false)
+    }
+  }
+
   const handleAwardPoints = async () => {
     setIsAwarding(true)
     try {
@@ -255,6 +290,9 @@ export default function AdminPage() {
   if (authLoading || profile?.role !== "superadmin") {
     return <AppLoadingScreen />
   }
+
+  const currentSelectedFixture = fixtures.find(f => f.id === selectedFixture)
+  const canResetToApi = currentSelectedFixture?.manually_updated_kickoff_at && currentSelectedFixture?.api_kickoff_at
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -552,14 +590,26 @@ export default function AdminPage() {
               />
             </div>
 
-            <Button 
-              onClick={handleUpdateTime}
-              disabled={!selectedFixture || !newTime || isUpdatingTime}
-              className="w-full h-16 rounded-2xl bg-foreground text-background hover:opacity-90 font-black uppercase text-sm tracking-[0.2em] shadow-xl"
-            >
-              {isUpdatingTime ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Clock className="h-5 w-5 mr-2" />}
-              Update Match Time
-            </Button>
+            <div className="space-y-3 pt-2">
+              <Button 
+                onClick={handleUpdateTime}
+                disabled={!selectedFixture || !newTime || isUpdatingTime}
+                className="w-full h-16 rounded-2xl bg-foreground text-background hover:opacity-90 font-black uppercase text-sm tracking-[0.2em] shadow-xl"
+              >
+                {isUpdatingTime ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Clock className="h-5 w-5 mr-2" />}
+                Update Match Time
+              </Button>
+
+              <Button 
+                onClick={() => setShowConfirmReset(true)}
+                disabled={!selectedFixture || !canResetToApi || isResettingTime}
+                variant="outline"
+                className="w-full h-14 rounded-2xl border-border/50 bg-muted/20 font-black uppercase text-xs tracking-[0.2em] flex items-center gap-2"
+              >
+                {isResettingTime ? <Loader2 className="h-4 w-4 animate-spin" /> : <RotateCcw className="h-4 w-4" />}
+                {canResetToApi ? "RESET TO API TIME" : "API TIME NOT AVAILABLE"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -577,6 +627,23 @@ export default function AdminPage() {
             <AlertDialogFooter className="mt-6 flex gap-3">
               <AlertDialogCancel className="rounded-2xl border-border/50 font-black uppercase text-[10px] tracking-widest h-12 flex-1">Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleAwardPoints} className="rounded-2xl premium-gold-pill border-0 flex-1 shadow-lg shadow-primary/20">Confirm Award</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={showConfirmReset} onOpenChange={setShowConfirmReset}>
+          <AlertDialogContent className="rounded-[2.5rem] bg-background border-primary/20 overflow-visible">
+            <AlertDialogHeader className="overflow-visible">
+              <AlertDialogTitle className="overflow-visible">
+                <span className="premium-gold-gradient-heading text-2xl">Reset Schedule</span>
+              </AlertDialogTitle>
+              <AlertDialogDescription className="font-medium text-muted-foreground text-sm">
+                Reset this match time back to the API time? This will re-enable automatic sync from the tournament source.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="mt-6 flex gap-3">
+              <AlertDialogCancel className="rounded-2xl border-border/50 font-black uppercase text-[10px] tracking-widest h-12 flex-1">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleResetTime} className="rounded-2xl bg-destructive text-destructive-foreground font-black uppercase text-[10px] tracking-widest h-12 flex-1 shadow-lg">Reset Time</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
