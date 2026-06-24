@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -98,6 +97,7 @@ export async function GET(req: Request) {
       home_flag: getTeamFlagUrl(homeTeam),
       away_flag: getTeamFlagUrl(awayTeam),
       kickoff_at: finalKickoff,
+      api_kickoff_at: apiKickoff,
       status,
       home_score: parseScore(game.home_score, status),
       away_score: parseScore(game.away_score, status),

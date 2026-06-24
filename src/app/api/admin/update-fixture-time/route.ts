@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
@@ -32,12 +31,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // 1. Update the fixture source of truth kickoff_at and set manual flag
+    // 1. Update the fixture source of truth kickoff_at and set manual flag + metadata
     const { data: fixture, error: updateError } = await supabaseAdmin
       .from("fixtures")
       .update({ 
         kickoff_at: newKickoffAt,
-        manually_updated_kickoff_at: true 
+        manually_updated_kickoff_at: true,
+        manual_kickoff_at_updated_at: new Date().toISOString(),
+        manual_kickoff_at_updated_by: user.id,
+        updated_at: new Date().toISOString()
       })
       .eq("id", fixtureId)
       .select()
