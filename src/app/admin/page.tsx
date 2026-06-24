@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -6,7 +7,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck, RotateCcw } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck, RotateCcw, Search, Check } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -16,6 +17,8 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { DateTime } from "luxon"
 import { NotificationBell } from "@/components/layout/notification-bell"
 import { PROFILE_ICON_PRESETS } from "@/lib/profile-icons"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { AppLoadingScreen } from "@/components/layout/app-loading-screen"
@@ -46,12 +49,14 @@ export default function AdminPage() {
   const [fixtures, setFixtures] = useState<any[]>([])
   
   const [selectedUser, setSelectedUser] = useState("")
-  const [selectedUserForRole, setSelectedUserForRole] = useState("")
   const [selectedFixture, setSelectedFixture] = useState("")
   const [newTime, setNewTime] = useState("")
   const [points, setPoints] = useState("")
   const [reason, setReason] = useState("")
   
+  // Fixture Search state
+  const [fixtureSearch, setFixtureSearch] = useState("")
+
   // Icon Assignment states
   const [selectedUserForIcon, setSelectedUserForIcon] = useState("")
   const [selectedIconKey, setSelectedIconKey] = useState("")
@@ -293,6 +298,10 @@ export default function AdminPage() {
 
   const currentSelectedFixture = fixtures.find(f => f.id === selectedFixture)
   const canResetToApi = currentSelectedFixture?.manually_updated_kickoff_at && currentSelectedFixture?.api_kickoff_at
+
+  const filteredFixtures = fixtures.filter(f => 
+    `${f.home_team} ${f.away_team}`.toLowerCase().includes(fixtureSearch.toLowerCase())
+  )
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -564,18 +573,63 @@ export default function AdminPage() {
               <label className="text-[10px] font-black uppercase text-muted-foreground opacity-60 tracking-widest flex items-center gap-2">
                 <Calendar className="h-3 w-3" /> Select Match
               </label>
-              <Select value={selectedFixture} onValueChange={setSelectedFixture}>
-                <SelectTrigger className="h-14 rounded-2xl border-border/50 bg-muted/30 font-black uppercase text-[11px] italic tracking-tight" id="fixture-selector">
-                  <SelectValue placeholder="Choose a fixture..." />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl max-h-[300px]">
-                  {fixtures.map(f => (
-                    <SelectItem key={f.id} value={f.id}>
-                      {f.home_team} vs {f.away_team} ({DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toFormat('LLL dd, HH:mm')})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    role="combobox" 
+                    className="w-full h-14 rounded-2xl border-border/50 bg-muted/30 font-black uppercase text-[11px] italic tracking-tight justify-between"
+                  >
+                    {selectedFixture 
+                      ? fixtures.find(f => f.id === selectedFixture)
+                        ? `${fixtures.find(f => f.id === selectedFixture).home_team} vs ${fixtures.find(f => f.id === selectedFixture).away_team}`
+                        : "Select Match..."
+                      : "Choose a fixture..."
+                    }
+                    <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-2xl border-border/50 bg-background shadow-2xl overflow-hidden">
+                  <div className="flex items-center border-b px-3 bg-muted/10">
+                    <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                    <input
+                      className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="Search teams..."
+                      value={fixtureSearch}
+                      onChange={(e) => setFixtureSearch(e.target.value)}
+                    />
+                  </div>
+                  <ScrollArea className="h-[300px]">
+                    <div className="p-2">
+                      {filteredFixtures.length === 0 ? (
+                        <div className="py-6 text-center text-xs text-muted-foreground uppercase font-black tracking-widest">No match found.</div>
+                      ) : (
+                        filteredFixtures.map((f) => (
+                          <button
+                            key={f.id}
+                            onClick={() => {
+                              setSelectedFixture(f.id)
+                              setFixtureSearch("")
+                            }}
+                            className={cn(
+                              "relative flex w-full cursor-default select-none items-center rounded-xl px-4 py-3 text-xs font-bold outline-none hover:bg-muted/50 transition-colors text-left",
+                              selectedFixture === f.id ? "bg-primary/10 text-primary" : "text-foreground"
+                            )}
+                          >
+                            <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                              <span className="truncate">{f.home_team} vs {f.away_team}</span>
+                              <span className="text-[9px] opacity-60 font-medium">
+                                {DateTime.fromISO(f.kickoff_at).setZone(APP_ZONE).toFormat('LLL dd, HH:mm')}
+                              </span>
+                            </div>
+                            {selectedFixture === f.id && <Check className="ml-2 h-4 w-4 shrink-0" />}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="space-y-2">
