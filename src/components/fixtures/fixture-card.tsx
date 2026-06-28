@@ -3,19 +3,20 @@
 import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Edit2, Check, Lock, Trophy, Zap, Timer, Goal, Star, ChevronDown, ChevronUp, Users, ShieldAlert } from "lucide-react"
+import { Edit2, Check, Lock, Trophy, Zap, Timer, Goal, Star, ChevronDown, ChevronUp, Users, ShieldAlert, Target } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { DateTime } from "luxon"
 import Image from "next/image"
 import { UserAvatar } from "@/components/user-avatar"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { Input } from "@/components/ui/input"
 
 const APP_ZONE = "Indian/Maldives"
 
 interface FixtureCardProps {
   fixture: any
   myPrediction?: any
-  onSave: (id: string, h: number, a: number, isLifeline: boolean) => void
+  onSave: (id: string, h: number, a: number, isLifeline: boolean, scorerName?: string) => void
   lifelinesRemaining?: number
   userProfile?: any
   supporters?: any[]
@@ -56,20 +57,24 @@ export function FixtureCard({
 }: FixtureCardProps) {
   const [hScore, setHScore] = useState<string>("")
   const [aScore, setAScore] = useState<string>("")
+  const [scorerName, setScorerName] = useState<string>("")
   const [editing, setEditing] = useState(false)
   const [isStandardLocked, setIsStandardLocked] = useState(false)
   const [isLifelineAvailable, setIsLifelineAvailable] = useState(false)
   const [isTotalLocked, setIsTotalLocked] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isBeforeKickoff, setIsBeforeKickoff] = useState(true)
 
   // Strictly sync state with props when props change
   useEffect(() => {
     if (myPrediction) {
       setHScore(myPrediction.predicted_home_score?.toString() || "0")
       setAScore(myPrediction.predicted_away_score?.toString() || "0")
+      setScorerName(myPrediction.predicted_scorer_name || "")
     } else {
       setHScore("")
       setAScore("")
+      setScorerName("")
     }
   }, [myPrediction])
 
@@ -80,11 +85,13 @@ export function FixtureCard({
   useEffect(() => {
     const checkLock = () => {
       const now = DateTime.now()
-      const standardLock = DateTime.fromISO(fixture.kickoff_at).plus({ minutes: 15 })
-      const lifelineLock = DateTime.fromISO(fixture.kickoff_at).plus({ minutes: 50 })
+      const kickoffTime = DateTime.fromISO(fixture.kickoff_at)
+      const standardLock = kickoffTime.plus({ minutes: 15 })
+      const lifelineLock = kickoffTime.plus({ minutes: 50 })
       
       const finished = fixture.status === 'finished'
       
+      setIsBeforeKickoff(now < kickoffTime)
       setIsStandardLocked(now > standardLock || finished)
       setIsLifelineAvailable(now >= standardLock && now < lifelineLock && !finished && lifelinesRemaining > 0)
       setIsTotalLocked(now > lifelineLock || finished)
@@ -99,7 +106,7 @@ export function FixtureCard({
     const h = parseInt(hScore)
     const a = parseInt(aScore)
     if (!isNaN(h) && !isNaN(a)) {
-      onSave(fixture.id, h, a, isLifeline)
+      onSave(fixture.id, h, a, isLifeline, isBeforeKickoff ? scorerName : undefined)
       setEditing(false)
     }
   }
@@ -197,12 +204,31 @@ export function FixtureCard({
 
           <div className="flex flex-col items-center justify-center min-w-[100px] sm:min-w-[140px] overflow-visible">
             {editing ? (
-              <div className="flex flex-col items-center gap-3 py-1 animate-in zoom-in-95 duration-200 overflow-visible">
+              <div className="flex flex-col items-center gap-3 py-1 animate-in zoom-in-95 duration-200 overflow-visible w-full">
                 <div className="flex items-center gap-2 overflow-visible">
                   <input type="number" value={hScore} onChange={(e) => setHScore(e.target.value)} className="w-10 h-12 sm:w-14 sm:h-16 text-center text-xl sm:text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-xl sm:rounded-2xl outline-none" autoFocus />
                   <span className="text-xl sm:text-3xl font-black text-muted-foreground italic">:</span>
                   <input type="number" value={aScore} onChange={(e) => setAScore(e.target.value)} className="w-10 h-12 sm:w-14 sm:h-16 text-center text-xl sm:text-3xl font-black bg-muted border-2 border-primary/50 text-foreground rounded-xl sm:rounded-2xl outline-none" />
                 </div>
+
+                {isBeforeKickoff ? (
+                  <div className="w-full space-y-1.5">
+                    <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground text-center block">Predict Scorer</label>
+                    <Input 
+                      placeholder="Player Name"
+                      value={scorerName}
+                      onChange={(e) => setScorerName(e.target.value)}
+                      className="h-9 rounded-xl text-center font-bold text-xs bg-muted/50 border-primary/20"
+                    />
+                    <p className="text-[7px] font-bold text-muted-foreground/60 text-center uppercase tracking-tighter italic">Optional · Locks at Kickoff</p>
+                  </div>
+                ) : myPrediction?.predicted_scorer_name && (
+                  <div className="w-full text-center">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-primary italic leading-none">Scorer Pick Locked</p>
+                    <p className="text-[10px] font-bold text-foreground mt-1 truncate">{myPrediction.predicted_scorer_name}</p>
+                  </div>
+                )}
+
                 <Button onClick={() => handleSave(isStandardLocked)} className="soft-button h-10 px-5 sm:h-12 sm:px-8 premium-gold-pill text-[10px] sm:text-xs">
                   <Check className="h-3 w-3 mr-1.5" /> LOCK PICK
                 </Button>
@@ -227,14 +253,27 @@ export function FixtureCard({
                     <AvatarStack supporters={drawSupporters} />
                     
                     {myPrediction && (
-                      <div className="rounded-full bg-primary/5 dark:bg-primary/10 border border-primary/20 px-3 py-1 flex items-center gap-1.5 shadow-sm overflow-visible animate-in fade-in slide-in-from-top-1 duration-300">
-                        <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
-                        <div className="flex items-center gap-1 overflow-visible">
-                           <span className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-tighter">Your Pick:</span>
-                           <span className="premium-gold-gradient-number text-[10px] sm:text-[11px] whitespace-nowrap overflow-visible">
-                             {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
-                           </span>
+                      <div className="flex flex-col items-center gap-1.5 overflow-visible w-full">
+                        <div className="rounded-full bg-primary/5 dark:bg-primary/10 border border-primary/20 px-3 py-1 flex items-center gap-1.5 shadow-sm overflow-visible animate-in fade-in slide-in-from-top-1 duration-300">
+                          <Zap className="h-2.5 w-2.5 text-primary fill-primary" />
+                          <div className="flex items-center gap-1 overflow-visible">
+                            <span className="text-[8px] font-black uppercase text-muted-foreground/60 tracking-tighter">Your Pick:</span>
+                            <span className="premium-gold-gradient-number text-[10px] sm:text-[11px] whitespace-nowrap overflow-visible">
+                              {myPrediction.predicted_home_score} - {myPrediction.predicted_away_score}
+                            </span>
+                          </div>
                         </div>
+
+                        {myPrediction.predicted_scorer_name && (
+                          <div className="flex items-center gap-1 bg-muted/40 px-2 py-0.5 rounded-full border border-border/30 animate-in fade-in zoom-in-95 duration-500">
+                            <Target className="h-2 w-2 text-primary/70" />
+                            <span className="text-[8px] font-black uppercase italic text-muted-foreground tracking-tight">Scorer:</span>
+                            <span className="text-[8px] font-bold text-foreground truncate max-w-[80px]">{myPrediction.predicted_scorer_name}</span>
+                            {myPrediction.scorer_prediction_status === 'correct' && (
+                              <Star className="h-2 w-2 text-yellow-500 fill-yellow-500 ml-0.5" />
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

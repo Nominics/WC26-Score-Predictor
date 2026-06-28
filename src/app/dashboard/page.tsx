@@ -102,7 +102,7 @@ export default function Dashboard() {
         supabase
           .from("predictions")
           .select(
-            "id, user_id, fixture_id, predicted_home_score, predicted_away_score, points, created_at, updated_at"
+            "id, user_id, fixture_id, predicted_home_score, predicted_away_score, predicted_scorer_name, scorer_prediction_status, scorer_prediction_points, points, created_at, updated_at"
           )
           .eq("user_id", authUser.id),
 
@@ -120,12 +120,6 @@ export default function Dashboard() {
       const directMyPredictions = pRes.data || []
       const supportersData = sRes.data || []
 
-      /**
-       * Safety fallback:
-       * View All Picks already proves fixture_prediction_supporters has prediction data.
-       * So we also extract the logged-in user's rows from supporters and merge them
-       * into the my predictions list.
-       */
       const mySupporterPredictions = supportersData
         .filter((s: any) => String(s.user_id) === String(authUser.id))
         .map((s: any) => ({
@@ -134,15 +128,14 @@ export default function Dashboard() {
           fixture_id: s.fixture_id,
           predicted_home_score: s.predicted_home_score,
           predicted_away_score: s.predicted_away_score,
+          predicted_scorer_name: s.predicted_scorer_name,
+          scorer_prediction_status: s.scorer_prediction_status,
+          scorer_prediction_points: s.scorer_prediction_points,
           points: s.points ?? 0,
           created_at: s.created_at ?? s.updated_at,
           updated_at: s.updated_at,
         }))
 
-      /**
-       * Merge direct predictions + supporter fallback by fixture_id.
-       * Direct predictions win if both exist.
-       */
       const mergedPredictionMap = new Map<string, any>()
 
       mySupporterPredictions.forEach((p: any) => {
@@ -255,18 +248,27 @@ export default function Dashboard() {
     return map
   }, [supporters])
 
-  const handlePredict = async (fixtureId: string, h: number, a: number, isLifeline: boolean) => {
+  const handlePredict = async (fixtureId: string, h: number, a: number, isLifeline: boolean, scorerName?: string) => {
     const newH = Number(h)
     const newA = Number(a)
 
     const existing = predictions.find(p => String(p.fixture_id) === String(fixtureId))
+    
+    // Check if anything actually changed
+    const scorerChanged = existing?.predicted_scorer_name !== (scorerName || null)
     if (existing && 
         existing.predicted_home_score === newH && 
-        existing.predicted_away_score === newA) {
+        existing.predicted_away_score === newA &&
+        !scorerChanged) {
       return
     }
 
     try {
+      const fixture = fixtures.find(f => String(f.id) === String(fixtureId))
+      const now = DateTime.now().setZone(APP_ZONE)
+      const kickoffAt = DateTime.fromISO(fixture.kickoff_at).setZone(APP_ZONE)
+      const canEditScorer = now < kickoffAt
+
       if (isLifeline) {
         try {
           await useLifeline()
@@ -276,19 +278,24 @@ export default function Dashboard() {
         }
       }
 
+      const upsertData: any = {
+        user_id: authUser?.id,
+        fixture_id: fixtureId,
+        predicted_home_score: newH,
+        predicted_away_score: newA,
+      }
+
+      // Only include scorer if it's still allowed to be edited (pre-kickoff)
+      // This prevents erasing the scorer pick when using a lifeline during a match
+      if (canEditScorer) {
+        upsertData.predicted_scorer_name = scorerName?.trim() || null
+      }
+
       const { data: savedPrediction, error } = await supabase
         .from("predictions")
-        .upsert(
-          {
-            user_id: authUser?.id,
-            fixture_id: fixtureId,
-            predicted_home_score: newH,
-            predicted_away_score: newA,
-          },
-          { onConflict: "user_id,fixture_id" }
-        )
+        .upsert(upsertData, { onConflict: "user_id,fixture_id" })
         .select(
-          "id, user_id, fixture_id, predicted_home_score, predicted_away_score, points, created_at, updated_at"
+          "id, user_id, fixture_id, predicted_home_score, predicted_away_score, predicted_scorer_name, scorer_prediction_status, scorer_prediction_points, points, created_at, updated_at"
         )
         .single()
 
@@ -299,7 +306,6 @@ export default function Dashboard() {
           const others = prev.filter(
             (p: any) => String(p.fixture_id) !== String(savedPrediction.fixture_id)
           )
-
           return [...others, savedPrediction]
         })
       }
