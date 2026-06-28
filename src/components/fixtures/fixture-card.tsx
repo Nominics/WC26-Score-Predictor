@@ -434,39 +434,71 @@ export function FixtureCard({
 }
 
 function PredictionRow({ supporter, isOwn, isFinished }: { supporter: any, isOwn: boolean, isFinished: boolean }) {
+  const hasScorer = !!supporter.predicted_scorer_name;
+
   return (
     <div className={cn(
-      "flex items-center justify-between p-3 rounded-2xl border transition-all overflow-visible",
+      "flex flex-col p-3 rounded-2xl border transition-all overflow-visible gap-2",
       isOwn 
         ? "bg-primary/10 border-primary/30 premium-gold-ring shadow-lg scale-[1.02]" 
         : "bg-white/40 dark:bg-muted/30 border-amber-100/50 dark:border-border/40"
     )}>
-      <div className="flex items-center gap-3 overflow-visible">
-        <UserAvatar profile={supporter} className="h-7 w-7 border-0 shadow-sm" />
-        <div className="flex flex-col overflow-visible">
-           <span className={cn(
-             "text-[11px] font-black uppercase tracking-tight leading-none",
-             isOwn ? "premium-gold-gradient-heading" : "text-foreground/80"
-           )}>
-             {supporter.display_name} {isOwn && <span className="text-[8px] italic opacity-60">(YOU)</span>}
-           </span>
-           {isFinished && supporter.points !== undefined && (
+      {/* Identity and Score Line */}
+      <div className="flex items-center justify-between gap-2 overflow-visible">
+        <div className="flex items-center gap-2.5 overflow-visible min-w-0">
+          <UserAvatar profile={supporter} className="h-7 w-7 border-0 shadow-sm shrink-0" />
+          <div className="flex flex-col overflow-visible min-w-0">
              <span className={cn(
-               "text-[8px] font-bold uppercase mt-0.5",
-               supporter.points > 0 ? "text-emerald-500" : "text-muted-foreground/40"
+               "text-[10px] sm:text-[11px] font-black uppercase tracking-tight leading-none truncate",
+               isOwn ? "premium-gold-gradient-heading" : "text-foreground/80"
              )}>
-               {supporter.points > 0 ? `+${supporter.points} points earned` : '0 points'}
+               {supporter.display_name} {isOwn && <span className="text-[8px] italic opacity-60">(YOU)</span>}
              </span>
-           )}
+             {isFinished && (
+               <span className={cn(
+                 "text-[7px] sm:text-[8px] font-bold uppercase mt-0.5 leading-none",
+                 (supporter.points || 0) > 0 ? "text-emerald-500" : "text-muted-foreground/40"
+               )}>
+                 {(supporter.points || 0) > 0 ? `+${supporter.points} Score Bonus` : 'Score 0 pts'}
+               </span>
+             )}
+          </div>
         </div>
-      </div>
-      
-      <div className="flex items-center gap-2 overflow-visible">
-        <div className="px-3 py-1 rounded-full bg-white/60 dark:bg-background/50 border border-amber-100/50 dark:border-border/50 shadow-inner overflow-visible">
-           <span className="premium-gold-gradient-number text-[12px] tabular-nums whitespace-nowrap overflow-visible">
+
+        <div className="px-2.5 py-0.5 rounded-full bg-white/60 dark:bg-background/50 border border-amber-100/50 dark:border-border/50 shadow-inner overflow-visible shrink-0">
+           <span className="premium-gold-gradient-number text-[11px] sm:text-[12px] tabular-nums whitespace-nowrap overflow-visible">
              {supporter.predicted_home_score} - {supporter.predicted_away_score}
            </span>
         </div>
+      </div>
+
+      {/* Scorer Prediction Line */}
+      <div className="flex items-center justify-between gap-2 px-1 border-t border-amber-100/20 dark:border-border/20 pt-2 mt-0.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <Target className={cn("h-2.5 w-2.5", hasScorer ? "text-primary/70" : "text-muted-foreground/20")} />
+          {hasScorer ? (
+            <span className="text-[9px] font-bold text-foreground/70 truncate uppercase italic tracking-tighter">
+              {supporter.predicted_scorer_name}
+            </span>
+          ) : (
+            <span className="text-[8px] font-bold uppercase text-muted-foreground/20 italic tracking-tighter">No Scorer Pick</span>
+          )}
+        </div>
+
+        {isFinished && hasScorer && (
+          <div className="flex items-center gap-1 shrink-0">
+            {supporter.scorer_prediction_status === 'correct' ? (
+              <div className="flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                <Star className="h-2 w-2 text-emerald-500 fill-emerald-500" />
+                <span className="text-[7px] font-black text-emerald-500 uppercase">+2 PTS</span>
+              </div>
+            ) : supporter.scorer_prediction_status === 'incorrect' ? (
+              <span className="text-[7px] font-black text-muted-foreground/40 uppercase">Incorrect</span>
+            ) : (
+              <span className="text-[7px] font-black text-amber-500/60 uppercase italic animate-pulse">Pending Review</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
