@@ -4,7 +4,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { ModeToggle } from "@/components/mode-toggle"
 import { NotificationBell } from "@/components/layout/notification-bell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Award, Zap, Calendar, ShieldAlert, Flag, Sparkles, Info, Share2 } from "lucide-react"
+import { Award, Zap, Calendar, ShieldAlert, Flag, Sparkles, Info, Share2, Target } from "lucide-react"
 import { cn, copyToClipboard } from "@/lib/utils"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
@@ -13,8 +13,9 @@ import Image from "next/image"
 const RULES = [
   { title: "Exact Score", points: 3, description: "Predict the exact final score of the match.", icon: Award },
   { title: "Correct Result", points: 1, description: "Predict the correct winner or a draw outcome.", icon: Zap },
-  { title: "Time Limit", points: 0, description: "Standard lock: 15 minutes after kickoff.", icon: Calendar },
-  { title: "Lifeline usage", points: 0, description: "Use 1 of 5 lifelines to update picks until the 50th minute.", icon: ShieldAlert },
+  { title: "Predict Scorer", points: 2, description: "Nominate one player to score. Optional bonus pick.", icon: Target },
+  { title: "Time Limit", points: 0, description: "Score lock: 15m after kickoff. Scorer lock: At kickoff.", icon: Calendar },
+  { title: "Lifeline usage", points: 0, description: "Use 1 of 5 lifelines to update scores until the 50th minute.", icon: ShieldAlert },
 ];
 
 export default function RulesPage() {
