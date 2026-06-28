@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendNotification } from "@/lib/notifications/send-notification";
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
       const scorerName = prediction.predicted_scorer_name;
       const fixtureName = `${(prediction.fixtures as any)?.home_team} vs ${(prediction.fixtures as any)?.away_team}`;
 
-      // Arena Alert (Notification)
+      // Create Notification via standard helper
       await sendNotification({
         userId: prediction.user_id,
         type: 'bonus_points',
@@ -100,7 +101,8 @@ export async function POST(req: Request) {
           fixture_id: prediction.fixture_id,
           prediction_id: predictionId,
           points: 2,
-          reason: "correct_scorer_prediction"
+          reason: "correct_scorer_prediction",
+          url: "/dashboard"
         }
       });
 
