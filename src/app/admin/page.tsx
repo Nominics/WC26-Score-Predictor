@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -7,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck, RotateCcw, Search, Check } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck, RotateCcw, Search, Check, Target, Goal, History, XCircle, CheckCircle2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -47,6 +46,9 @@ export default function AdminPage() {
   
   const [allProfiles, setAllProfiles] = useState<any[]>([])
   const [fixtures, setFixtures] = useState<any[]>([])
+  const [pendingScorers, setPendingScorers] = useState<any[]>([])
+  const [reviewedScorers, setReviewedScorers] = useState<any[]>([])
+  const [isReviewing, setIsReviewing] = useState<string | null>(null)
   
   const [selectedUser, setSelectedUser] = useState("")
   const [selectedFixture, setSelectedFixture] = useState("")
@@ -81,12 +83,81 @@ export default function AdminPage() {
     if (profile?.role === "superadmin") {
       fetchProfiles()
       fetchFixtures()
+      fetchPendingScorers()
+      fetchReviewedScorers()
     }
   }, [user, profile, authLoading, router])
 
   const fetchProfiles = async () => {
     const { data } = await supabase.from("profiles").select("id, display_name, role, profile_icon_key, favorite_team").order("display_name")
     setAllProfiles(data || [])
+  }
+
+  const fetchFixtures = async () => {
+    const { data } = await supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true })
+    setFixtures(data || [])
+  }
+
+  const fetchPendingScorers = async () => {
+    const { data } = await supabase
+      .from("predictions")
+      .select(`
+        *,
+        fixtures (home_team, away_team, status, home_score, away_score, home_scorers, away_scorers),
+        profiles (display_name, favorite_team, profile_icon_key)
+      `)
+      .not("predicted_scorer_name", "is", null)
+      .eq("scorer_prediction_status", "pending")
+      .eq("fixtures.status", "finished")
+    
+    // Filter out rows where join failed (shouldn't happen with inner logic but good for safety)
+    const valid = data?.filter(d => d.fixtures && (d.fixtures as any).status === 'finished') || []
+    setPendingScorers(valid)
+  }
+
+  const fetchReviewedScorers = async () => {
+    const { data } = await supabase
+      .from("predictions")
+      .select(`
+        *,
+        fixtures (home_team, away_team),
+        profiles (display_name)
+      `)
+      .not("scorer_prediction_status", "eq", "pending")
+      .order("scorer_reviewed_at", { ascending: false })
+      .limit(10)
+    setReviewedScorers(data || [])
+  }
+
+  const handleReviewScorer = async (predictionId: string, result: 'correct' | 'incorrect') => {
+    setIsReviewing(predictionId)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error("Session expired.")
+
+      const response = await fetch("/api/admin/review-scorer-prediction", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ predictionId, result })
+      })
+
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || "Review failed")
+
+      toast({ 
+        title: result === 'correct' ? "Awarded +2 Points" : "Marked Incorrect", 
+        description: "Scorer prediction has been reviewed." 
+      })
+      fetchPendingScorers()
+      fetchReviewedScorers()
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Review Error", description: error.message })
+    } finally {
+      setIsReviewing(null)
+    }
   }
 
   const handleRunCron = async () => {
@@ -110,6 +181,7 @@ export default function AdminPage() {
         description: `Synced ${data.syncedFixtures} matches. Sent ${data.remindersSent} reminders.` 
       })
       fetchFixtures()
+      fetchPendingScorers()
     } catch (error: any) {
       toast({ variant: "destructive", title: "Cron Failed", description: error.message })
     } finally {
@@ -158,7 +230,6 @@ export default function AdminPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) throw new Error("Session expired.")
 
-      // Admin inputs time in Maldives time, we convert to UTC for storage
       const utcTime = DateTime.fromISO(newTime, { zone: APP_ZONE }).toUTC().toISO()
 
       const response = await fetch("/api/admin/update-fixture-time", {
@@ -287,11 +358,6 @@ export default function AdminPage() {
     }
   }
 
-  const fetchFixtures = async () => {
-    const { data } = await supabase.from("fixtures").select("*").order("kickoff_at", { ascending: true })
-    setFixtures(data || [])
-  }
-
   if (authLoading || profile?.role !== "superadmin") {
     return <AppLoadingScreen />
   }
@@ -302,6 +368,11 @@ export default function AdminPage() {
   const filteredFixtures = fixtures.filter(f => 
     `${f.home_team} ${f.away_team}`.toLowerCase().includes(fixtureSearch.toLowerCase())
   )
+
+  const cleanScorers = (scorers: string | null) => {
+    if (!scorers || scorers === 'null') return "None recorded";
+    return scorers.replace(/[{}"']/g, '').replace(/[;,]/g, ' • ');
+  }
 
   return (
     <div className="min-h-screen bg-background pb-32">
@@ -329,6 +400,117 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-2xl mx-auto p-4 space-y-8 mt-6 overflow-visible">
+        {/* Scorer Prediction Review Hub */}
+        <Card className="app-glass-card border-primary/20 shadow-primary/5 overflow-visible">
+          <CardHeader className="bg-muted/40 border-b border-border/50 p-6 rounded-t-[2.5rem] overflow-visible">
+            <CardTitle className="overflow-visible flex items-center gap-3">
+              <Target className="h-5 w-5 text-primary" />
+              <span className="premium-gold-gradient-heading text-lg">Scorer Review Hub</span>
+            </CardTitle>
+            <CardDescription className="text-muted-foreground font-bold uppercase text-[9px] tracking-widest mt-1">
+              Verify goal-scorer predictions and award bonuses
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-6 space-y-6">
+            {pendingScorers.length === 0 ? (
+              <div className="py-12 text-center bg-muted/20 rounded-[2rem] border-2 border-dashed border-border/40">
+                <Goal className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">No pending scorer reviews</p>
+                <p className="text-[8px] font-bold text-muted-foreground/40 uppercase mt-1">Matches must be finished to review</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black uppercase text-primary tracking-widest px-2">{pendingScorers.length} Pending Review{pendingScorers.length !== 1 ? 's' : ''}</h4>
+                <div className="space-y-4">
+                  {pendingScorers.map((rev) => {
+                    const f = rev.fixtures as any;
+                    const p = rev.profiles as any;
+                    return (
+                      <div key={rev.id} className="p-5 bg-muted/30 rounded-[2rem] border border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-1">
+                            <span className="text-[9px] font-black uppercase text-muted-foreground opacity-60">Match Outcome</span>
+                            <p className="font-black text-xs uppercase tracking-tight italic">
+                              {f.home_team} {f.home_score} - {f.away_score} {f.away_team}
+                            </p>
+                            <div className="flex items-center gap-2 mt-2">
+                               <Goal className="h-3 w-3 text-primary opacity-50" />
+                               <span className="text-[9px] font-bold text-muted-foreground italic break-words max-w-[200px]">
+                                 {cleanScorers(f.home_scorers)} • {cleanScorers(f.away_scorers)}
+                               </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                             <span className="text-[9px] font-black uppercase text-muted-foreground opacity-60">Player</span>
+                             <p className="premium-gold-gradient-heading text-xs">{p.display_name}</p>
+                          </div>
+                        </div>
+
+                        <div className="p-4 bg-background/50 rounded-2xl border border-primary/10 flex items-center justify-between">
+                           <div className="space-y-1">
+                              <span className="text-[8px] font-black uppercase text-primary tracking-[0.2em]">Prediction</span>
+                              <p className="text-sm font-black italic uppercase">🎯 {rev.predicted_scorer_name}</p>
+                           </div>
+                           <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleReviewScorer(rev.id, 'incorrect')}
+                                disabled={!!isReviewing}
+                                variant="outline"
+                                className="h-10 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                {isReviewing === rev.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 mr-1.5" />}
+                                Incorrect
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleReviewScorer(rev.id, 'correct')}
+                                disabled={!!isReviewing}
+                                className="h-10 rounded-xl px-4 premium-gold-pill text-[9px] shadow-lg"
+                              >
+                                {isReviewing === rev.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3 mr-1.5" />}
+                                Correct (+2)
+                              </Button>
+                           </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Reviewed History */}
+            {reviewedScorers.length > 0 && (
+              <div className="pt-6 border-t border-border/30 space-y-4">
+                <div className="flex items-center gap-2 px-2">
+                  <History className="h-3.5 w-3.5 text-muted-foreground" />
+                  <h4 className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Recent Reviews</h4>
+                </div>
+                <div className="space-y-2">
+                  {reviewedScorers.map((rev) => (
+                    <div key={rev.id} className="flex items-center justify-between p-3 bg-muted/10 rounded-xl border border-border/20 text-[10px]">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-foreground">{(rev.profiles as any)?.display_name}</span>
+                        <span className="text-[8px] text-muted-foreground uppercase">{(rev.fixtures as any)?.home_team} vs {(rev.fixtures as any)?.away_team}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                         <span className="italic font-medium text-muted-foreground opacity-60">Pick: {rev.predicted_scorer_name}</span>
+                         <span className={cn(
+                           "font-black uppercase tracking-tighter text-[9px] px-2 py-0.5 rounded-full",
+                           rev.scorer_prediction_status === 'correct' ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"
+                         )}>
+                           {rev.scorer_prediction_status}
+                         </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* System Operations */}
         <Card className="app-glass-card border-primary/20 shadow-primary/5 overflow-visible">
           <CardHeader className="bg-muted/40 border-b border-border/50 p-6 rounded-t-[2.5rem] overflow-visible">
