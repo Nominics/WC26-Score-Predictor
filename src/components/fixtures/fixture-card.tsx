@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useMemo } from "react"
@@ -435,6 +436,7 @@ export function FixtureCard({
 
 function PredictionRow({ supporter, isOwn, isFinished }: { supporter: any, isOwn: boolean, isFinished: boolean }) {
   const hasScorer = !!supporter.predicted_scorer_name;
+  const isReviewed = supporter.scorer_prediction_status !== 'pending';
 
   return (
     <div className={cn(
@@ -477,28 +479,35 @@ function PredictionRow({ supporter, isOwn, isFinished }: { supporter: any, isOwn
         <div className="flex items-center gap-1.5 min-w-0">
           <Target className={cn("h-2.5 w-2.5", hasScorer ? "text-primary/70" : "text-muted-foreground/20")} />
           {hasScorer ? (
-            <span className="text-[9px] font-bold text-foreground/70 truncate uppercase italic tracking-tighter">
-              {supporter.predicted_scorer_name}
-            </span>
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[9px] font-bold text-foreground/70 truncate uppercase italic tracking-tighter">
+                {supporter.predicted_scorer_name}
+              </span>
+              
+              {/* Status Pills for finished matches or non-pending status */}
+              {(isFinished || isReviewed) && (
+                <div className="flex items-center gap-1 shrink-0">
+                  {supporter.scorer_prediction_status === 'correct' ? (
+                    <div className="flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      <Star className="h-2 w-2 text-emerald-500 fill-emerald-500" />
+                      <span className="text-[7px] font-black text-emerald-500 uppercase">+{supporter.scorer_prediction_points || 2} PTS</span>
+                    </div>
+                  ) : supporter.scorer_prediction_status === 'incorrect' ? (
+                    <div className="bg-muted/50 px-2 py-0.5 rounded-full border border-border/30">
+                      <span className="text-[7px] font-black text-muted-foreground/40 uppercase">Incorrect</span>
+                    </div>
+                  ) : (
+                    <div className="bg-amber-500/5 px-2 py-0.5 rounded-full border border-amber-500/10">
+                      <span className="text-[7px] font-black text-amber-500/60 uppercase italic animate-pulse">Pending Review</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           ) : (
             <span className="text-[8px] font-bold uppercase text-muted-foreground/20 italic tracking-tighter">No Scorer Pick</span>
           )}
         </div>
-
-        {isFinished && hasScorer && (
-          <div className="flex items-center gap-1 shrink-0">
-            {supporter.scorer_prediction_status === 'correct' ? (
-              <div className="flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                <Star className="h-2 w-2 text-emerald-500 fill-emerald-500" />
-                <span className="text-[7px] font-black text-emerald-500 uppercase">+2 PTS</span>
-              </div>
-            ) : supporter.scorer_prediction_status === 'incorrect' ? (
-              <span className="text-[7px] font-black text-muted-foreground/40 uppercase">Incorrect</span>
-            ) : (
-              <span className="text-[7px] font-black text-amber-500/60 uppercase italic animate-pulse">Pending Review</span>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )
