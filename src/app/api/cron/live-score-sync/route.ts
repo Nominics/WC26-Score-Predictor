@@ -247,6 +247,10 @@ export async function POST(req: Request) {
   }
 }
 
+export async function GET(req: Request) {
+  return POST(req)
+}
+
 async function handleMatchEvent({
   fixtureId, type, title, emoji, message, eventKey, userIds, metadata = {}
 }: {
