@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { MainNav } from "@/components/layout/main-nav"
-import { Medal, Trophy, Zap, Hash, Target, History, Star, LayoutGrid, List as ListIcon, ChevronRight } from "lucide-react"
+import { Medal, Trophy, Zap, Hash, Target, History, Star, LayoutGrid, List as ListIcon, ChevronRight, Goal } from "lucide-react"
 import { UserAvatar } from "@/components/user-avatar"
 import { PwaInstallButton } from "@/components/pwa-install-button"
 import { ModeToggle } from "@/components/mode-toggle"
@@ -57,6 +57,7 @@ export default function Leaderboard() {
           starting_points, 
           prediction_points, 
           manual_points,
+          scorer_prediction_points,
           total_points, 
           total_predictions, 
           last_prediction_at
@@ -333,6 +334,16 @@ function LeaderboardCard({ entry, rank, currentUserId }: { entry: any, rank: num
 
          <div className="flex items-center gap-2.5">
             <div className="h-7 w-7 rounded-lg bg-primary/5 dark:bg-primary/10 flex items-center justify-center shrink-0 border border-primary/10">
+               <Goal className="h-3.5 w-3.5 text-primary opacity-70" />
+            </div>
+            <div className="flex flex-col min-w-0">
+                <span className="text-[8px] font-black text-slate-500 dark:text-muted-foreground/50 uppercase tracking-widest leading-none">Scorer P</span>
+                <span className="premium-gold-gradient-number text-[11px] leading-tight mt-0.5">{entry.scorer_prediction_points || 0} <span className="text-[8px] not-italic opacity-40 uppercase ml-0.5">pts</span></span>
+            </div>
+         </div>
+
+         <div className="flex items-center gap-2.5">
+            <div className="h-7 w-7 rounded-lg bg-primary/5 dark:bg-primary/10 flex items-center justify-center shrink-0 border border-primary/10">
                <Zap className="h-3.5 w-3.5 text-primary fill-primary opacity-70" />
             </div>
             <div className="flex flex-col min-w-0">
@@ -346,7 +357,7 @@ function LeaderboardCard({ entry, rank, currentUserId }: { entry: any, rank: num
             </div>
          </div>
 
-         <div className="flex items-center gap-2.5 col-span-2">
+         <div className="flex items-center gap-2.5">
             <div className="h-7 w-7 rounded-lg bg-muted/40 dark:bg-muted/20 flex items-center justify-center shrink-0 border border-amber-100/50 dark:border-white/5">
                <History className="h-3.5 w-3.5 text-muted-foreground/50" />
             </div>
