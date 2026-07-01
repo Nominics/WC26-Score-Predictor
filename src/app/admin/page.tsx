@@ -100,30 +100,21 @@ export default function AdminPage() {
 
   const fetchPendingScorers = async () => {
     const { data } = await supabase
-      .from("predictions")
-      .select(`
-        *,
-        fixtures (home_team, away_team, status, home_score, away_score, home_scorers, away_scorers),
-        profiles (display_name, favorite_team, profile_icon_key)
-      `)
-      .not("predicted_scorer_name", "is", null)
+      .from("scorer_prediction_reviews")
+      .select("*")
       .eq("scorer_prediction_status", "pending")
+      .eq("status", "finished")
+      .order("kickoff_at", { ascending: false })
     
-    // Filter for finished matches manually to be safe with joined data
-    const valid = data?.filter(d => (d.fixtures as any)?.status === 'finished') || []
-    setPendingScorers(valid)
+    setPendingScorers(data || [])
   }
 
   const fetchReviewedScorers = async () => {
     const { data } = await supabase
-      .from("predictions")
-      .select(`
-        *,
-        fixtures (home_team, away_team),
-        profiles (display_name)
-      `)
+      .from("scorer_prediction_reviews")
+      .select("*")
       .not("scorer_prediction_status", "eq", "pending")
-      .order("scorer_reviewed_at", { ascending: false })
+      .order("kickoff_at", { ascending: false })
       .limit(10)
     setReviewedScorers(data || [])
   }
@@ -422,22 +413,21 @@ export default function AdminPage() {
                 <h4 className="text-[10px] font-black uppercase text-primary tracking-widest px-2">{pendingScorers.length} Pending Review{pendingScorers.length !== 1 ? 's' : ''}</h4>
                 <div className="space-y-4">
                   {pendingScorers.filter(Boolean).map((rev) => {
-                    const f = (rev.fixtures as any) || {};
-                    const p = (rev.profiles as any) || {};
-                    const playerName = p.display_name || rev.display_name || "Unknown Player";
+                    const playerName = rev.player_display_name || "Unknown Player";
+                    const predictionId = rev.prediction_id;
                     
                     return (
-                      <div key={rev.id} className="p-5 bg-muted/30 rounded-[2rem] border border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div key={predictionId} className="p-5 bg-muted/30 rounded-[2rem] border border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="flex justify-between items-start">
                           <div className="space-y-1">
                             <span className="text-[9px] font-black uppercase text-muted-foreground opacity-60">Match Outcome</span>
                             <p className="font-black text-xs uppercase tracking-tight italic">
-                              {f.home_team || 'TBD'} {f.home_score ?? 0} - {f.away_score ?? 0} {f.away_team || 'TBD'}
+                              {rev.home_team || 'TBD'} {rev.home_score ?? 0} - {rev.away_score ?? 0} {rev.away_team || 'TBD'}
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                                <Goal className="h-3 w-3 text-primary opacity-50" />
                                <span className="text-[9px] font-bold text-muted-foreground italic break-words max-w-[200px]">
-                                 {cleanScorers(f.home_scorers)} • {cleanScorers(f.away_scorers)}
+                                 {cleanScorers(rev.home_scorers)} • {cleanScorers(rev.away_scorers)}
                                </span>
                             </div>
                           </div>
@@ -455,21 +445,21 @@ export default function AdminPage() {
                            <div className="flex gap-2">
                               <Button 
                                 size="sm" 
-                                onClick={() => handleReviewScorer(rev.id, 'incorrect')}
+                                onClick={() => handleReviewScorer(predictionId, 'incorrect')}
                                 disabled={!!isReviewing}
                                 variant="outline"
                                 className="h-10 rounded-xl px-4 text-[9px] font-black uppercase tracking-widest hover:bg-destructive/10 hover:text-destructive"
                               >
-                                {isReviewing === rev.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 mr-1.5" />}
+                                {isReviewing === predictionId ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3 mr-1.5" />}
                                 Incorrect
                               </Button>
                               <Button 
                                 size="sm" 
-                                onClick={() => handleReviewScorer(rev.id, 'correct')}
+                                onClick={() => handleReviewScorer(predictionId, 'correct')}
                                 disabled={!!isReviewing}
                                 className="h-10 rounded-xl px-4 premium-gold-pill text-[9px] shadow-lg"
                               >
-                                {isReviewing === rev.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3 mr-1.5" />}
+                                {isReviewing === predictionId ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3 mr-1.5" />}
                                 Correct (+2)
                               </Button>
                            </div>
@@ -490,11 +480,11 @@ export default function AdminPage() {
                 </div>
                 <div className="space-y-2">
                   {reviewedScorers.filter(Boolean).map((rev) => {
-                    const profileName = (rev.profiles as any)?.display_name || "Unknown Player";
-                    const fixtureLabel = `${(rev.fixtures as any)?.home_team || 'TBD'} vs ${(rev.fixtures as any)?.away_team || 'TBD'}`;
+                    const profileName = rev.player_display_name || "Unknown Player";
+                    const fixtureLabel = `${rev.home_team || 'TBD'} vs ${rev.away_team || 'TBD'}`;
                     
                     return (
-                      <div key={rev.id} className="flex items-center justify-between p-3 bg-muted/10 rounded-xl border border-border/20 text-[10px]">
+                      <div key={rev.prediction_id} className="flex items-center justify-between p-3 bg-muted/10 rounded-xl border border-border/20 text-[10px]">
                         <div className="flex flex-col">
                           <span className="font-bold text-foreground">{profileName}</span>
                           <span className="text-[8px] text-muted-foreground uppercase">{fixtureLabel}</span>
