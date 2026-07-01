@@ -6,7 +6,7 @@ import { MainNav } from "@/components/layout/main-nav"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
-import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck, RotateCcw, Search, Check, Target, Goal, History, XCircle, CheckCircle2 } from "lucide-react"
+import { RefreshCcw, Loader2, Zap, Star, UserSearch, UserPlus, Calendar, Clock, Send, UserCircle, ShieldCheck, RotateCcw, Search, Check, Target, Goal, History, XCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -49,6 +49,7 @@ export default function AdminPage() {
   const [pendingScorers, setPendingScorers] = useState<any[]>([])
   const [reviewedScorers, setReviewedScorers] = useState<any[]>([])
   const [isReviewing, setIsReviewing] = useState<string | null>(null)
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false)
   
   const [selectedUser, setSelectedUser] = useState("")
   const [selectedFixture, setSelectedFixture] = useState("")
@@ -474,34 +475,48 @@ export default function AdminPage() {
             {/* Reviewed History */}
             {reviewedScorers.length > 0 && (
               <div className="pt-6 border-t border-border/30 space-y-4">
-                <div className="flex items-center gap-2 px-2">
-                  <History className="h-3.5 w-3.5 text-muted-foreground" />
-                  <h4 className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Recent Reviews</h4>
+                <div className="flex items-center justify-between px-2">
+                  <div className="flex items-center gap-2">
+                    <History className="h-3.5 w-3.5 text-muted-foreground" />
+                    <h4 className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Recent Reviews</h4>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                    className="h-8 px-4 rounded-xl bg-muted/30 hover:bg-primary/10 text-[9px] font-black uppercase tracking-widest flex items-center gap-2 group transition-all"
+                  >
+                    <span>{isHistoryExpanded ? 'Hide All' : 'Show All'}</span>
+                    {isHistoryExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3 group-hover:translate-y-0.5 transition-transform" />}
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  {reviewedScorers.filter(Boolean).map((rev) => {
-                    const profileName = rev.player_display_name || "Unknown Player";
-                    const fixtureLabel = `${rev.home_team || 'TBD'} vs ${rev.away_team || 'TBD'}`;
-                    
-                    return (
-                      <div key={rev.prediction_id} className="flex items-center justify-between p-3 bg-muted/10 rounded-xl border border-border/20 text-[10px]">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-foreground">{profileName}</span>
-                          <span className="text-[8px] text-muted-foreground uppercase">{fixtureLabel}</span>
+                
+                {isHistoryExpanded && (
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                    {reviewedScorers.filter(Boolean).map((rev) => {
+                      const profileName = rev.player_display_name || "Unknown Player";
+                      const fixtureLabel = `${rev.home_team || 'TBD'} vs ${rev.away_team || 'TBD'}`;
+                      
+                      return (
+                        <div key={rev.prediction_id} className="flex items-center justify-between p-3 bg-muted/10 rounded-xl border border-border/20 text-[10px]">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-foreground">{profileName}</span>
+                            <span className="text-[8px] text-muted-foreground uppercase">{fixtureLabel}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                             <span className="italic font-medium text-muted-foreground opacity-60">Pick: {rev.predicted_scorer_name}</span>
+                             <span className={cn(
+                               "font-black uppercase tracking-tighter text-[9px] px-2 py-0.5 rounded-full",
+                               rev.scorer_prediction_status === 'correct' ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"
+                             )}>
+                               {rev.scorer_prediction_status}
+                             </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                           <span className="italic font-medium text-muted-foreground opacity-60">Pick: {rev.predicted_scorer_name}</span>
-                           <span className={cn(
-                             "font-black uppercase tracking-tighter text-[9px] px-2 py-0.5 rounded-full",
-                             rev.scorer_prediction_status === 'correct' ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"
-                           )}>
-                             {rev.scorer_prediction_status}
-                           </span>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
