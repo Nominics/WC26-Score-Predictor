@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * High-frequency cron route for live score synchronization.
- * Target: Run every 1-2 minutes during match windows.
+ * Finalized for production use.
  */
 
 type WorldCupApiGame = {
@@ -44,6 +44,7 @@ function parseKickoffToUtc(localDate: string) {
 
 function mapStatus(game: WorldCupApiGame) {
   if (game.finished === "TRUE" || game.time_elapsed === "finished") return "finished";
+  if (game.time_elapsed === "notstarted") return "scheduled";
   const elapsed = parseInt(game.time_elapsed);
   if (game.time_elapsed === "live" || (!isNaN(elapsed) && elapsed >= 0)) return "live";
   return "scheduled";
@@ -63,14 +64,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Fetch API Data
-    const apiUrl = process.env.FIXTURES_API_URL;
-    const apiKey = process.env.FIXTURES_API_KEY;
-    if (!apiUrl || !apiKey) {
-      console.error("[Live Score Sync] API configuration missing");
-      return NextResponse.json({ error: "API configuration missing" }, { status: 500 });
+    // 2. Environment Variables
+    const apiUrl = process.env.FIXTURES_API_URL || "https://worldcup26.ir/get/games";
+    const apiKey = process.env.FIXTURES_API_KEY || process.env.WC_API_TOKEN;
+
+    if (!apiKey) {
+      return NextResponse.json({ error: "API token missing" }, { status: 500 });
     }
 
+    // 3. Fetch API Data
     const apiResponse = await fetch(apiUrl, {
       headers: { Authorization: `Bearer ${apiKey}` },
       cache: "no-store",
@@ -83,7 +85,7 @@ export async function POST(req: Request) {
     const apiData = (await apiResponse.json()) as WorldCupApiResponse;
     const apiGames = apiData.games || [];
 
-    // 3. Fetch current DB state for comparison
+    // 4. Fetch current DB state
     const { data: dbFixtures, error: fixturesError } = await supabaseAdmin.from("fixtures").select("*");
     if (fixturesError) throw fixturesError;
 
@@ -94,6 +96,7 @@ export async function POST(req: Request) {
     const fixtureMap = new Map(dbFixtures?.map(f => [f.external_id, f]) || []);
 
     const results = {
+      success: true,
       liveMatchesChecked: 0,
       fixturesUpdated: 0,
       goalsDetected: 0,
@@ -112,9 +115,12 @@ export async function POST(req: Request) {
       
       if (!existing) continue;
 
-      // Filter for live or recently changed matches
-      const isLiveMatch = status === 'live' || (existing.status === 'live' && status === 'finished');
-      if (!isLiveMatch) continue;
+      // 5. Production Live Detection
+      // A match is "live interest" if it's currently live OR it just finished.
+      const isActuallyLive = status === "live" && game.time_elapsed !== "notstarted";
+      const isJustFinished = existing.status === "live" && status === "finished";
+      
+      if (!isActuallyLive && !isJustFinished) continue;
 
       results.liveMatchesChecked++;
 
@@ -123,13 +129,14 @@ export async function POST(req: Request) {
       const cleanScorers = (val?: string | null) => (val === "null" || !val ? null : val);
       const homeScorers = cleanScorers(game.home_scorers);
       const awayScorers = cleanScorers(game.away_scorers);
+      const apiKickoff = parseKickoffToUtc(game.local_date);
 
-      // Change Detection Logic
-      
-      // A. Match Started
+      // 6. Change Detection Logic & Specific Event Keys
+
+      // A. Match Started (Scheduled -> Live)
       if (existing.status === 'scheduled' && status === 'live') {
-        const eventKey = `match_start:${game.id}`;
-        const notificationSent = await handleMatchEvent({
+        const eventKey = `match-start:${existing.id}`;
+        const notified = await handleMatchEvent({
           fixtureId: existing.id,
           type: 'match_started',
           title: 'MATCH STARTED',
@@ -138,13 +145,10 @@ export async function POST(req: Request) {
           eventKey,
           userIds
         });
-        if (notificationSent) {
-          results.notificationsCreated++;
-          results.pushAttempted += userIds.length;
-        }
+        if (notified) results.notificationsCreated++;
       }
 
-      // B. Goal Detected
+      // B. Goal Detected (Score Change)
       if (existing.home_score !== homeScore || existing.away_score !== awayScore) {
         const whoScored = (homeScore ?? 0) > (existing.home_score ?? 0) 
           ? game.home_team_name_en 
@@ -154,8 +158,8 @@ export async function POST(req: Request) {
 
         if (whoScored) {
           results.goalsDetected++;
-          const eventKey = `goal:${game.id}:${homeScore}-${awayScore}`;
-          const notificationSent = await handleMatchEvent({
+          const eventKey = `goal:${existing.id}:${homeScore}-${awayScore}`;
+          const notified = await handleMatchEvent({
             fixtureId: existing.id,
             type: 'team_scored',
             title: 'GOAL!',
@@ -165,10 +169,7 @@ export async function POST(req: Request) {
             userIds,
             metadata: { homeScore, awayScore, scorerTeam: whoScored }
           });
-          if (notificationSent) {
-            results.notificationsCreated++;
-            results.pushAttempted += userIds.length;
-          }
+          if (notified) results.notificationsCreated++;
         }
       }
 
@@ -176,8 +177,10 @@ export async function POST(req: Request) {
       if (existing.home_scorers !== homeScorers || existing.away_scorers !== awayScorers) {
         if (homeScorers || awayScorers) {
           results.scorerUpdates++;
-          const eventKey = `scorers:${game.id}:${Date.now()}`;
-          await handleMatchEvent({
+          // Use content-based hash for deduplication
+          const scorersHash = `${homeScorers || ''}-${awayScorers || ''}`.substring(0, 50);
+          const eventKey = `scorer-update:${existing.id}:${scorersHash}`;
+          const notified = await handleMatchEvent({
             fixtureId: existing.id,
             type: 'scorer_updated',
             title: 'SCORERS UPDATED',
@@ -187,13 +190,14 @@ export async function POST(req: Request) {
             userIds,
             metadata: { homeScorers, awayScorers }
           });
+          if (notified) results.notificationsCreated++;
         }
       }
 
-      // D. Match Finished
+      // D. Match Finished (Live -> Finished)
       if (existing.status !== 'finished' && status === 'finished') {
-        const eventKey = `match_end:${game.id}`;
-        const notificationSent = await handleMatchEvent({
+        const eventKey = `match-finished:${existing.id}:${homeScore}-${awayScore}`;
+        const notified = await handleMatchEvent({
           fixtureId: existing.id,
           type: 'match_finished',
           title: 'FULL TIME',
@@ -203,13 +207,10 @@ export async function POST(req: Request) {
           userIds,
           metadata: { homeScore, awayScore }
         });
-        if (notificationSent) {
-          results.notificationsCreated++;
-          results.pushAttempted += userIds.length;
-        }
+        if (notified) results.notificationsCreated++;
       }
 
-      // Prepare Update Object
+      // 7. Prepare Database Update (With Kickoff Protection)
       const updatePayload: any = {
         external_id: game.id,
         status,
@@ -219,27 +220,26 @@ export async function POST(req: Request) {
         away_scorers: awayScorers,
         api_time_elapsed: game.time_elapsed,
         api_finished: game.finished,
+        api_kickoff_at: apiKickoff,
         updated_at: new Date().toISOString(),
       };
 
-      // Rule: Protect manually corrected kickoff times
-      if (!existing.manually_updated_kickoff_at) {
-        const apiKickoff = parseKickoffToUtc(game.local_date);
-        if (apiKickoff) {
-          updatePayload.kickoff_at = apiKickoff;
-        }
+      // PROTECTION: Only update kickoff_at if NOT manually corrected
+      if (!existing.manually_updated_kickoff_at && apiKickoff) {
+        updatePayload.kickoff_at = apiKickoff;
       }
 
       updatesToUpsert.push(updatePayload);
     }
 
+    // 8. Bulk Update Database
     if (updatesToUpsert.length > 0) {
       const { error: upsertError } = await supabaseAdmin.from("fixtures").upsert(updatesToUpsert, { onConflict: "external_id" });
       if (upsertError) throw upsertError;
       results.fixturesUpdated = updatesToUpsert.length;
     }
 
-    return NextResponse.json({ success: true, ...results });
+    return NextResponse.json(results);
 
   } catch (err: any) {
     console.error("[Live Score Sync] Critical Error:", err.message);
@@ -248,9 +248,13 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  return POST(req)
+  return POST(req);
 }
 
+/**
+ * Internal handler for match events.
+ * Manages Pulse insertion and Global Alerts.
+ */
 async function handleMatchEvent({
   fixtureId, type, title, emoji, message, eventKey, userIds, metadata = {}
 }: {
@@ -275,7 +279,7 @@ async function handleMatchEvent({
         metadata
       });
 
-      // 2. Dispatch Arena Alerts to all users
+      // 2. Dispatch Arena Alerts to all users via reusable helper
       await sendNotificationToUsers({
         userIds,
         type: type as NotificationType,
