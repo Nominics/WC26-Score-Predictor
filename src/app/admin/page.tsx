@@ -108,10 +108,9 @@ export default function AdminPage() {
       `)
       .not("predicted_scorer_name", "is", null)
       .eq("scorer_prediction_status", "pending")
-      .eq("fixtures.status", "finished")
     
-    // Filter out rows where join failed (shouldn't happen with inner logic but good for safety)
-    const valid = data?.filter(d => d.fixtures && (d.fixtures as any).status === 'finished') || []
+    // Filter for finished matches manually to be safe with joined data
+    const valid = data?.filter(d => (d.fixtures as any)?.status === 'finished') || []
     setPendingScorers(valid)
   }
 
@@ -422,16 +421,18 @@ export default function AdminPage() {
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black uppercase text-primary tracking-widest px-2">{pendingScorers.length} Pending Review{pendingScorers.length !== 1 ? 's' : ''}</h4>
                 <div className="space-y-4">
-                  {pendingScorers.map((rev) => {
-                    const f = rev.fixtures as any;
-                    const p = rev.profiles as any;
+                  {pendingScorers.filter(Boolean).map((rev) => {
+                    const f = (rev.fixtures as any) || {};
+                    const p = (rev.profiles as any) || {};
+                    const playerName = p.display_name || rev.display_name || "Unknown Player";
+                    
                     return (
                       <div key={rev.id} className="p-5 bg-muted/30 rounded-[2rem] border border-border/40 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="flex justify-between items-start">
                           <div className="space-y-1">
                             <span className="text-[9px] font-black uppercase text-muted-foreground opacity-60">Match Outcome</span>
                             <p className="font-black text-xs uppercase tracking-tight italic">
-                              {f.home_team} {f.home_score} - {f.away_score} {f.away_team}
+                              {f.home_team || 'TBD'} {f.home_score ?? 0} - {f.away_score ?? 0} {f.away_team || 'TBD'}
                             </p>
                             <div className="flex items-center gap-2 mt-2">
                                <Goal className="h-3 w-3 text-primary opacity-50" />
@@ -442,14 +443,14 @@ export default function AdminPage() {
                           </div>
                           <div className="text-right">
                              <span className="text-[9px] font-black uppercase text-muted-foreground opacity-60">Player</span>
-                             <p className="premium-gold-gradient-heading text-xs">{p.display_name}</p>
+                             <p className="premium-gold-gradient-heading text-xs">{playerName}</p>
                           </div>
                         </div>
 
                         <div className="p-4 bg-background/50 rounded-2xl border border-primary/10 flex items-center justify-between">
                            <div className="space-y-1">
                               <span className="text-[8px] font-black uppercase text-primary tracking-[0.2em]">Prediction</span>
-                              <p className="text-sm font-black italic uppercase">🎯 {rev.predicted_scorer_name}</p>
+                              <p className="text-sm font-black italic uppercase">🎯 {rev.predicted_scorer_name || 'No pick'}</p>
                            </div>
                            <div className="flex gap-2">
                               <Button 
@@ -488,23 +489,28 @@ export default function AdminPage() {
                   <h4 className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Recent Reviews</h4>
                 </div>
                 <div className="space-y-2">
-                  {reviewedScorers.map((rev) => (
-                    <div key={rev.id} className="flex items-center justify-between p-3 bg-muted/10 rounded-xl border border-border/20 text-[10px]">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-foreground">{(rev.profiles as any)?.display_name}</span>
-                        <span className="text-[8px] text-muted-foreground uppercase">{(rev.fixtures as any)?.home_team} vs {(rev.fixtures as any)?.away_team}</span>
+                  {reviewedScorers.filter(Boolean).map((rev) => {
+                    const profileName = (rev.profiles as any)?.display_name || "Unknown Player";
+                    const fixtureLabel = `${(rev.fixtures as any)?.home_team || 'TBD'} vs ${(rev.fixtures as any)?.away_team || 'TBD'}`;
+                    
+                    return (
+                      <div key={rev.id} className="flex items-center justify-between p-3 bg-muted/10 rounded-xl border border-border/20 text-[10px]">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-foreground">{profileName}</span>
+                          <span className="text-[8px] text-muted-foreground uppercase">{fixtureLabel}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           <span className="italic font-medium text-muted-foreground opacity-60">Pick: {rev.predicted_scorer_name}</span>
+                           <span className={cn(
+                             "font-black uppercase tracking-tighter text-[9px] px-2 py-0.5 rounded-full",
+                             rev.scorer_prediction_status === 'correct' ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"
+                           )}>
+                             {rev.scorer_prediction_status}
+                           </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                         <span className="italic font-medium text-muted-foreground opacity-60">Pick: {rev.predicted_scorer_name}</span>
-                         <span className={cn(
-                           "font-black uppercase tracking-tighter text-[9px] px-2 py-0.5 rounded-full",
-                           rev.scorer_prediction_status === 'correct' ? "bg-emerald-500/10 text-emerald-500" : "bg-destructive/10 text-destructive"
-                         )}>
-                           {rev.scorer_prediction_status}
-                         </span>
-                      </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}
