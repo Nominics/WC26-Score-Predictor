@@ -1,9 +1,10 @@
-
 import { NextResponse } from "next/server";
 import { DateTime } from "luxon";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { getTeamFlagUrl } from "@/lib/team-flags";
 import { sendNotificationToUsers, NotificationType } from "@/lib/notifications/send-notification";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 /**
  * High-frequency cron route for live score synchronization.
@@ -33,9 +34,18 @@ type WorldCupApiResponse = {
   games: WorldCupApiGame[];
 };
 
+function parseKickoffToUtc(localDate: string) {
+  if (!localDate) return null;
+  const dt = DateTime.fromFormat(localDate, "MM/dd/yyyy HH:mm", {
+    zone: "America/New_York",
+  });
+  return dt.isValid ? dt.toUTC().toISO() : null;
+}
+
 function mapStatus(game: WorldCupApiGame) {
   if (game.finished === "TRUE" || game.time_elapsed === "finished") return "finished";
-  if (game.time_elapsed === "live" || (parseInt(game.time_elapsed) >= 0)) return "live";
+  const elapsed = parseInt(game.time_elapsed);
+  if (game.time_elapsed === "live" || (!isNaN(elapsed) && elapsed >= 0)) return "live";
   return "scheduled";
 }
 
@@ -57,6 +67,7 @@ export async function POST(req: Request) {
     const apiUrl = process.env.FIXTURES_API_URL;
     const apiKey = process.env.FIXTURES_API_KEY;
     if (!apiUrl || !apiKey) {
+      console.error("[Live Score Sync] API configuration missing");
       return NextResponse.json({ error: "API configuration missing" }, { status: 500 });
     }
 
@@ -73,10 +84,13 @@ export async function POST(req: Request) {
     const apiGames = apiData.games || [];
 
     // 3. Fetch current DB state for comparison
-    const { data: dbFixtures } = await supabaseAdmin.from("fixtures").select("*");
-    const { data: profiles } = await supabaseAdmin.from("profiles").select("id");
+    const { data: dbFixtures, error: fixturesError } = await supabaseAdmin.from("fixtures").select("*");
+    if (fixturesError) throw fixturesError;
+
+    const { data: profiles, error: profilesError } = await supabaseAdmin.from("profiles").select("id");
+    if (profilesError) throw profilesError;
+
     const userIds = profiles?.map(p => p.id) || [];
-    
     const fixtureMap = new Map(dbFixtures?.map(f => [f.external_id, f]) || []);
 
     const results = {
@@ -85,6 +99,9 @@ export async function POST(req: Request) {
       goalsDetected: 0,
       scorerUpdates: 0,
       notificationsCreated: 0,
+      pushAttempted: 0,
+      pushSent: 0,
+      pushFailed: 0
     };
 
     const updatesToUpsert: any[] = [];
@@ -112,7 +129,7 @@ export async function POST(req: Request) {
       // A. Match Started
       if (existing.status === 'scheduled' && status === 'live') {
         const eventKey = `match_start:${game.id}`;
-        await handleMatchEvent({
+        const notificationSent = await handleMatchEvent({
           fixtureId: existing.id,
           type: 'match_started',
           title: 'MATCH STARTED',
@@ -121,11 +138,14 @@ export async function POST(req: Request) {
           eventKey,
           userIds
         });
-        results.notificationsCreated++;
+        if (notificationSent) {
+          results.notificationsCreated++;
+          results.pushAttempted += userIds.length;
+        }
       }
 
       // B. Goal Detected
-      if (status !== 'scheduled' && (existing.home_score !== homeScore || existing.away_score !== awayScore)) {
+      if (existing.home_score !== homeScore || existing.away_score !== awayScore) {
         const whoScored = (homeScore ?? 0) > (existing.home_score ?? 0) 
           ? game.home_team_name_en 
           : (awayScore ?? 0) > (existing.away_score ?? 0) 
@@ -135,7 +155,7 @@ export async function POST(req: Request) {
         if (whoScored) {
           results.goalsDetected++;
           const eventKey = `goal:${game.id}:${homeScore}-${awayScore}`;
-          await handleMatchEvent({
+          const notificationSent = await handleMatchEvent({
             fixtureId: existing.id,
             type: 'team_scored',
             title: 'GOAL!',
@@ -145,15 +165,18 @@ export async function POST(req: Request) {
             userIds,
             metadata: { homeScore, awayScore, scorerTeam: whoScored }
           });
-          results.notificationsCreated++;
+          if (notificationSent) {
+            results.notificationsCreated++;
+            results.pushAttempted += userIds.length;
+          }
         }
       }
 
       // C. Scorer List Updated
-      if (status !== 'scheduled' && (existing.home_scorers !== homeScorers || existing.away_scorers !== awayScorers)) {
+      if (existing.home_scorers !== homeScorers || existing.away_scorers !== awayScorers) {
         if (homeScorers || awayScorers) {
           results.scorerUpdates++;
-          const eventKey = `scorers:${game.id}:${Date.now()}`; // Scorers can update multiple times
+          const eventKey = `scorers:${game.id}:${Date.now()}`;
           await handleMatchEvent({
             fixtureId: existing.id,
             type: 'scorer_updated',
@@ -170,7 +193,7 @@ export async function POST(req: Request) {
       // D. Match Finished
       if (existing.status !== 'finished' && status === 'finished') {
         const eventKey = `match_end:${game.id}`;
-        await handleMatchEvent({
+        const notificationSent = await handleMatchEvent({
           fixtureId: existing.id,
           type: 'match_finished',
           title: 'FULL TIME',
@@ -180,7 +203,10 @@ export async function POST(req: Request) {
           userIds,
           metadata: { homeScore, awayScore }
         });
-        results.notificationsCreated++;
+        if (notificationSent) {
+          results.notificationsCreated++;
+          results.pushAttempted += userIds.length;
+        }
       }
 
       // Prepare Update Object
@@ -198,8 +224,10 @@ export async function POST(req: Request) {
 
       // Rule: Protect manually corrected kickoff times
       if (!existing.manually_updated_kickoff_at) {
-        const apiKickoff = DateTime.fromFormat(game.local_date, "MM/dd/yyyy HH:mm", { zone: "America/New_York" }).toUTC().toISO();
-        updatePayload.kickoff_at = apiKickoff;
+        const apiKickoff = parseKickoffToUtc(game.local_date);
+        if (apiKickoff) {
+          updatePayload.kickoff_at = apiKickoff;
+        }
       }
 
       updatesToUpsert.push(updatePayload);
@@ -214,7 +242,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, ...results });
 
   } catch (err: any) {
-    console.error("[Live Score Sync] Error:", err.message);
+    console.error("[Live Score Sync] Critical Error:", err.message);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -252,8 +280,11 @@ async function handleMatchEvent({
         data: { fixtureId, ...metadata, url: "/dashboard" },
         eventKeyPrefix: `alert:${eventKey}`
       });
+      return true;
     }
+    return false;
   } catch (err) {
     console.error("[Match Event Handler] Error:", err);
+    return false;
   }
 }
